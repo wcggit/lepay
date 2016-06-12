@@ -1,0 +1,6 @@
+/.idea
+/.mvn
+/logs
+/*.log
+/target
+/src/main/resources/config
