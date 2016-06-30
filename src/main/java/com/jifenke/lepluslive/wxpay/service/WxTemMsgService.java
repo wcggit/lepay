@@ -3,6 +3,8 @@ package com.jifenke.lepluslive.wxpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantWeiXinUser;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.merchant.service.MerchantWeiXinUserService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
@@ -52,6 +54,9 @@ public class WxTemMsgService {
 
   @Inject
   private MerchantService merchantService;
+
+  @Inject
+  private DictionaryService dictionaryService;
 
   private static final Logger log = LoggerFactory.getLogger(WxTemMsgService.class);
 
@@ -113,7 +118,7 @@ public class WxTemMsgService {
       map2.put("remark", mapRemark);
 
       sendTemMessage(offLineOrder.getLeJiaUser().getWeiXinUser().getOpenId(), 2L, keys,
-                     offLineOrder.getOrderSid(), 39L, map2);
+                     offLineOrder.getOrderSid(), 7L, map2);
 
       //为商户发送模版消息
     }).start();
@@ -166,7 +171,7 @@ public class WxTemMsgService {
           new StringEntity(new String(param.toString().getBytes("utf8"), "iso8859-1"));
 
       //获取token
-      String token = WeixinPayUtil.getAccessToken(wxId).getAccessToken();
+      String token = dictionaryService.findDictionaryById(wxId).getValue();
 
       String
           getUrl =
@@ -225,20 +230,31 @@ public class WxTemMsgService {
       mapRemark.put("color", "#173177");
       HashMap<String, Object> map2 = new HashMap<>();
       map2.put("remark", mapRemark);
-
-      merchantService.findMerchantUserByMerchant(offLineOrder
-                                                     .getMerchant()).stream().map(merchantUser -> {
-        merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser).stream()
-            .map(merchantWeiXinUser -> {
-              sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
-                             offLineOrder.getOrderSid(), 41L, map2);
-              return null;
-            })
-            .collect(Collectors.toList());
-        return null;
-      }).collect(
-          Collectors.toList());
-      offLineOrder.getMerchant();
+      List<MerchantUser>
+          merchantUsers =
+          merchantService.findMerchantUserByMerchant(offLineOrder
+                                                         .getMerchant());
+      for(MerchantUser merchantUser : merchantUsers){
+        List<MerchantWeiXinUser>
+            merchantWeiXinUsers =
+            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser);
+        for(MerchantWeiXinUser merchantWeiXinUser:merchantWeiXinUsers){
+          sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
+                         offLineOrder.getOrderSid(), 9L, map2);
+        }
+      }
+//      merchantService.findMerchantUserByMerchant(offLineOrder
+//                                                     .getMerchant()).stream().map(merchantUser -> {
+//        merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser).stream()
+//            .map(merchantWeiXinUser -> {
+//              sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
+//                             offLineOrder.getOrderSid(), 41L, map2);
+//              return null;
+//            })
+//            .collect(Collectors.toList());
+//        return null;
+//      }).collect(
+//          Collectors.toList());
 
       //为商户发送模版消息
     }).start();

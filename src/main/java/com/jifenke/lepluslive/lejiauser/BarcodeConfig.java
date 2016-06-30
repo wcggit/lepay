@@ -3,6 +3,8 @@ package com.jifenke.lepluslive.lejiauser;
 import net.glxn.qrgen.core.image.ImageType;
 import org.krysalis.barcode4j.tools.UnitConv;
 
+import java.math.BigDecimal;
+
 public class BarcodeConfig {
 
 	public static class Barcode {
@@ -105,5 +107,9 @@ public class BarcodeConfig {
 			qrConfig.setImageType(ImageType.JPG);
 			return qrConfig;
 		}
+
+//	  public static void main(String[] args) {
+//	    System.out.println(new BigDecimal(0).doubleValue()==0);
+//	  }
 	}
 }

@@ -2,6 +2,8 @@ package com.jifenke.lepluslive.lejiauser.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jifenke.lepluslive.global.util.MvUtil;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.partner.domain.entities.Partner;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 
 import org.hibernate.annotations.Cache;
@@ -27,118 +29,170 @@ import javax.persistence.Table;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class LeJiaUser {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-    private String oneBarCodeUrl;
+  private String oneBarCodeUrl;
 
-    private String userSid = MvUtil.getBarCodeStr();
+  private String userSid = MvUtil.getBarCodeStr();
 
-    private Date createDate = new Date();
+  private Date createDate = new Date();
 
-    private Date phoneBindDate;
+  private Date phoneBindDate;
 
-    @OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @JsonIgnore
-    private WeiXinUser weiXinUser;
+  @OneToOne
+  @JsonIgnore
+  private WeiXinUser weiXinUser;
 
-    private String phoneNumber;
+  private String phoneNumber;
 
-    private String token;
+  private String token;
 
-    private String pwd;    //加密后
+  private String pwd;    //加密后
 
-    private String headImageUrl;
+  private String headImageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private RegisterOrigin registerOrigin;
+  private String userName;  //用户名
 
-    public RegisterOrigin getRegisterOrigin() {
-        return registerOrigin;
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  private RegisterOrigin registerOrigin;
 
-    public void setRegisterOrigin(RegisterOrigin registerOrigin) {
-        this.registerOrigin = registerOrigin;
-    }
+  @ManyToOne
+  private Merchant bindMerchant;
 
-    public String getToken() {
-        return token;
-    }
+  @ManyToOne
+  private Partner bindPartner;
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+  private Date bindMerchantDate;
 
-    public String getPwd() {
-        return pwd;
-    }
+  private Date bindPartnerDate;
 
-    public void setPwd(String pwd) {
-        this.pwd = pwd;
-    }
+  public Date getBindMerchantDate() {
+    return bindMerchantDate;
+  }
 
-    public String getHeadImageUrl() {
-        return headImageUrl;
-    }
+  public void setBindMerchantDate(Date bindMerchantDate) {
+    this.bindMerchantDate = bindMerchantDate;
+  }
 
-    public void setHeadImageUrl(String headImageUrl) {
-        this.headImageUrl = headImageUrl;
-    }
+  public Date getBindPartnerDate() {
+    return bindPartnerDate;
+  }
 
-    public Date getPhoneBindDate() {
-        return phoneBindDate;
-    }
+  public void setBindPartnerDate(Date bindPartnerDate) {
+    this.bindPartnerDate = bindPartnerDate;
+  }
 
-    public void setPhoneBindDate(Date phoneBindDate) {
-        this.phoneBindDate = phoneBindDate;
-    }
+  public WeiXinUser getWeiXinUser() {
+    return weiXinUser;
+  }
 
-    public Date getCreateDate() {
-        return createDate;
-    }
+  public void setWeiXinUser(WeiXinUser weiXinUser) {
+    this.weiXinUser = weiXinUser;
+  }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+  public Partner getBindPartner() {
+    return bindPartner;
+  }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+  public void setBindPartner(Partner bindPartner) {
+    this.bindPartner = bindPartner;
+  }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
+  public Merchant getBindMerchant() {
+    return bindMerchant;
+  }
 
-    public WeiXinUser getWeiXinUser() {
-        return weiXinUser;
-    }
+  public void setBindMerchant(Merchant bindMerchant) {
+    this.bindMerchant = bindMerchant;
+  }
 
-    public void setWeiXinUser(WeiXinUser weiXinUser) {
-        this.weiXinUser = weiXinUser;
-    }
+  public RegisterOrigin getRegisterOrigin() {
+    return registerOrigin;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public void setRegisterOrigin(RegisterOrigin registerOrigin) {
+    this.registerOrigin = registerOrigin;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public String getToken() {
+    return token;
+  }
 
-    public String getOneBarCodeUrl() {
-        return oneBarCodeUrl;
-    }
+  public void setToken(String token) {
+    this.token = token;
+  }
 
-    public void setOneBarCodeUrl(String oneBarCodeUrl) {
-        this.oneBarCodeUrl = oneBarCodeUrl;
-    }
+  public String getPwd() {
+    return pwd;
+  }
 
-    public String getUserSid() {
-        return userSid;
-    }
+  public void setPwd(String pwd) {
+    this.pwd = pwd;
+  }
 
-    public void setUserSid(String userSid) {
-        this.userSid = userSid;
-    }
+  public String getHeadImageUrl() {
+    return headImageUrl;
+  }
+
+  public void setHeadImageUrl(String headImageUrl) {
+    this.headImageUrl = headImageUrl;
+  }
+
+  public Date getPhoneBindDate() {
+    return phoneBindDate;
+  }
+
+  public void setPhoneBindDate(Date phoneBindDate) {
+    this.phoneBindDate = phoneBindDate;
+  }
+
+  public Date getCreateDate() {
+    return createDate;
+  }
+
+  public void setCreateDate(Date createDate) {
+    this.createDate = createDate;
+  }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getOneBarCodeUrl() {
+    return oneBarCodeUrl;
+  }
+
+  public void setOneBarCodeUrl(String oneBarCodeUrl) {
+    this.oneBarCodeUrl = oneBarCodeUrl;
+  }
+
+  public String getUserSid() {
+    return userSid;
+  }
+
+  public void setUserSid(String userSid) {
+    this.userSid = userSid;
+  }
+
+  public String getUserName() {
+    return userName;
+  }
+
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 }

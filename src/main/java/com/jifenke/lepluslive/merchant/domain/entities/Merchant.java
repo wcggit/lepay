@@ -1,8 +1,12 @@
 package com.jifenke.lepluslive.merchant.domain.entities;
 
 import com.jifenke.lepluslive.global.util.MvUtil;
+import com.jifenke.lepluslive.partner.domain.entities.Partner;
+
+
 import java.math.BigDecimal;
 import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,6 +42,8 @@ public class Merchant {
   @ManyToOne
   private MerchantType merchantType;
 
+  @ManyToOne
+  private Partner partner;
 
   private String location;
 
@@ -49,9 +55,9 @@ public class Merchant {
 
   private Integer partnership; //合作关系
 
-  private Double lng=0.0;
+  private Double lng = 0.0;
 
-  private Double lat=0.0;
+  private Double lat = 0.0;
 
   private String payee; //收款人
 
@@ -65,22 +71,15 @@ public class Merchant {
 
   private BigDecimal ljCommission; //乐加佣金 单位百分比
 
+  private BigDecimal ljBrokerage = new BigDecimal(0); //只有联盟商户才不为空 , 代表非乐加会员消费时,收取的手续费
+
   private BigDecimal scoreARebate; //返a积分比 单位百分比
 
-  private BigDecimal scoreBRebate; //返b积分比 单位百分比
-
-  private BigDecimal ljBrokerage = new BigDecimal(0); //只有联盟商户才不为空 , 代表非乐加会员消费时,收取的手续费
+  private BigDecimal scoreBRebate;
 
   private String contact; //联系人
 
   private Date createDate = new Date();
-
-
-  private Integer cycle;  //结算周期  1 一个工作日 2 2个工作日
-
-  private String merchantPhone; //绑定电话
-
-  private String officeHour; //营业时间
 
   public BigDecimal getLjBrokerage() {
     return ljBrokerage;
@@ -89,6 +88,12 @@ public class Merchant {
   public void setLjBrokerage(BigDecimal ljBrokerage) {
     this.ljBrokerage = ljBrokerage;
   }
+
+  private Integer cycle;  //结算周期  1 一个工作日 2 2个工作日
+
+  private String merchantPhone; //绑定电话
+
+  private String officeHour; //营业时间
 
   public String getMerchantPhone() {
     return merchantPhone;
@@ -162,6 +167,15 @@ public class Merchant {
   public void setUserLimit(Long userLimit) {
     this.userLimit = userLimit;
   }
+
+  public Partner getPartner() {
+    return partner;
+  }
+
+  public void setPartner(Partner partner) {
+    this.partner = partner;
+  }
+
 
   public Long getLimit() {
     return userLimit;

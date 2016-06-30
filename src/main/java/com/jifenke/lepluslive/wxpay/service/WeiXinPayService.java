@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -45,6 +46,9 @@ public class WeiXinPayService {
 
   @Value("${weixin.jsapiTicket}")
   private String jsapiTicket;
+
+  @Inject
+  private DictionaryService dictionaryService;
 
 
   /**
@@ -158,7 +162,7 @@ public class WeiXinPayService {
   public String getJsapiSignature(HttpServletRequest request, String noncestr, Long timestamp) {
     StringBuffer sb = new StringBuffer();
     sb.append("jsapi_ticket=");
-    sb.append(WeixinPayUtil.getAccessToken(39L).getJsapiTickek());
+    sb.append(dictionaryService.findDictionaryById(8L).getValue());
     sb.append("&noncestr=");
     sb.append(noncestr);
     sb.append("&timestamp=");
