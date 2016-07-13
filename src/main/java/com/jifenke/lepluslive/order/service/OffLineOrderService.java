@@ -193,7 +193,7 @@ public class OffLineOrderService {
 
       }
       //不管会员还说非会员,消费完成对商家待转账金额增加
-     // merchantService.paySuccess(offLineOrder);
+      // merchantService.paySuccess(offLineOrder);
       offLineOrder.setState(1);
       offLineOrderRepository.save(offLineOrder);
     }
@@ -363,10 +363,12 @@ public class OffLineOrderService {
   public void checkMessageState(String orderSid) {
     OffLineOrder offLineOrder = offLineOrderRepository.findByOrderSid(orderSid);
     if (offLineOrder.getMessageState() == 0) {
-      wxTemMsgService.sendToClient(offLineOrder);
-      wxTemMsgService.sendToMerchant(offLineOrder);
+      offLineOrder.setMessageState(1);
+      offLineOrderRepository.save(offLineOrder);
+      new Thread(() -> {
+        wxTemMsgService.sendToClient(offLineOrder);
+        wxTemMsgService.sendToMerchant(offLineOrder);
+      }).start();
     }
-    offLineOrder.setMessageState(1);
-    offLineOrderRepository.save(offLineOrder);
   }
 }
