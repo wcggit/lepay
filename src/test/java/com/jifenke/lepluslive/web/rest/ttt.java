@@ -5,6 +5,8 @@ import com.jifenke.lepluslive.global.config.Constants;
 import com.jifenke.lepluslive.global.util.Des;
 import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantWallet;
+import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
@@ -23,6 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -59,13 +62,13 @@ public class ttt {
   private ScoreAService scoreAService;
 
   @Inject
-  private OffLineOrderRepository offLineOrderRepository;
+  private MerchantWalletRepository merchantWalletRepository;
+
+
 
   @Test
   public void tttt() {
-    OffLineOrder one = offLineOrderRepository.findOne(12L);
-        offLineOrderService.offLIneOrderShare(one);
-//    Date start = new Date();
+//    offLineOrderService.paySuccess("16071015404016597");
 
   }
 

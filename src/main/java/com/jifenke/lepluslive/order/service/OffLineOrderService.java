@@ -185,15 +185,15 @@ public class OffLineOrderService {
             .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
 
         //对于返庸订单分润
-        if (offLineOrder.getRebateWay() == 1) {
-          new Thread(() -> {
-            offLIneOrderShare(offLineOrder);
-          }).start();
-        }
+//        if (offLineOrder.getRebateWay() == 1) {
+//          new Thread(() -> {
+//            offLIneOrderShare(offLineOrder);
+//          }).start();
+//        }
 
       }
       //不管会员还说非会员,消费完成对商家待转账金额增加
-      merchantService.paySuccess(offLineOrder);
+     // merchantService.paySuccess(offLineOrder);
       offLineOrder.setState(1);
       offLineOrderRepository.save(offLineOrder);
     }
@@ -220,6 +220,7 @@ public class OffLineOrderService {
                             / 100.0);
       partnerService.shareToPartner(toTradePartner, offLineOrder.getMerchant().getPartner(),
                                     offLineOrder.getOrderSid(), 1L);
+      offLineOrderShare.setTradePartner(offLineOrder.getMerchant().getPartner());
       //分润给交易合伙人管理员
       long
           toTradePartnerManager =
@@ -230,6 +231,8 @@ public class OffLineOrderService {
                                            offLineOrder.getMerchant().getPartner()
                                                .getPartnerManager(), offLineOrder.getOrderSid(),
                                            1L);
+      offLineOrderShare.setTradePartnerManager(offLineOrder.getMerchant().getPartner()
+                                                   .getPartnerManager());
 
       offLineOrderShare.setToTradePartner(toTradePartner);
       offLineOrderShare.setToTradePartnerManager(toTradePartnerManager);
@@ -243,7 +246,7 @@ public class OffLineOrderService {
         //分润给绑定商户
         merchantService.shareToMerchant(toLockMerchant, leJiaUser.getBindMerchant(),
                                         offLineOrder.getOrderSid(), 1L);
-
+        offLineOrderShare.setLockMerchant(leJiaUser.getBindMerchant());
         if (leJiaUser.getBindPartner() != null) {
           toLockPartner =
               (long) Math.floor(shareMoney.multiply(
@@ -263,9 +266,11 @@ public class OffLineOrderService {
                                                leJiaUser.getBindPartner().getPartnerManager(),
                                                offLineOrder.getOrderSid(), 1L);
           offLineOrderShare.setToLockPartnerManager(toLockPartnerManager);
+          offLineOrderShare.setLockPartner(leJiaUser.getBindPartner());
+          offLineOrderShare.setLockPartnerManager(leJiaUser.getBindPartner().getPartnerManager());
         }
       }
-      offLineOrderShare.setOrderSid(offLineOrder.getOrderSid());
+      offLineOrderShare.setOffLineOrder(offLineOrder);
       offLineOrderShare
           .setToLePlusLife(
               shareMoney.longValue() - toTradePartner - toTradePartnerManager - toLockMerchant
@@ -273,6 +278,7 @@ public class OffLineOrderService {
       partnerService.shareToPartnerManager(offLineOrderShare.getToLePlusLife(),
                                            partnerService.findPartnerManagerById(1L),
                                            offLineOrder.getOrderSid(), 1L);
+      offLineOrderShare.setCreateDate(offLineOrder.getCompleteDate());
       offLineOrderShareRepository.save(offLineOrderShare);
     }
 

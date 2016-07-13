@@ -83,7 +83,6 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkUserBindMerchant(LeJiaUser leJiaUser, Merchant merchant) {
     //判断是否需要绑定商户
-
     if (leJiaUser.getBindMerchant() == null) {
       long userLimit = leJiaUserRepository.countMerchantBindLeJiaUser(merchant.getId());
       if (merchant.getUserLimit() > userLimit) {

@@ -1,9 +1,17 @@
 package com.jifenke.lepluslive.order.domain.entities;
 
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.partner.domain.entities.Partner;
+import com.jifenke.lepluslive.partner.domain.entities.PartnerManager;
+
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
@@ -17,7 +25,8 @@ public class OffLineOrderShare {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  private String orderSid;
+  @OneToOne
+  private OffLineOrder offLineOrder;
 
   private Long toTradePartner = 0L;
 
@@ -30,6 +39,80 @@ public class OffLineOrderShare {
   private Long toLockPartnerManager = 0L;
 
   private Long toLePlusLife = 0L;
+
+  private Date createDate = new Date();
+
+  @ManyToOne
+  private Partner tradePartner;
+
+  @ManyToOne
+  private PartnerManager tradePartnerManager;
+
+  @ManyToOne
+  private Merchant lockMerchant;
+
+  @ManyToOne
+  private Partner lockPartner;
+
+  @ManyToOne
+  private PartnerManager lockPartnerManager;
+
+
+  public OffLineOrder getOffLineOrder() {
+    return offLineOrder;
+  }
+
+  public void setOffLineOrder(OffLineOrder offLineOrder) {
+    this.offLineOrder = offLineOrder;
+  }
+
+  public Partner getTradePartner() {
+    return tradePartner;
+  }
+
+  public void setTradePartner(Partner tradePartner) {
+    this.tradePartner = tradePartner;
+  }
+
+  public PartnerManager getTradePartnerManager() {
+    return tradePartnerManager;
+  }
+
+  public void setTradePartnerManager(PartnerManager tradePartnerManager) {
+    this.tradePartnerManager = tradePartnerManager;
+  }
+
+  public Merchant getLockMerchant() {
+    return lockMerchant;
+  }
+
+  public void setLockMerchant(Merchant lockMerchant) {
+    this.lockMerchant = lockMerchant;
+  }
+
+  public Partner getLockPartner() {
+    return lockPartner;
+  }
+
+  public void setLockPartner(Partner lockPartner) {
+    this.lockPartner = lockPartner;
+  }
+
+  public PartnerManager getLockPartnerManager() {
+    return lockPartnerManager;
+  }
+
+  public void setLockPartnerManager(PartnerManager lockPartnerManager) {
+    this.lockPartnerManager = lockPartnerManager;
+  }
+
+  public Date getCreateDate() {
+    return createDate;
+  }
+
+  public void setCreateDate(Date createDate) {
+    this.createDate = createDate;
+  }
 
   public Long getToLePlusLife() {
     return toLePlusLife;
@@ -47,13 +130,6 @@ public class OffLineOrderShare {
     this.id = id;
   }
 
-  public String getOrderSid() {
-    return orderSid;
-  }
-
-  public void setOrderSid(String orderSid) {
-    this.orderSid = orderSid;
-  }
 
   public Long getToTradePartner() {
     return toTradePartner;

@@ -26,7 +26,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "LE_JIA_USER")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class LeJiaUser {
 
   @Id
