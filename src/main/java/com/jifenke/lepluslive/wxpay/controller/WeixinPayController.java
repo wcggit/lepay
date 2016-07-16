@@ -66,7 +66,7 @@ public class WeixinPayController {
     //操作订单
     if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
       //确定只发送一条模版消息;
-      offLineOrderService.checkMessageState(orderSid);
+     // offLineOrderService.checkMessageState(orderSid);
       //操作订单
       try {
         offLineOrderService.paySuccess(orderSid);
@@ -98,7 +98,7 @@ public class WeixinPayController {
     offLineOrderService.checkOrderState(orderSid);
     OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
     model.addAttribute("offLineOrder", offLineOrder);
-    if (offLineOrder.getRebateWay() != 1) {
+    if (offLineOrder.getRebateWay() != 1||offLineOrder.getRebateWay() != 3) {
       return MvUtil.go("/weixin/paySuccessForNoNMember");
     } else {
       return MvUtil.go("/weixin/paySuccessForMember");

@@ -3,16 +3,22 @@ package com.jifenke.lepluslive.merchant.domain.entities;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.partner.domain.entities.Partner;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -55,9 +61,9 @@ public class Merchant {
 
   private Integer partnership; //合作关系
 
-  private Double lng = 0.0;
+  private Double lng=0.0;
 
-  private Double lat = 0.0;
+  private Double lat=0.0;
 
   private String payee; //收款人
 
@@ -73,6 +79,8 @@ public class Merchant {
 
   private BigDecimal ljBrokerage = new BigDecimal(0); //只有联盟商户才不为空 , 代表非乐加会员消费时,收取的手续费
 
+  private BigDecimal memberCommission = new BigDecimal(0); //只有联盟商户才不为空 , 代表会员在绑定商户消费时的手续费
+
   private BigDecimal scoreARebate; //返a积分比 单位百分比
 
   private BigDecimal scoreBRebate;
@@ -80,6 +88,14 @@ public class Merchant {
   private String contact; //联系人
 
   private Date createDate = new Date();
+
+  public BigDecimal getMemberCommission() {
+    return memberCommission;
+  }
+
+  public void setMemberCommission(BigDecimal memberCommission) {
+    this.memberCommission = memberCommission;
+  }
 
   public BigDecimal getLjBrokerage() {
     return ljBrokerage;
@@ -176,14 +192,6 @@ public class Merchant {
     this.partner = partner;
   }
 
-
-  public Long getLimit() {
-    return userLimit;
-  }
-
-  public void setLimit(Long userLimit) {
-    this.userLimit = userLimit;
-  }
 
   @ManyToOne
   private Area area;

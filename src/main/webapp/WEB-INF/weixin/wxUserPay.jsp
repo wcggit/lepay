@@ -220,7 +220,7 @@
         var ext = ljhash(truePrice + " " + trueScore
                          + " ${leJiaUser.userSid} ${merchantId} " + totalPrice
                          + " ${openid}", "lepluslife");
-        $.post('${wxRootUrl}/lepay/wxpay/offLineOrderForUser', {
+        $.post('/lepay/wxpay/offLineOrderForUser', {
             ext: ext
         }, function (res) {
             $(this).removeClass('btn-disabled');
@@ -239,7 +239,7 @@
     $("#pay-confrim").on('touchstart', function () {
         $('#pay-confrim').unbind('touchstart');
         var ext = ljhash("${leJiaUser.userSid} ${merchantId} ${totalPrice}", "lepluslife");
-        $.post('${wxRootUrl}/lepay/wxpay/payByScoreA', {
+        $.post('/lepay/wxpay/payByScoreA', {
             ext: ext
         }, function (res) {
             if (res.status == 200) {
@@ -248,7 +248,7 @@
                     <%--'${wxRootUrl}/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;--%>
                 <%--} else {--%>
                     window.location.href =
-                    '${wxRootUrl}/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
+                    '/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
                // }
             } else {
                 alert(res.msg)
@@ -313,7 +313,7 @@
                            paySign: res['sign'], // 支付签名
                            success: function (data) {
                                window.location.href =
-                               '${wxRootUrl}/lepay/wxpay/paySuccess?orderSid='
+                               '/lepay/wxpay/paySuccess?orderSid='
                                + res['orderSid'];
                            },
                            cancel: function (res) {

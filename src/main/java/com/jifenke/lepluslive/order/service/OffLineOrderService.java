@@ -91,24 +91,24 @@ public class OffLineOrderService {
     offLineOrder.setTruePay(truePirce);
     offLineOrder.setCreatedDate(new Date());
     offLineOrder.setRebateWay(0);
-    offLineOrder.setWxCommission((long) Math.ceil(truePirce * 6 / 1000.0));
+    offLineOrder.setWxCommission(Math.round(truePirce * 6 / 1000.0));
     Merchant merchant = merchantService.findMerchantById(merchantId);
     offLineOrder.setMerchant(merchant);
     if (merchant.getPartnership() == 0) {
       if (merchant.getLjCommission().doubleValue() != 0) {
         offLineOrder.setLjCommission(
-            (long) Math.ceil(truePirce * merchant.getLjCommission().doubleValue() / 100.0));
+            Math.round(truePirce * merchant.getLjCommission().doubleValue() / 100.0));
       }
     } else {
       if (merchant.getLjBrokerage().doubleValue() != 0) {
         offLineOrder.setLjCommission(
-            (long) Math.ceil(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
+             Math.round(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
       }
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setPayWay(new PayWay(1L));
     offLineOrderRepository.save(offLineOrder);
-    long scoreB = (long) Math.ceil(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    long scoreB =  Math.round(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     return offLineOrder;
   }
@@ -131,12 +131,23 @@ public class OffLineOrderService {
     Merchant merchant = merchantService.findMerchantById(merchantId);
     offLineOrder.setMerchant(merchant);
     offLineOrder.setRebateWay(2);
-    offLineOrder.setWxCommission((long) Math.ceil(truePirce * 6 / 1000.0));
+    offLineOrder.setWxCommission(Math.round(truePirce * 6 / 1000.0));
     offLineOrder.setPayWay(new PayWay(1L));
-    if (merchant.getLjCommission().doubleValue() != 0) {
+    if(leJiaUser.getBindMerchant().getId()==merchant.getId()){
+      offLineOrder.setRebateWay(3);
       long
           ljCommission =
-          (long) Math.ceil(
+          Math.round(
+              new BigDecimal(total).multiply(merchant.getMemberCommission()).divide(new BigDecimal(100))
+                  .doubleValue());
+      offLineOrder.setLjCommission(ljCommission);
+      if(ljCommission-offLineOrder.getWxCommission()>0){
+        offLineOrder.setRebate(ljCommission-offLineOrder.getWxCommission());
+      }
+    } else if(merchant.getLjCommission().doubleValue() != 0){
+      long
+          ljCommission =
+          Math.round(
               new BigDecimal(total).multiply(merchant.getLjCommission()).divide(new BigDecimal(100))
                   .doubleValue());
       offLineOrder.setLjCommission(ljCommission);
@@ -145,14 +156,14 @@ public class OffLineOrderService {
         if (ljCommission != offLineOrder.getWxCommission()) {
           long
               rebate =
-              (long) Math.ceil(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
+           Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
           offLineOrder.setRebate(rebate);
         }
       }
     }
 
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
-    long scoreB = (long) Math.ceil(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    long scoreB = Math.round(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     offLineOrderRepository.save(offLineOrder);
     return offLineOrder;
@@ -185,11 +196,11 @@ public class OffLineOrderService {
             .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
 
         //对于返庸订单分润
-//        if (offLineOrder.getRebateWay() == 1) {
-//          new Thread(() -> {
-//            offLIneOrderShare(offLineOrder);
-//          }).start();
-//        }
+        if (offLineOrder.getRebateWay() == 1) {
+          new Thread(() -> {
+            offLIneOrderShare(offLineOrder);
+          }).start();
+        }
 
       }
       //不管会员还说非会员,消费完成对商家待转账金额增加
@@ -303,12 +314,12 @@ public class OffLineOrderService {
     offLineOrder.setMerchant(merchant);
     offLineOrder.setState(1);
     offLineOrder.setPayWay(new PayWay(2L));
-    long scoreB = (long) Math.ceil(scoreA * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    long scoreB = Math.round(scoreA * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     if (merchant.getLjCommission().doubleValue() != 0) {
       long
           ljCommission =
-          (long) Math.ceil(new BigDecimal(scoreA).multiply(merchant.getLjCommission())
+          Math.round(new BigDecimal(scoreA).multiply(merchant.getLjCommission())
                                .divide(new BigDecimal(100)).doubleValue());
       offLineOrder.setLjCommission(ljCommission);
 
@@ -316,7 +327,7 @@ public class OffLineOrderService {
         offLineOrder.setRebateWay(1);
         long
             rebate =
-            (long) Math.ceil(ljCommission * merchant.getScoreARebate()
+             Math.round(ljCommission * merchant.getScoreARebate()
                 .doubleValue() / 100.0);
         offLineOrder.setRebate(rebate);
       } else {

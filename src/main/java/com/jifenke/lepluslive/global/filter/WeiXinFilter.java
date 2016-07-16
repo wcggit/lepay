@@ -18,9 +18,11 @@ public class WeiXinFilter implements HandlerInterceptor {
 
   private WeiXinUserService weiXinUserService;
 
-  private String appId = Constants.APPID;
+//  private String appId = Constants.APPID;
+  private String appId = Constants.TEST_APPID;
 
-  private String weixinRootUrl = Constants.WEI_XIN_ROOT_URL;
+//  private String weixinRootUrl = Constants.WEI_XIN_ROOT_URL;
+  private String weixinRootUrl = Constants.WEI_XIN_TEST_ROOT_URL;
 
 
   @Override

@@ -190,7 +190,7 @@
         var totalPrice = $("#monetary").val();
         if (${openid!=null}) {
             // 首先提交请求，生成预支付订单
-            $.post('${wxRootUrl}/lepay/wxpay/offLineOrder', {
+            $.post('/lepay/wxpay/offLineOrder', {
                 truePrice: totalPrice,
                 merchantId: ${merchant.id},
                 openid: "${openid}"
@@ -219,7 +219,7 @@
                 var ext = ljhash(totalPrice + " 0"
                                  + " ${leJiaUser.userSid} ${merchant.id} " + totalPrice
                                  + " ${ljopenid}", "lepluslife");
-                $.post('${wxRootUrl}/lepay/wxpay/offLineOrderForUser', {
+                $.post('/lepay/wxpay/offLineOrderForUser', {
                     ext: ext
                 }, function (res) {
                     $(this).removeClass('btn-disabled');
@@ -245,9 +245,8 @@
                            paySign: res['sign'], // 支付签名
                            success: function (data) {
                                window.location.href =
-                               '${wxRootUrl}/lepay/wxpay/paySuccess?orderSid='
+                               '/lepay/wxpay/paySuccess?orderSid='
                                + res['orderSid'];
-
                            },
                            cancel: function (res) {
                                $('#confirm-pay').empty().text("确认支付");

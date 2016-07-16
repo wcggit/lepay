@@ -58,7 +58,7 @@ public class OffLineOrder {
 
   private Long transferMoney; //每笔应该转给商户的金额
 
-  private Integer rebateWay; //返利方式,如果为0 代表非会员订单 则只返b积分 如果为1 代表会员订单 2 会员在非签约商家消费
+  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单
 
   private Integer messageState = 0;
 
