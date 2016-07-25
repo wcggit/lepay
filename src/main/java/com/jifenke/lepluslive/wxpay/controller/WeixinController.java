@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -76,7 +77,7 @@ public class WeixinController {
   @Inject
   private OffLineOrderService offLineOrderService;
 
- // String openid = "oVmqjxLVGMaHMX7dRsAzZg7BlpgE";
+// String openid = "oVmqjxLVGMaHMX7dRsAzZg7BlpgE";
 
   @RequestMapping("/wxpay/{id}")
   public void merchantId() {
@@ -118,7 +119,8 @@ public class WeixinController {
 
   @RequestMapping("/wxpay/pay")
   public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
-                                HttpServletRequest request, HttpServletResponse response,
+                                @RequestParam(required = false) String pure,
+                                HttpServletRequest request,
                                 Model model) {
 
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
@@ -131,16 +133,25 @@ public class WeixinController {
           weiXinUserService.registerLeJiaUserForNonMember(openid, weiXinUser);
         }).start();
         model.addAttribute("openid", openid);
-
+        if (pure != null && "access".equals(pure)) {
+          model.addAttribute("pure", true);
+        }
       } else {
-        model.addAttribute("leJiaUser", weiXinUser.getLeJiaUser());
-        model
-            .addAttribute("scoreA", scoreAService.findScoreAByLeJiaUser(weiXinUser.getLeJiaUser()));
-        model.addAttribute("ljopenid", openid);
+        //如果扫纯支付码
+        if (pure != null && "access".equals(pure)) {
+          model.addAttribute("openid", openid);
+          model.addAttribute("pure", true);
+        } else {
+          model.addAttribute("leJiaUser", weiXinUser.getLeJiaUser());
+          model
+              .addAttribute("scoreA",
+                            scoreAService.findScoreAByLeJiaUser(weiXinUser.getLeJiaUser()));
+          model.addAttribute("ljopenid", openid);
+        }
       }
 
       model.addAttribute("wxConfig", getWeiXinPayConfig(request));
-      new Thread(()->{
+      new Thread(() -> {
         WeixinPayUtil
             .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
                                 "test");
@@ -153,19 +164,23 @@ public class WeixinController {
 
 
   @RequestMapping("/wxpay/userRegister")
-  public ModelAndView userRegister(@RequestParam String merchantSid, @RequestParam String code,
-                                   HttpServletRequest request, HttpServletResponse response,
-                                   Model model)
+  public void userRegister(@RequestParam String merchantSid, @RequestParam String code,
+                           @RequestParam(required = false) String pure,
+                           HttpServletResponse response)
       throws IOException {
     Map<String, Object> map = weiXinService.getSnsAccessToken(code);
+    System.out.println(map.toString());
     String openid = map.get("openid").toString();
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("/lepay/wxpay/pay?openid=");
     stringBuffer.append(openid);
     stringBuffer.append("&merchantSid=");
     stringBuffer.append(merchantSid);
+    if (pure != null && "access".equals(pure)) {
+      stringBuffer.append("&pure=access");
+    }
     response.sendRedirect(stringBuffer.toString());
-    return null;
+
   }
 
   //微信支付非会员接口
@@ -173,10 +188,11 @@ public class WeixinController {
   public
   @ResponseBody
   Map<Object, Object> weixinPay(@RequestParam String truePrice, @RequestParam String openid,
+                                @RequestParam boolean pure,
                                 @RequestParam Long merchantId, HttpServletRequest request) {
     OffLineOrder
         offLineOrder =
-        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, openid);
+        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, openid,pure);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -211,12 +227,12 @@ public class WeixinController {
     model.addAttribute("merchant", merchant);
     model.addAttribute("wxConfig", getWeiXinPayConfig(request));
     model.addAttribute("openid", strs[3]);
-    new Thread(()->{
+    new Thread(() -> {
       WeixinPayUtil
           .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
                               "test");
     }).start();
-    if(merchant.getReceiptAuth()==0){
+    if (merchant.getReceiptAuth() == 0) {
       return MvUtil.go("/weixin/userPayNonScore");
     }
 
@@ -235,7 +251,8 @@ public class WeixinController {
     OffLineOrder
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
-                                                        strs[4], leJiaUserService.findUserByUserSid(strs[2]));
+                                                        strs[4], leJiaUserService
+                .findUserByUserSid(strs[2]));
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -259,14 +276,15 @@ public class WeixinController {
   @RequestMapping(value = "/wxpay/userNonScoreA")
   public
   @ResponseBody
-  Map<Object, Object>  userPayByScoreA(@RequestParam String ext,
-                          HttpServletRequest request) {
+  Map<Object, Object> userPayByScoreA(@RequestParam String ext,
+                                      HttpServletRequest request) {
     String result = Des.strDec(ext, "lepluslife", null, null);
     String[] strs = result.split(" ");
     OffLineOrder
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[1], Long.parseLong(strs[2]), "0",
-                                                        strs[1], leJiaUserService.findUserByUserSid(strs[0]));
+                                                        strs[1], leJiaUserService
+                .findUserByUserSid(strs[0]));
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -302,7 +320,6 @@ public class WeixinController {
 
     }
   }
-
 
 
   /**

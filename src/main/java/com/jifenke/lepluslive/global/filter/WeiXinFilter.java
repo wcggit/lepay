@@ -18,11 +18,11 @@ public class WeiXinFilter implements HandlerInterceptor {
 
   private WeiXinUserService weiXinUserService;
 
-//  private String appId = Constants.APPID;
-  private String appId = Constants.TEST_APPID;
+  private String appId = Constants.APPID;
+//  private String appId = Constants.TEST_APPID;
 
-//  private String weixinRootUrl = Constants.WEI_XIN_ROOT_URL;
-  private String weixinRootUrl = Constants.WEI_XIN_TEST_ROOT_URL;
+  private String weixinRootUrl = Constants.WEI_XIN_ROOT_URL;
+//  private String weixinRootUrl = Constants.WEI_XIN_TEST_ROOT_URL;
 
 
   @Override
@@ -50,6 +50,10 @@ public class WeiXinFilter implements HandlerInterceptor {
       }
       String[] strs = action.split("/");
       String callbackUrl = weixinRootUrl + "/lepay/wxpay/userRegister?merchantSid=" + strs[3];
+      String pure = request.getParameter("pure");
+      if(pure!=null&&"access".equals(pure)){
+        callbackUrl+="&pure=access";
+      }
       String
           redirectUrl =
           "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appId + "&redirect_uri=" +

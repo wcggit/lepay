@@ -94,7 +94,7 @@ public class WeixinPayUtil {
 //      log.error("https请求异常：{}", e);
 //    }
 
-    Date start = new Date();
+//    Date start = new Date();
     CloseableHttpClient httpclient = HttpClients.createDefault();
     HttpPost httppost = new HttpPost(requestUrl);
 
@@ -105,8 +105,8 @@ public class WeixinPayUtil {
       httppost.setEntity(myEntity);
       CloseableHttpResponse response = httpclient.execute(httppost);
       HttpEntity resEntity = response.getEntity();
-      Date end = new Date();
-      System.out.println(end.getTime() - start.getTime() + "微信请求的时间=========");
+//      Date end = new Date();
+//      System.out.println(end.getTime() - start.getTime() + "微信请求的时间=========");
       return doXMLParse(EntityUtils.toString(resEntity, "UTF-8"));
     } catch (Exception e) {
       e.printStackTrace();

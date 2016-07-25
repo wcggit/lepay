@@ -2,16 +2,11 @@ package com.jifenke.lepluslive.web.rest;
 
 import com.jifenke.lepluslive.Application;
 import com.jifenke.lepluslive.global.config.Constants;
-import com.jifenke.lepluslive.global.util.Des;
 import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
-import com.jifenke.lepluslive.merchant.domain.entities.MerchantWallet;
 import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
-import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
-import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
 import com.jifenke.lepluslive.score.repository.ScoreARepository;
-import com.jifenke.lepluslive.score.repository.ScoreBRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.wxpay.repository.WeiXinUserRepository;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
@@ -23,9 +18,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-
-import java.util.Date;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -56,7 +48,7 @@ public class ttt {
   private WeiXinPayService weiXinPayService;
 
   @Inject
-  private OffLineOrderService offLineOrderService;
+  private OffLineOrderService service;
 
   @Inject
   private ScoreAService scoreAService;
@@ -65,11 +57,27 @@ public class ttt {
   private MerchantWalletRepository merchantWalletRepository;
 
 
-
   @Test
   public void tttt() {
-//    offLineOrderService.paySuccess("16071015404016597");
-   // offLineOrderService.checkMessageState("16052715520172837");
+    Thread t1 = new Thread(() -> {
+      for (int i = 0; i < 1000; i++) {
+        service.multiTest();
+      }
+    },"t1");
+    Thread t2 = new Thread(() -> {
+      for (int i = 0; i < 1000; i++) {
+        service.multiTest();
+      }
+    },"t2");
+
+    t1.start();
+    t2.start();
+    try {
+      t1.join();
+      t2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
   }
 

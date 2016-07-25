@@ -28,6 +28,8 @@ public class OffLineOrderShare {
   @OneToOne
   private OffLineOrder offLineOrder;
 
+  private Long shareMoney;
+
   private Long toTradePartner = 0L;
 
   private Long toTradePartnerManager = 0L;
@@ -57,6 +59,14 @@ public class OffLineOrderShare {
   @ManyToOne
   private PartnerManager lockPartnerManager;
 
+
+  public Long getShareMoney() {
+    return shareMoney;
+  }
+
+  public void setShareMoney(Long shareMoney) {
+    this.shareMoney = shareMoney;
+  }
 
   public OffLineOrder getOffLineOrder() {
     return offLineOrder;

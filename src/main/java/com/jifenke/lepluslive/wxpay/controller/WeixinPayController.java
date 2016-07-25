@@ -66,10 +66,10 @@ public class WeixinPayController {
     //操作订单
     if ("SUCCESS".equals(returnCode) && "SUCCESS".equals(resultCode)) {
       //确定只发送一条模版消息;
-     // offLineOrderService.checkMessageState(orderSid);
+      offLineOrderService.lockCheckMessageState(orderSid);
       //操作订单
       try {
-        offLineOrderService.paySuccess(orderSid);
+        offLineOrderService.lockPaySuccess(orderSid);
       } catch (Exception e) {
         log.error(e.getMessage());
         buffer.delete(0, buffer.length());
@@ -93,12 +93,11 @@ public class WeixinPayController {
   }
 
   @RequestMapping(value = "/paySuccess")
-  public ModelAndView goPaySuccessPageForMember(@RequestParam String orderSid, Model model,
-                                                HttpServletRequest request) {
+  public ModelAndView goPaySuccessPageForMember(@RequestParam String orderSid, Model model) {
     offLineOrderService.checkOrderState(orderSid);
     OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
     model.addAttribute("offLineOrder", offLineOrder);
-    if (offLineOrder.getRebateWay() != 1||offLineOrder.getRebateWay() != 3) {
+    if (offLineOrder.getRebateWay() != 1&&offLineOrder.getRebateWay() != 3) {
       return MvUtil.go("/weixin/paySuccessForNoNMember");
     } else {
       return MvUtil.go("/weixin/paySuccessForMember");

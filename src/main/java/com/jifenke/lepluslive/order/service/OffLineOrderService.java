@@ -1,6 +1,5 @@
 package com.jifenke.lepluslive.order.service;
 
-import com.jifenke.lepluslive.global.config.Constants;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -13,6 +12,7 @@ import com.jifenke.lepluslive.order.repository.OffLineOrderShareRepository;
 import com.jifenke.lepluslive.partner.service.PartnerService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
+import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.DictionaryService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinUserService;
@@ -22,15 +22,15 @@ import com.jifenke.lepluslive.wxpay.service.WxTemMsgService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.inject.Inject;
 
@@ -38,13 +38,15 @@ import javax.inject.Inject;
  * Created by wcg on 16/5/5.
  */
 @Service
-@Transactional(readOnly = true)
 public class OffLineOrderService {
 
   private static final Logger log = LoggerFactory.getLogger(OffLineOrderService.class);
 
+  private static ReentrantLock lock = new ReentrantLock();
+
+
   @Inject
-  private OffLineOrderRepository offLineOrderRepository;
+  private OffLineOrderRepository repository;
 
   @Inject
   private WeiXinUserService weiXinUserService;
@@ -83,14 +85,23 @@ public class OffLineOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,
-                                                     String openid) {
+                                                     String openid,boolean pure) {
     OffLineOrder offLineOrder = new OffLineOrder();
     Long truePirce = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
-    offLineOrder.setLeJiaUser(weiXinUserService.findWeiXinUserByOpenId(openid).getLeJiaUser());
+    WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
+    offLineOrder.setLeJiaUser(weiXinUser.getLeJiaUser());
     offLineOrder.setTotalPrice(truePirce);
     offLineOrder.setTruePay(truePirce);
     offLineOrder.setCreatedDate(new Date());
     offLineOrder.setRebateWay(0);
+    //如果扫纯支付码
+    if(pure){
+      if(weiXinUser.getState()==0){
+        offLineOrder.setRebateWay(4);
+      }else{
+        offLineOrder.setRebateWay(5);
+      }
+    }
     offLineOrder.setWxCommission(Math.round(truePirce * 6 / 1000.0));
     Merchant merchant = merchantService.findMerchantById(merchantId);
     offLineOrder.setMerchant(merchant);
@@ -102,13 +113,13 @@ public class OffLineOrderService {
     } else {
       if (merchant.getLjBrokerage().doubleValue() != 0) {
         offLineOrder.setLjCommission(
-             Math.round(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
+            Math.round(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
       }
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setPayWay(new PayWay(1L));
-    offLineOrderRepository.save(offLineOrder);
-    long scoreB =  Math.round(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    repository.save(offLineOrder);
+    long scoreB = Math.round(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     return offLineOrder;
   }
@@ -133,30 +144,30 @@ public class OffLineOrderService {
     offLineOrder.setRebateWay(2);
     offLineOrder.setWxCommission(Math.round(truePirce * 6 / 1000.0));
     offLineOrder.setPayWay(new PayWay(1L));
-    if(leJiaUser.getBindMerchant().getId()==merchant.getId()){
-      offLineOrder.setRebateWay(3);
-      long
-          ljCommission =
-          Math.round(
-              new BigDecimal(total).multiply(merchant.getMemberCommission()).divide(new BigDecimal(100))
-                  .doubleValue());
-      offLineOrder.setLjCommission(ljCommission);
-      if(ljCommission-offLineOrder.getWxCommission()>0){
-        offLineOrder.setRebate(ljCommission-offLineOrder.getWxCommission());
-      }
-    } else if(merchant.getLjCommission().doubleValue() != 0){
+    if (merchant.getLjCommission().doubleValue() != 0) {
       long
           ljCommission =
           Math.round(
               new BigDecimal(total).multiply(merchant.getLjCommission()).divide(new BigDecimal(100))
                   .doubleValue());
       offLineOrder.setLjCommission(ljCommission);
-      if (merchant.getPartnership() != 0) {
-        offLineOrder.setRebateWay(1);
-        if (ljCommission != offLineOrder.getWxCommission()) {
+      if (merchant.getPartnership() != 0) { //代表联盟商户
+        if (leJiaUser.getBindMerchant()!=null&&leJiaUser.getBindMerchant().getId() == merchant.getId()) { //代表会员订单
+          offLineOrder.setRebateWay(3);
+              ljCommission =
+              Math.round(
+                  new BigDecimal(total).multiply(merchant.getMemberCommission())
+                      .divide(new BigDecimal(100))
+                      .doubleValue());
+          offLineOrder.setLjCommission(ljCommission);
+          if (ljCommission - offLineOrder.getWxCommission() > 0) { //如果会员佣金大于微信手续费则发红包
+            offLineOrder.setRebate(ljCommission - offLineOrder.getWxCommission());
+          }
+        } else{ //导流订单
+          offLineOrder.setRebateWay(1);
           long
               rebate =
-           Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
+              Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
           offLineOrder.setRebate(rebate);
         }
       }
@@ -165,15 +176,13 @@ public class OffLineOrderService {
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     long scoreB = Math.round(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
-    offLineOrderRepository.save(offLineOrder);
+    repository.save(offLineOrder);
     return offLineOrder;
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void paySuccess(String orderSid) {
-    OffLineOrder offLineOrder = offLineOrderRepository.findByOrderSid(orderSid);
-    // 再开一个线程,为用户和商家推送2条模版消息
-
+    OffLineOrder offLineOrder = repository.findByOrderSid(orderSid);
     if (offLineOrder.getState() == 0) {
       offLineOrder.setCompleteDate(new Date());
       if (offLineOrder.getRebateWay() == 0) {
@@ -203,10 +212,8 @@ public class OffLineOrderService {
         }
 
       }
-      //不管会员还说非会员,消费完成对商家待转账金额增加
-      // merchantService.paySuccess(offLineOrder);
       offLineOrder.setState(1);
-      offLineOrderRepository.save(offLineOrder);
+      repository.save(offLineOrder);
     }
   }
 
@@ -220,6 +227,7 @@ public class OffLineOrderService {
             .getWxCommission());
     if (shareMoney.doubleValue() > 0) {
       offLineOrderShare = new OffLineOrderShare();
+      offLineOrderShare.setShareMoney(shareMoney.longValue());
       //分润给交易合伙人
       long toLockMerchant = 0L;
       long toLockPartner = 0L;
@@ -298,7 +306,7 @@ public class OffLineOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder findOffLineOrderByOrderSid(String orderSid) {
-    return offLineOrderRepository.findByOrderSid(orderSid);
+    return repository.findByOrderSid(orderSid);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -320,14 +328,14 @@ public class OffLineOrderService {
       long
           ljCommission =
           Math.round(new BigDecimal(scoreA).multiply(merchant.getLjCommission())
-                               .divide(new BigDecimal(100)).doubleValue());
+                         .divide(new BigDecimal(100)).doubleValue());
       offLineOrder.setLjCommission(ljCommission);
 
       if (merchant.getPartnership() != 0) { //代表乐加签约商家,会给消费者返现
         offLineOrder.setRebateWay(1);
         long
             rebate =
-             Math.round(ljCommission * merchant.getScoreARebate()
+            Math.round(ljCommission * merchant.getScoreARebate()
                 .doubleValue() / 100.0);
         offLineOrder.setRebate(rebate);
       } else {
@@ -342,14 +350,14 @@ public class OffLineOrderService {
     wxTemMsgService.sendToClient(offLineOrder);
     wxTemMsgService.sendToMerchant(offLineOrder);
     offLineOrder.setMessageState(1);
-    offLineOrderRepository.save(offLineOrder);
+    repository.save(offLineOrder);
 
     return offLineOrder;
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkOrderState(String orderSId) {
-    OffLineOrder offLineOrder = offLineOrderRepository.findByOrderSid(orderSId);
+    OffLineOrder offLineOrder = repository.findByOrderSid(orderSId);
     if (offLineOrder != null) {
       if (offLineOrder.getState() == 0) {
         //调接口查询订单是否支付完成
@@ -372,14 +380,37 @@ public class OffLineOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkMessageState(String orderSid) {
-    OffLineOrder offLineOrder = offLineOrderRepository.findByOrderSid(orderSid);
+    OffLineOrder offLineOrder = repository.findByOrderSid(orderSid);
     if (offLineOrder.getMessageState() == 0) {
       offLineOrder.setMessageState(1);
-      offLineOrderRepository.save(offLineOrder);
+      repository.save(offLineOrder);
       new Thread(() -> {
         wxTemMsgService.sendToClient(offLineOrder);
         wxTemMsgService.sendToMerchant(offLineOrder);
       }).start();
     }
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false,isolation = Isolation.REPEATABLE_READ)
+  public  void multiTest() {
+    OffLineOrder order = repository.findOne(1L);
+      order.setMessageState(order.getMessageState() + 1);
+      repository.save(order);
+  }
+
+  public  synchronized void lockMultiTest() {
+    multiTest();
+  }
+
+
+
+  public  void lockCheckMessageState(String orderSid) {
+    lock.lock();
+    checkMessageState(orderSid);
+    lock.unlock();
+  }
+
+  public synchronized void lockPaySuccess(String orderSid) {
+    paySuccess(orderSid);
   }
 }

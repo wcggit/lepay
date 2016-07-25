@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  * Created by wcg on 16/5/5.
@@ -58,11 +59,23 @@ public class OffLineOrder {
 
   private Long transferMoney; //每笔应该转给商户的金额
 
-  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单
+  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
 
   private Integer messageState = 0;
 
   private String lepayCode = MvUtil.getLePayCode();
+
+//  @Version
+//  private Long version = 0L;
+//
+//
+//  public Long getVersion() {
+//    return version;
+//  }
+//
+//  public void setVersion(Long version) {
+//    this.version = version;
+//  }
 
   public Integer getMessageState() {
     return messageState;

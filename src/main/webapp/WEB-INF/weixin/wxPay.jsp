@@ -189,11 +189,17 @@
         }
         var totalPrice = $("#monetary").val();
         if (${openid!=null}) {
+            var url = '/lepay/wxpay/offLineOrder';
+            var pure = false;
+            if(${pure!=null}){
+                pure = true;
+            }
             // 首先提交请求，生成预支付订单
-            $.post('/lepay/wxpay/offLineOrder', {
+            $.post(url, {
                 truePrice: totalPrice,
                 merchantId: ${merchant.id},
-                openid: "${openid}"
+                openid: "${openid}",
+                pure: pure
             }, function (res) {
                 $(this).removeClass('btn-disabled');
 //            调用微信支付js-api接口

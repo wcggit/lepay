@@ -24,17 +24,25 @@ public class PayFilter implements HandlerInterceptor {
   @Override
   public boolean preHandle(HttpServletRequest request,
                            HttpServletResponse response, Object o) throws Exception {
-    String ua = request.getHeader("user-agent")
-        .toLowerCase();
-    String action = request.getRequestURI();
-    if (ua.indexOf("micromessenger") > 0) {// 是微信浏览器
-      String[] strs = action.split("/");
-      // response.sendRedirect("/lepay/wxpay/" + strs[3]);
-      request.getRequestDispatcher("/lepay/wxpay/" + strs[3]).forward(request, response);
-      return false;
-    } else {
-      request.getRequestDispatcher("/lepay/scan").forward(request, response);
+    String ua = request.getHeader("user-agent");
+    if(ua!=null){
+      ua = ua.toLowerCase();
+      String action = request.getRequestURI();
+      if (ua.indexOf("micromessenger") > 0) {// 是微信浏览器
+        String[] strs = action.split("/");
+        // response.sendRedirect("/lepay/wxpay/" + strs[3]);
+        String pure = request.getParameter("pure");
+        if(pure!=null&&"access".equals(pure)){
+          request.getRequestDispatcher("/lepay/wxpay/" + strs[3]+"?pure="+pure).forward(request, response);
+        }else{
+          request.getRequestDispatcher("/lepay/wxpay/" + strs[3]).forward(request, response);
+        }
+        return false;
+      } else {
+        request.getRequestDispatcher("/lepay/scan").forward(request, response);
+      }
     }
+
     return false;
   }
 
