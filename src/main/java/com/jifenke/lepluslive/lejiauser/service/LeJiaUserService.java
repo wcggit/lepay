@@ -2,7 +2,9 @@ package com.jifenke.lepluslive.lejiauser.service;
 
 
 import com.jifenke.lepluslive.global.util.MD5Util;
+import com.jifenke.lepluslive.lejiauser.domain.entities.BankCard;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.lejiauser.repository.BankCardRepository;
 import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -32,7 +35,7 @@ public class LeJiaUserService {
   private LeJiaUserRepository leJiaUserRepository;
 
   @Inject
-  private MerchantService merchantService;
+  private BankCardRepository bankCardRepository;
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public LeJiaUser findUserByUserSid(String userSid) {
@@ -109,5 +112,18 @@ public class LeJiaUserService {
         }
       }
     }
+  }
+
+  /**
+   * 登录
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public LeJiaUser findLeJiaUserByCard(String cardNumber) {
+
+    Optional<BankCard> bankCard = bankCardRepository.findByName(cardNumber);
+    if (bankCard.isPresent()) {
+      return bankCard.get().getLeJiaUser();
+    }
+    return null;
   }
 }

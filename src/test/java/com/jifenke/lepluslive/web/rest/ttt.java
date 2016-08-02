@@ -5,6 +5,7 @@ import com.jifenke.lepluslive.global.config.Constants;
 import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
+import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
 import com.jifenke.lepluslive.score.repository.ScoreARepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
@@ -59,25 +60,8 @@ public class ttt {
 
   @Test
   public void tttt() {
-    Thread t1 = new Thread(() -> {
-      for (int i = 0; i < 1000; i++) {
-        service.multiTest();
-      }
-    },"t1");
-    Thread t2 = new Thread(() -> {
-      for (int i = 0; i < 1000; i++) {
-        service.multiTest();
-      }
-    },"t2");
-
-    t1.start();
-    t2.start();
-    try {
-      t1.join();
-      t2.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    OffLineOrder offLineOrder = service.findOffLineOrderByOrderSid("16072914232449951");
+    service.offLIneOrderShare(offLineOrder);
 
   }
 

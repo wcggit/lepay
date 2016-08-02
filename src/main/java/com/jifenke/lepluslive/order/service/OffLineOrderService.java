@@ -313,7 +313,8 @@ public class OffLineOrderService {
   public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long scoreA = Long.parseLong(totalPrice);
-    offLineOrder.setLeJiaUser(leJiaUserService.findUserByUserSid(userSid));
+    LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
+    offLineOrder.setLeJiaUser(leJiaUser);
     offLineOrder.setTotalPrice(scoreA);
     offLineOrder.setTrueScore(scoreA);
     offLineOrder.setTruePay(0L);
@@ -331,15 +332,31 @@ public class OffLineOrderService {
                          .divide(new BigDecimal(100)).doubleValue());
       offLineOrder.setLjCommission(ljCommission);
 
-      if (merchant.getPartnership() != 0) { //代表乐加签约商家,会给消费者返现
-        offLineOrder.setRebateWay(1);
-        long
-            rebate =
-            Math.round(ljCommission * merchant.getScoreARebate()
-                .doubleValue() / 100.0);
-        offLineOrder.setRebate(rebate);
+      if (merchant.getPartnership() != 0) { //代表乐加会员在签约商家消费
+        if(leJiaUser.getBindMerchant()!=null&&leJiaUser.getBindMerchant().getId()!=merchant.getId()){
+          offLineOrder.setRebateWay(1); //导流订单
+          long
+              rebate =
+              Math.round(ljCommission * merchant.getScoreARebate()
+                  .doubleValue() / 100.0);
+          offLineOrder.setRebate(rebate);
+          new Thread(() -> {
+            offLIneOrderShare(offLineOrder);
+          }).start();
+        }else{
+          offLineOrder.setRebateWay(3); //会员订单
+          ljCommission =
+              Math.round(
+                  new BigDecimal(scoreA).multiply(merchant.getMemberCommission())
+                      .divide(new BigDecimal(100))
+                      .doubleValue());
+          offLineOrder.setLjCommission(ljCommission);
+          if (ljCommission - offLineOrder.getWxCommission() > 0) { //如果会员佣金大于微信手续费则发红包
+            offLineOrder.setRebate(ljCommission - offLineOrder.getWxCommission());
+          }
+        }
       } else {
-        offLineOrder.setRebateWay(2);
+        offLineOrder.setRebateWay(2); //会员普通订单
       }
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
