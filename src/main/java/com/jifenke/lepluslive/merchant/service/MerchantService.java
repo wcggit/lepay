@@ -210,7 +210,7 @@ public class MerchantService {
 
       log.setType(type);
 
-      merchantWallet.setTotalMoney(merchantWallet.getTotalMoney());
+      merchantWallet.setTotalMoney(merchantWallet.getTotalMoney() + shareMoney);
 
       merchantWallet.setAvailableBalance(afterShareMoney);
 

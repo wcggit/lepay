@@ -120,7 +120,7 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public LeJiaUser findLeJiaUserByCard(String cardNumber) {
 
-    Optional<BankCard> bankCard = bankCardRepository.findByName(cardNumber);
+    Optional<BankCard> bankCard = bankCardRepository.findByNumber(cardNumber);
     if (bankCard.isPresent()) {
       return bankCard.get().getLeJiaUser();
     }

@@ -6,6 +6,7 @@ import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
+import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
 import com.jifenke.lepluslive.score.repository.ScoreARepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
@@ -20,7 +21,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 /**
  * Created by wcg on 16/4/15.
@@ -49,7 +56,7 @@ public class ttt {
   private WeiXinPayService weiXinPayService;
 
   @Inject
-  private OffLineOrderService service;
+  private OffLineOrderRepository offLineOrderRepository;
 
   @Inject
   private ScoreAService scoreAService;
@@ -57,11 +64,16 @@ public class ttt {
   @Inject
   private MerchantWalletRepository merchantWalletRepository;
 
+  @Inject
+  private EntityManager entityManager;
+
 
   @Test
   public void tttt() {
-    OffLineOrder offLineOrder = service.findOffLineOrderByOrderSid("16072914232449951");
-    service.offLIneOrderShare(offLineOrder);
+    OffLineOrder offLineOrder = offLineOrderRepository.findOne(10322L);
+    leJiaUserService
+        .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
+
 
   }
 

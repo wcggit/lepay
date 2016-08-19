@@ -9,13 +9,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -24,12 +30,15 @@ import javax.net.ssl.TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -201,6 +210,193 @@ public class WeixinPayUtil {
       }
     }
 
+    return sb.toString();
+  }
+
+  public static void main1(String[] args) throws UnsupportedEncodingException {
+    TreeMap<String, String> parameters = new TreeMap<String, String>();
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+    Date date = new Date();
+    parameters.put("msg_type", "10");
+    parameters.put("msg_txn_code", "104001");
+    parameters.put("msg_crrltn_id", "12345678901234567890123456789000");
+    parameters.put("msg_flg", "0");
+    parameters.put("msg_sender", "214");
+    parameters.put("msg_time", format.format(date));
+    parameters.put("msg_sys_sn", "12345678900987654321");
+    parameters.put("msg_ver", "0.1");
+    parameters.put("address", URLEncoder.encode("朝阳区", "utf-8"));
+    parameters.put("term_no", "12345678");
+    parameters.put("shop_no", "086123456123456789");
+    List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+    StringBuffer sb = new StringBuffer();
+    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
+    Iterator it = es.iterator();
+    while (it.hasNext()) {
+      Map.Entry entry = (Map.Entry) it.next();
+      String k = (String) entry.getKey();
+      String v = (String) entry.getValue();
+      nvps.add(new BasicNameValuePair(k, v));
+      if (null != v && !"".equals(v)
+          && !"sign".equals(k) && !"key".equals(k)) {
+        sb.append(k + "=" + v + "&");
+      }
+    }
+    sb.deleteCharAt(sb.length() - 1);
+    String
+        getUrl =
+        "http://dev.spserv.yxlm.chinaums.com:17201/spservice/shopquery/doShopQuery";
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    HttpPost httpPost = new HttpPost(getUrl);
+    nvps.add(new BasicNameValuePair("sign", RSAUtil.sign(
+        sb.toString())));
+    httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+
+    CloseableHttpResponse response = null;
+    try {
+      response = httpclient.execute(httpPost);
+      HttpEntity entity = response.getEntity();
+      ObjectMapper mapper = new ObjectMapper();
+      Map result =
+          mapper.readValue(new BufferedReader(new InputStreamReader(entity.getContent(), "utf-8")),
+                           HashMap.class);
+      EntityUtils.consume(entity);
+      response.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void main2(String[] args) throws UnsupportedEncodingException {
+    TreeMap<String, String> parameters = new TreeMap<String, String>();
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+    Date date = new Date();
+    parameters.put("msg_type", "10");
+    parameters.put("msg_txn_code", "104003");
+    parameters.put("msg_crrltn_id", "12345678901234567890123456789000");
+    parameters.put("msg_flg", "0");
+    parameters.put("msg_sender", "214");
+    parameters.put("msg_time", format.format(date));
+    parameters.put("msg_sys_sn", "12345678900987654321");
+    parameters.put("msg_ver", "0.1");
+    parameters.put("sp_chnl_no", "214");
+    parameters.put("pk_card_no", RSAUtil.encode("6228480018572810978"));
+
+    List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+    StringBuffer sb = new StringBuffer();
+    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
+    Iterator it = es.iterator();
+    while (it.hasNext()) {
+      Map.Entry entry = (Map.Entry) it.next();
+      String k = (String) entry.getKey();
+      String v = (String) entry.getValue();
+      nvps.add(new BasicNameValuePair(k, v));
+      if (null != v && !"".equals(v)
+          && !"sign".equals(k) && !"key".equals(k)) {
+        sb.append(k + "=" + v + "&");
+      }
+    }
+    sb.deleteCharAt(sb.length() - 1);
+    String
+        getUrl =
+        "http://dev.spserv.yxlm.chinaums.com:17201/spservice/spenc/doReSign";
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    HttpPost httpPost = new HttpPost(getUrl);
+    nvps.add(new BasicNameValuePair("sign", RSAUtil.sign(
+        sb.toString())));
+    httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+
+    CloseableHttpResponse response = null;
+    try {
+      response = httpclient.execute(httpPost);
+      HttpEntity entity = response.getEntity();
+      ObjectMapper mapper = new ObjectMapper();
+      TreeMap result =
+          mapper.readValue(new BufferedReader(new InputStreamReader(entity.getContent(), "utf-8")),
+                           TreeMap.class);
+      String sign = result.get("sign").toString();
+      result.remove("sign");
+      String originStr = getOriginStr(result);
+      boolean b = RSAUtil.testSign(originStr, sign);
+      EntityUtils.consume(entity);
+      response.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void main3(String[] args) throws UnsupportedEncodingException {
+    TreeMap<String, String> parameters = new TreeMap<String, String>();
+    SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+    Date date = new Date();
+    parameters.put("msg_type", "10");
+    parameters.put("msg_txn_code", "104003");
+    parameters.put("msg_crrltn_id", "12345678901234567890123456789000");
+    parameters.put("msg_flg", "0");
+    parameters.put("msg_sender", "214");
+    parameters.put("msg_time", format.format(date));
+    parameters.put("msg_sys_sn", "12345678900987654321");
+    parameters.put("msg_ver", "0.1");
+    parameters.put("sp_chnl_no", "214");
+    parameters.put("pk_card_no", RSAUtil.encode("6228480018572810978"));
+
+    List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+    StringBuffer sb = new StringBuffer();
+    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
+    Iterator it = es.iterator();
+    while (it.hasNext()) {
+      Map.Entry entry = (Map.Entry) it.next();
+      String k = (String) entry.getKey();
+      String v = (String) entry.getValue();
+      nvps.add(new BasicNameValuePair(k, v));
+      if (null != v && !"".equals(v)
+          && !"sign".equals(k) && !"key".equals(k)) {
+        sb.append(k + "=" + v + "&");
+      }
+    }
+    sb.deleteCharAt(sb.length() - 1);
+    String
+        getUrl =
+        "http://www.lepluslife.com/lepay/pospay/union_pay/search";
+    CloseableHttpClient httpclient = HttpClients.createDefault();
+    HttpPost httpPost = new HttpPost(getUrl);
+    nvps.add(new BasicNameValuePair("sign", RSAUtil.sign(
+        sb.toString())));
+    httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+
+    CloseableHttpResponse response = null;
+    try {
+      response = httpclient.execute(httpPost);
+      HttpEntity entity = response.getEntity();
+      ObjectMapper mapper = new ObjectMapper();
+      TreeMap result =
+          mapper.readValue(new BufferedReader(new InputStreamReader(entity.getContent(), "utf-8")),
+                           TreeMap.class);
+      String sign = result.get("sign").toString();
+      result.remove("sign");
+      String originStr = getOriginStr(result);
+      boolean b = RSAUtil.testSign(originStr, sign);
+      EntityUtils.consume(entity);
+      response.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static String getOriginStr(TreeMap parameters) {
+    StringBuffer sb = new StringBuffer();
+    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
+    Iterator it = es.iterator();
+    while (it.hasNext()) {
+      Map.Entry entry = (Map.Entry) it.next();
+      String k = (String) entry.getKey();
+      String v = (String) entry.getValue();
+      if (null != v && !"".equals(v)
+          && !"sign".equals(k) && !"key".equals(k)) {
+        sb.append(k + "=" + v + "&");
+      }
+    }
+    sb.deleteCharAt(sb.length() - 1);
     return sb.toString();
   }
 

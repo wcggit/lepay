@@ -115,6 +115,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.yinlian</groupId>
+            <artifactId>encode</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <exclusions>

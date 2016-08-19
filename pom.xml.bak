@@ -20,7 +20,6 @@
     </prerequisites>
 
     <properties>
-        <shiro.version>1.2.4</shiro.version>
         <assertj-core.version>3.1.0</assertj-core.version>
         <awaitility.version>1.4.0</awaitility.version>
         <commons-io.version>2.4</commons-io.version>
@@ -43,6 +42,7 @@
         <!-- Sonar properties -->
         <project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>
         <run.addResources>false</run.addResources>
+        <shiro.version>1.2.4</shiro.version>
         <sonar-maven-plugin.version>2.6</sonar-maven-plugin.version>
         <sonar.exclusions>src/main/webapp/assets/**/*.*, src/main/webapp/bower_components/**/*.*, src/main/webapp/dist/**/*.*</sonar.exclusions>
         <sonar.jacoco.itReportPath>${project.testresult.directory}/coverage/jacoco/jacoco-it.exec</sonar.jacoco.itReportPath>
@@ -59,6 +59,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.yinlian</groupId>
+            <artifactId>encode</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>
             <artifactId>aliyun-sdk-oss</artifactId>

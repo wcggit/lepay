@@ -3,6 +3,7 @@ package com.jifenke.lepluslive.order.domain.entities;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantPos;
 
 import java.util.Date;
 
@@ -11,22 +12,20 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 
 /**
- * Created by wcg on 16/5/5.
+ * Created by wcg on 16/8/2.
  */
 @Entity
-@Table(name = "OFF_LINE_ORDER")
-public class OffLineOrder {
+@Table(name = "POS_ORDER")
+public class PosOrder {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  private String orderSid = MvUtil.getOrderNumber();
+  private String orderSid;
 
   private Date createdDate;
 
@@ -36,14 +35,10 @@ public class OffLineOrder {
   private LeJiaUser leJiaUser;
 
   @ManyToOne
-  private Merchant merchant;
+  private MerchantPos merchantPos;
 
   @ManyToOne
   private PayWay payWay;
-
-  private Long totalPrice = 0L;
-
-  private Long truePay = 0L;
 
   private Long ljCommission = 0L; //乐加佣金
 
@@ -57,56 +52,29 @@ public class OffLineOrder {
 
   private Integer state = 0; //支付状态
 
-  private Long transferMoney; //每笔应该转给商户的金额(包括现金和红包)
+  private Long transferMoney; //每笔应该转给商户的金额
 
-  private Long transferMoneyFromTruePay; //每笔订单中现金支付转给商户的金额
+  private Long totalPrice;
 
-  private Integer
-      rebateWay;
-      //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
+  private Long truePay; //实际支付
 
-  private Integer messageState = 0; //发送模版消息状态
+  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
 
-  private String lepayCode = MvUtil.getLePayCode();
 
-  public Long getTransferMoneyFromTruePay() {
-    return transferMoneyFromTruePay;
+  public Long getTruePay() {
+    return truePay;
   }
 
-  public void setTransferMoneyFromTruePay(Long transferMoneyFromTruePay) {
-    this.transferMoneyFromTruePay = transferMoneyFromTruePay;
+  public void setTruePay(Long truePay) {
+    this.truePay = truePay;
   }
 
-  public Integer getMessageState() {
-    return messageState;
+  public Long getTotalPrice() {
+    return totalPrice;
   }
 
-  public void setMessageState(Integer messageState) {
-    this.messageState = messageState;
-  }
-
-  public String getLepayCode() {
-    return lepayCode;
-  }
-
-  public void setLepayCode(String lepayCode) {
-    this.lepayCode = lepayCode;
-  }
-
-  public Integer getRebateWay() {
-    return rebateWay;
-  }
-
-  public void setRebateWay(Integer rebateWay) {
-    this.rebateWay = rebateWay;
-  }
-
-  public Long getTransferMoney() {
-    return transferMoney;
-  }
-
-  public void setTransferMoney(Long transferMoney) {
-    this.transferMoney = transferMoney;
+  public void setTotalPrice(Long totalPrice) {
+    this.totalPrice = totalPrice;
   }
 
   public Long getId() {
@@ -149,12 +117,12 @@ public class OffLineOrder {
     this.leJiaUser = leJiaUser;
   }
 
-  public Merchant getMerchant() {
-    return merchant;
+  public MerchantPos getMerchantPos() {
+    return merchantPos;
   }
 
-  public void setMerchant(Merchant merchant) {
-    this.merchant = merchant;
+  public void setMerchantPos(MerchantPos merchantPos) {
+    this.merchantPos = merchantPos;
   }
 
   public PayWay getPayWay() {
@@ -163,22 +131,6 @@ public class OffLineOrder {
 
   public void setPayWay(PayWay payWay) {
     this.payWay = payWay;
-  }
-
-  public Long getTotalPrice() {
-    return totalPrice;
-  }
-
-  public void setTotalPrice(Long totalPrice) {
-    this.totalPrice = totalPrice;
-  }
-
-  public Long getTruePay() {
-    return truePay;
-  }
-
-  public void setTruePay(Long truePay) {
-    this.truePay = truePay;
   }
 
   public Long getLjCommission() {
@@ -228,4 +180,21 @@ public class OffLineOrder {
   public void setState(Integer state) {
     this.state = state;
   }
+
+  public Long getTransferMoney() {
+    return transferMoney;
+  }
+
+  public void setTransferMoney(Long transferMoney) {
+    this.transferMoney = transferMoney;
+  }
+
+  public Integer getRebateWay() {
+    return rebateWay;
+  }
+
+  public void setRebateWay(Integer rebateWay) {
+    this.rebateWay = rebateWay;
+  }
+
 }

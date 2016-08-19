@@ -85,7 +85,7 @@ public class OffLineOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,
-                                                     String openid,boolean pure) {
+                                                     String openid, boolean pure) {
     OffLineOrder offLineOrder = new OffLineOrder();
     Long truePirce = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
@@ -95,10 +95,10 @@ public class OffLineOrderService {
     offLineOrder.setCreatedDate(new Date());
     offLineOrder.setRebateWay(0);
     //如果扫纯支付码
-    if(pure){
-      if(weiXinUser.getState()==0){
+    if (pure) {
+      if (weiXinUser.getState() == 0) {
         offLineOrder.setRebateWay(4);
-      }else{
+      } else {
         offLineOrder.setRebateWay(5);
       }
     }
@@ -117,6 +117,8 @@ public class OffLineOrderService {
       }
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
+    offLineOrder.setTransferMoneyFromTruePay(
+        offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setPayWay(new PayWay(1L));
     repository.save(offLineOrder);
     long scoreB = Math.round(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
@@ -131,18 +133,18 @@ public class OffLineOrderService {
                                                   LeJiaUser leJiaUser
   ) {
     OffLineOrder offLineOrder = new OffLineOrder();
-    long truePirce = Long.parseLong(truePrice);
+    long truePay = Long.parseLong(truePrice);
     long total = Long.parseLong(totalPrice);
     long scoreA = Long.parseLong(trueScore);
     offLineOrder.setLeJiaUser(leJiaUser);
     offLineOrder.setTotalPrice(total);
     offLineOrder.setTrueScore(scoreA);
-    offLineOrder.setTruePay(truePirce);
+    offLineOrder.setTruePay(truePay);
     offLineOrder.setCreatedDate(new Date());
     Merchant merchant = merchantService.findMerchantById(merchantId);
     offLineOrder.setMerchant(merchant);
     offLineOrder.setRebateWay(2);
-    offLineOrder.setWxCommission(Math.round(truePirce * 6 / 1000.0));
+    offLineOrder.setWxCommission(Math.round(truePay * 6 / 1000.0));
     offLineOrder.setPayWay(new PayWay(1L));
     if (merchant.getLjCommission().doubleValue() != 0) {
       long
@@ -152,9 +154,10 @@ public class OffLineOrderService {
                   .doubleValue());
       offLineOrder.setLjCommission(ljCommission);
       if (merchant.getPartnership() != 0) { //代表联盟商户
-        if (leJiaUser.getBindMerchant()!=null&&leJiaUser.getBindMerchant().getId() == merchant.getId()) { //代表会员订单
+        if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
+            .getId()) { //代表会员订单
           offLineOrder.setRebateWay(3);
-              ljCommission =
+          ljCommission =
               Math.round(
                   new BigDecimal(total).multiply(merchant.getMemberCommission())
                       .divide(new BigDecimal(100))
@@ -163,7 +166,7 @@ public class OffLineOrderService {
           if (ljCommission - offLineOrder.getWxCommission() > 0) { //如果会员佣金大于微信手续费则发红包
             offLineOrder.setRebate(ljCommission - offLineOrder.getWxCommission());
           }
-        } else{ //导流订单
+        } else { //导流订单
           offLineOrder.setRebateWay(1);
           long
               rebate =
@@ -174,6 +177,9 @@ public class OffLineOrderService {
     }
 
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
+    offLineOrder.setTransferMoneyFromTruePay(new BigDecimal(truePay).divide(new BigDecimal(total))
+                                                 .multiply(new BigDecimal(
+                                                     offLineOrder.getTransferMoney())).longValue());
     long scoreB = Math.round(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     repository.save(offLineOrder);
@@ -228,6 +234,7 @@ public class OffLineOrderService {
     if (shareMoney.doubleValue() > 0) {
       offLineOrderShare = new OffLineOrderShare();
       offLineOrderShare.setShareMoney(shareMoney.longValue());
+      offLineOrderShare.setTradeMerchant(offLineOrder.getMerchant());
       //分润给交易合伙人
       long toLockMerchant = 0L;
       long toLockPartner = 0L;
@@ -333,18 +340,9 @@ public class OffLineOrderService {
       offLineOrder.setLjCommission(ljCommission);
 
       if (merchant.getPartnership() != 0) { //代表乐加会员在签约商家消费
-        if(leJiaUser.getBindMerchant()!=null&&leJiaUser.getBindMerchant().getId()!=merchant.getId()){
-          offLineOrder.setRebateWay(1); //导流订单
-          long
-              rebate =
-              Math.round(ljCommission * merchant.getScoreARebate()
-                  .doubleValue() / 100.0);
-          offLineOrder.setRebate(rebate);
-          new Thread(() -> {
-            offLIneOrderShare(offLineOrder);
-          }).start();
-        }else{
-          offLineOrder.setRebateWay(3); //会员订单
+        if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
+            .getId()) { //代表会员订单
+          offLineOrder.setRebateWay(3);
           ljCommission =
               Math.round(
                   new BigDecimal(scoreA).multiply(merchant.getMemberCommission())
@@ -354,12 +352,22 @@ public class OffLineOrderService {
           if (ljCommission - offLineOrder.getWxCommission() > 0) { //如果会员佣金大于微信手续费则发红包
             offLineOrder.setRebate(ljCommission - offLineOrder.getWxCommission());
           }
+        } else { //导流订单
+          offLineOrder.setRebateWay(1);
+          long
+              rebate =
+              Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
+          offLineOrder.setRebate(rebate);
+          new Thread(() -> {
+            offLIneOrderShare(offLineOrder);
+          }).start();
         }
       } else {
         offLineOrder.setRebateWay(2); //会员普通订单
       }
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
+    offLineOrder.setTransferMoneyFromTruePay(0L);
     scoreAService.paySuccessForMember(offLineOrder);
     scoreBService.paySuccess(offLineOrder);
     offLineOrder.setCompleteDate(new Date());
@@ -369,6 +377,9 @@ public class OffLineOrderService {
     offLineOrder.setMessageState(1);
     repository.save(offLineOrder);
 
+    //判断是否需要绑定商户
+    leJiaUserService
+        .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
     return offLineOrder;
   }
 
@@ -408,20 +419,19 @@ public class OffLineOrderService {
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = false,isolation = Isolation.REPEATABLE_READ)
-  public  void multiTest() {
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false, isolation = Isolation.REPEATABLE_READ)
+  public void multiTest() {
     OffLineOrder order = repository.findOne(1L);
-      order.setMessageState(order.getMessageState() + 1);
-      repository.save(order);
+    order.setMessageState(order.getMessageState() + 1);
+    repository.save(order);
   }
 
-  public  synchronized void lockMultiTest() {
+  public synchronized void lockMultiTest() {
     multiTest();
   }
 
 
-
-  public  void lockCheckMessageState(String orderSid) {
+  public void lockCheckMessageState(String orderSid) {
     lock.lock();
     checkMessageState(orderSid);
     lock.unlock();
