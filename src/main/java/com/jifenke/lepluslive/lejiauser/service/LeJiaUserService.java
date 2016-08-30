@@ -126,4 +126,16 @@ public class LeJiaUserService {
     }
     return null;
   }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void checkUserBindCard(LeJiaUser leJiaUser, String cardNo) {
+    Optional<BankCard> bankCard = bankCardRepository.findByNumber(cardNo);
+    if (!bankCard.isPresent()) {
+      BankCard newCard = new BankCard();
+      newCard.setLeJiaUser(leJiaUser);
+      newCard.setNumber(cardNo);
+      bankCardRepository.save(newCard);
+    }
+
+  }
 }

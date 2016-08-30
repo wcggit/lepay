@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
-* Created by wcg on 16/4/1.
-*/
+ * Created by wcg on 16/4/1.
+ */
 public class WeiXinFilter implements HandlerInterceptor {
 
   private WeiXinUserService weiXinUserService;
@@ -51,14 +51,14 @@ public class WeiXinFilter implements HandlerInterceptor {
       String[] strs = action.split("/");
       String callbackUrl = weixinRootUrl + "/lepay/wxpay/userRegister?merchantSid=" + strs[3];
       String pure = request.getParameter("pure");
-      if(pure!=null&&"access".equals(pure)){
-        callbackUrl+="&pure=access";
+      if (pure != null && "access".equals(pure)) {
+        callbackUrl += "&pure=access";
       }
       String
           redirectUrl =
           "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appId + "&redirect_uri=" +
           URLEncoder.encode(callbackUrl, "UTF-8")
-          + "&response_type=code&scope=snsapi_base&state=123#wechat_redirect";
+          + "&response_type=code&scope=snsapi_base&state=123&connect_redirect=1#wechat_redirect";
       response.sendRedirect(redirectUrl);
       return false;
     }

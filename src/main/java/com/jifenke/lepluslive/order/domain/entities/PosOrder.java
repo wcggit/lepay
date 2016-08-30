@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.order.domain.entities;
 
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -19,7 +20,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "POS_ORDER")
-public class PosOrder {
+public class PosOrder implements Order {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,13 +39,14 @@ public class PosOrder {
   private MerchantPos merchantPos;
 
   @ManyToOne
-  private PayWay payWay;
+  private Merchant merchant;
+
 
   private Long ljCommission = 0L; //乐加佣金
 
   private Long trueScore = 0L; //实际使用红包
 
-  private Long wxCommission = 0L; //微信手续费
+  private Long wxCommission = 0L; //三方手续费
 
   private Long rebate = 0L; //返利红包
 
@@ -54,12 +56,23 @@ public class PosOrder {
 
   private Long transferMoney; //每笔应该转给商户的金额
 
+  private Long transferByBank; //中慧转给商户的金额
+
   private Long totalPrice;
 
   private Long truePay; //实际支付
 
-  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
+  private Integer tradeFlag; //0支付宝、3POS刷卡、4微信、5纯积分（会员登录后不能用现金交易） 6现金支付
 
+  private Integer paidType;  //1,非会员消费   2只用货币完成交易、3混用了货币积分完成交易、4只用积分完成了交易
+
+  public Long getTransferByBank() {
+    return transferByBank;
+  }
+
+  public void setTransferByBank(Long transferByBank) {
+    this.transferByBank = transferByBank;
+  }
 
   public Long getTruePay() {
     return truePay;
@@ -125,13 +138,6 @@ public class PosOrder {
     this.merchantPos = merchantPos;
   }
 
-  public PayWay getPayWay() {
-    return payWay;
-  }
-
-  public void setPayWay(PayWay payWay) {
-    this.payWay = payWay;
-  }
 
   public Long getLjCommission() {
     return ljCommission;
@@ -189,12 +195,27 @@ public class PosOrder {
     this.transferMoney = transferMoney;
   }
 
-  public Integer getRebateWay() {
-    return rebateWay;
+  public Integer getTradeFlag() {
+    return tradeFlag;
   }
 
-  public void setRebateWay(Integer rebateWay) {
-    this.rebateWay = rebateWay;
+  public void setTradeFlag(Integer tradeFlag) {
+    this.tradeFlag = tradeFlag;
   }
 
+  public Integer getPaidType() {
+    return paidType;
+  }
+
+  public void setPaidType(Integer paidType) {
+    this.paidType = paidType;
+  }
+
+  public Merchant getMerchant() {
+    return merchant;
+  }
+
+  public void setMerchant(Merchant merchant) {
+    this.merchant = merchant;
+  }
 }

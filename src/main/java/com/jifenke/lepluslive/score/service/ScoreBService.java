@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.score.service;
 
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.score.domain.entities.ScoreB;
@@ -69,7 +70,7 @@ public class ScoreBService {
 
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public void paySuccess(OffLineOrder offLineOrder) {
+  public void paySuccess(Order offLineOrder) {
     ScoreB scoreB = findScoreBByleJiaUser(offLineOrder.getLeJiaUser());
     scoreB.setScore(scoreB.getScore() + offLineOrder.getScoreB());
     scoreB.setTotalScore(scoreB.getTotalScore() + offLineOrder.getScoreB());

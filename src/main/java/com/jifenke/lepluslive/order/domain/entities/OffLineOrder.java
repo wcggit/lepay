@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.order.domain.entities;
 
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -20,7 +21,7 @@ import javax.persistence.Version;
  */
 @Entity
 @Table(name = "OFF_LINE_ORDER")
-public class OffLineOrder {
+public class OffLineOrder implements Order {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.score.service;
 
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
@@ -69,27 +70,27 @@ public class ScoreAService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public void paySuccessForMember(OffLineOrder offLineOrder) {
-    ScoreA scoreA = findScoreAByLeJiaUser(offLineOrder.getLeJiaUser());
-      if (scoreA.getScore() - offLineOrder.getTrueScore() >= 0) {
-        scoreA.setScore(scoreA.getScore() - offLineOrder.getTrueScore() + offLineOrder.getRebate());
-        scoreA.setTotalScore(scoreA.getTotalScore() + offLineOrder.getRebate());
-        if (offLineOrder.getTrueScore() != 0) {
+  public void paySuccessForMember(Order order) {
+    ScoreA scoreA = findScoreAByLeJiaUser(order.getLeJiaUser());
+      if (scoreA.getScore() - order.getTrueScore() >= 0) {
+        scoreA.setScore(scoreA.getScore() - order.getTrueScore() + order.getRebate());
+        scoreA.setTotalScore(scoreA.getTotalScore() + order.getRebate());
+        if (order.getTrueScore() != 0) {
           ScoreADetail scoreADetail = new ScoreADetail();
-          scoreADetail.setOperate(offLineOrder.getMerchant().getName() + "消费");
+          scoreADetail.setOperate(order.getMerchant().getName() + "消费");
           scoreADetail.setOrigin(3);
-          scoreADetail.setOrderSid(offLineOrder.getOrderSid());
+          scoreADetail.setOrderSid(order.getOrderSid());
           scoreADetail.setScoreA(scoreA);
-          scoreADetail.setNumber(-offLineOrder.getTrueScore());
+          scoreADetail.setNumber(-order.getTrueScore());
           scoreADetailRepository.save(scoreADetail);
         }
-      if (offLineOrder.getRebate() != 0) {
+      if (order.getRebate() != 0) {
         ScoreADetail rebate = new ScoreADetail();
-        rebate.setOperate(offLineOrder.getMerchant().getName() + "消费返红包");
+        rebate.setOperate(order.getMerchant().getName() + "消费返红包");
         rebate.setOrigin(4);
-        rebate.setOrderSid(offLineOrder.getOrderSid());
+        rebate.setOrderSid(order.getOrderSid());
         rebate.setScoreA(scoreA);
-        rebate.setNumber(offLineOrder.getRebate());
+        rebate.setNumber(order.getRebate());
         scoreADetailRepository.save(rebate);
       }
       scoreARepository.save(scoreA);

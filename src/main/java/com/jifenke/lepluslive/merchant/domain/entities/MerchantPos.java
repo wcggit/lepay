@@ -31,7 +31,9 @@ public class MerchantPos {
 
   private Integer type; //1 封顶类pos 0 非封顶pos
 
-  private BigDecimal posCommission; //pos 佣金
+  private BigDecimal posCommission; //pos 佣金 针对非会员消费
+
+  private BigDecimal ljCommission; //会员刷卡消费佣金
 
   private BigDecimal wxCommission; // 微信佣金
 
@@ -40,6 +42,14 @@ public class MerchantPos {
   private BigDecimal bdCommission; //百度佣金
 
   private Long ceil; //封顶手续费
+
+  public BigDecimal getLjCommission() {
+    return ljCommission;
+  }
+
+  public void setLjCommission(BigDecimal ljCommission) {
+    this.ljCommission = ljCommission;
+  }
 
   public String getPsamCard() {
     return psamCard;

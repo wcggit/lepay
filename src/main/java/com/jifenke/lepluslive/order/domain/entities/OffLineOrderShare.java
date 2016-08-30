@@ -28,6 +28,11 @@ public class OffLineOrderShare {
   @OneToOne
   private OffLineOrder offLineOrder;
 
+  @OneToOne
+  private PosOrder posOrder;
+
+  private Integer type; //1 代表线下订单分润 2代表中慧pos订单分润
+
   private Long shareMoney;
 
   private Long toTradePartner = 0L;
@@ -61,6 +66,22 @@ public class OffLineOrderShare {
 
   @ManyToOne
   private PartnerManager lockPartnerManager;
+
+  public PosOrder getPosOrder() {
+    return posOrder;
+  }
+
+  public void setPosOrder(PosOrder posOrder) {
+    this.posOrder = posOrder;
+  }
+
+  public Integer getType() {
+    return type;
+  }
+
+  public void setType(Integer type) {
+    this.type = type;
+  }
 
   public Merchant getTradeMerchant() {
     return tradeMerchant;

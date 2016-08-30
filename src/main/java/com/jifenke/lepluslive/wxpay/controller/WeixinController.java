@@ -169,7 +169,9 @@ public class WeixinController {
                            HttpServletResponse response)
       throws IOException {
     Map<String, Object> map = weiXinService.getSnsAccessToken(code);
-    System.out.println(map.toString());
+    if (map.get("openid") == null) {
+      log.error(map.toString());
+    }
     String openid = map.get("openid").toString();
     StringBuffer stringBuffer = new StringBuffer();
     stringBuffer.append("/lepay/wxpay/pay?openid=");
@@ -192,7 +194,7 @@ public class WeixinController {
                                 @RequestParam Long merchantId, HttpServletRequest request) {
     OffLineOrder
         offLineOrder =
-        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, openid,pure);
+        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, openid, pure);
     //封装订单参数
     SortedMap<Object, Object>
         map =
