@@ -69,6 +69,7 @@ public class PosOrderService {
         posOrder.setPaidType(1);
         posOrder.setMerchant(merchantPos.getMerchant());
         posOrder.setTruePay(price);
+        posOrder.setRebateWay(1);
         posOrderRepository.save(posOrder);
       } catch (Exception e) {
       }
@@ -169,10 +170,12 @@ public class PosOrderService {
           Math.round(totalPrice.multiply(merchant.getScoreBRebate()).divide(new BigDecimal(10000))
                          .doubleValue()));
       if (tradeFlag == 0) {//支付宝
+        posOrder.setRebateWay(2);
         thirdCommission =
             merchantPos.getAliCommission().multiply(truePay);
         ljCommission = thirdCommission;
       } else if (tradeFlag == 3) { //刷卡
+        posOrder.setRebateWay(3);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
         thirdCommission =
             merchantPos.getPosCommission().multiply(truePay);
@@ -181,10 +184,12 @@ public class PosOrderService {
                 ljCommission.multiply(merchant.getScoreARebate().divide(new BigDecimal(10000)))
                     .doubleValue()));
       } else if (tradeFlag == 4) { //微信
+        posOrder.setRebateWay(2);
         thirdCommission =
             merchantPos.getWxCommission().multiply(truePay);
         ljCommission = thirdCommission;
       } else if (tradeFlag == 5) { //纯积分
+        posOrder.setRebateWay(3);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
         thirdCommission =
             new BigDecimal(0);

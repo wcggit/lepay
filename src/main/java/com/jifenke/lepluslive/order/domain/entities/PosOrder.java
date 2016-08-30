@@ -41,6 +41,7 @@ public class PosOrder implements Order {
   @ManyToOne
   private Merchant merchant;
 
+  private Integer rebateWay; //1 代表非会员消费 2 代表会员消费,3 代表会员刷卡,或者纯积分消费 导流订单
 
   private Long ljCommission = 0L; //乐加佣金
 
@@ -138,7 +139,6 @@ public class PosOrder implements Order {
     this.merchantPos = merchantPos;
   }
 
-
   public Long getLjCommission() {
     return ljCommission;
   }
@@ -217,5 +217,13 @@ public class PosOrder implements Order {
 
   public void setMerchant(Merchant merchant) {
     this.merchant = merchant;
+  }
+
+  public Integer getRebateWay() {
+    return rebateWay;
+  }
+
+  public void setRebateWay(Integer rebateWay) {
+    this.rebateWay = rebateWay;
   }
 }
