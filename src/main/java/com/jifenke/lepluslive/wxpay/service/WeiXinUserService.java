@@ -1,10 +1,12 @@
 package com.jifenke.lepluslive.wxpay.service;
 
+import com.jifenke.lepluslive.global.util.WeixinPayUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.RegisterOrigin;
 import com.jifenke.lepluslive.lejiauser.service.BarcodeService;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.domain.entities.ScoreB;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.wxpay.domain.entities.Dictionary;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.score.repository.ScoreARepository;
 import com.jifenke.lepluslive.score.repository.ScoreBRepository;
@@ -30,10 +32,6 @@ public class WeiXinUserService {
   @Value("${bucket.ossBarCodeReadRoot}")
   private String barCodeRootUrl;
 
-
-  @Inject
-  private BarcodeService barcodeService;
-
   @Inject
   private WeiXinUserRepository weiXinUserRepository;
 
@@ -46,6 +44,9 @@ public class WeiXinUserService {
   @Inject
   private LeJiaUserRepository leJiaUserRepository;
 
+  @Inject
+  private DictionaryService dictionaryService;
+
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public WeiXinUser findWeiXinUserByOpenId(String openId) {
     return weiXinUserRepository.findByOpenId(openId);
@@ -55,7 +56,13 @@ public class WeiXinUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void registerLeJiaUserForNonMember(String openid, WeiXinUser weiXinUser) {
     if (weiXinUser == null) {
+      Dictionary dictionary = dictionaryService.findDictionaryById(7L);
+      String accessToken = dictionary.getValue();
+      String
+          unionId =
+          WeixinPayUtil.getUnionIdByAccessTokenAndOpenId(accessToken, openid);
       weiXinUser = new WeiXinUser();
+      weiXinUser.setUnionId(unionId);
       weiXinUser.setOpenId(openid);
       weiXinUser.setDateCreated(new Date());
       weiXinUser.setLastUpdated(new Date());

@@ -29,6 +29,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,39 +85,6 @@ public class WeixinController {
 
   }
 
-//  @RequestMapping("/merchant/{merchantSid}")
-//  public ModelAndView goPay(@PathVariable String merchantSid,Model model,HttpServletRequest request) {
-//    WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
-//    Optional<Merchant> optional = merchantService.findMerchantBySId(merchantSid);
-//    if (optional.isPresent()) {
-//      model.addAttribute("merchant", optional.get());
-//      if (weiXinUser == null || weiXinUser.getState() == 0) {
-//        new Thread(() -> {
-//          //未关注公众号的人消费默认注册一个lejiauser
-//          weiXinUserService.registerLeJiaUserForNonMember(openid, weiXinUser);
-//        }).start();
-//        model.addAttribute("openid", openid);
-//
-//      } else {
-//        model.addAttribute("leJiaUser", weiXinUser.getLeJiaUser());
-//        model
-//            .addAttribute("scoreA", scoreAService.findScoreAByLeJiaUser(weiXinUser.getLeJiaUser()));
-//        model.addAttribute("ljopenid", openid);
-//      }
-//
-//      model.addAttribute("wxConfig", getWeiXinPayConfig(request));
-//      new Thread(()->{
-//        WeixinPayUtil
-//            .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
-//                                "test");
-//      }).start();
-//      return MvUtil.go("/weixin/wxPay");
-//    } else {
-//      return null;
-//    }
-//
-//  }
-
   @RequestMapping("/wxpay/pay")
   public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
                                 @RequestParam(required = false) String pure,
@@ -171,6 +139,17 @@ public class WeixinController {
     Map<String, Object> map = weiXinService.getSnsAccessToken(code);
     if (map.get("openid") == null) {
       log.error(map.toString());
+      String callbackUrl = weixinRootUrl + "/lepay/wxpay/userRegister?merchantSid=" + merchantSid;
+      if (pure != null && "access".equals(pure)) {
+        callbackUrl += "&pure=access";
+      }
+      callbackUrl += "&no=" + MvUtil.getRandomNumber();
+      String
+          redirectUrl =
+          "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + appId + "&redirect_uri=" +
+          URLEncoder.encode(callbackUrl, "UTF-8")
+          + "&response_type=code&scope=snsapi_base&state=123&connect_redirect=1#wechat_redirect";
+      response.sendRedirect(redirectUrl);
     }
     String openid = map.get("openid").toString();
     StringBuffer stringBuffer = new StringBuffer();
@@ -206,7 +185,7 @@ public class WeixinController {
       return weiXinPayService
           .buildJsapiParams(unifiedOrder.get("prepay_id").toString(), offLineOrder.getOrderSid());
     } else {
-      log.error(unifiedOrder.get("return_msg").toString());
+      log.error(unifiedOrder.toString());
       unifiedOrder.clear();
       unifiedOrder.put("err_msg", "出现未知错误,请联系管理员或稍后重试");
       return unifiedOrder;
@@ -266,7 +245,7 @@ public class WeixinController {
       return weiXinPayService
           .buildJsapiParams(unifiedOrder.get("prepay_id").toString(), offLineOrder.getOrderSid());
     } else {
-      log.error(unifiedOrder.get("return_msg").toString());
+      log.error(unifiedOrder.toString());
       unifiedOrder.clear();
       unifiedOrder.put("err_msg", "出现未知错误,请联系管理员或稍后重试");
       return unifiedOrder;
@@ -298,7 +277,7 @@ public class WeixinController {
       return weiXinPayService
           .buildJsapiParams(unifiedOrder.get("prepay_id").toString(), offLineOrder.getOrderSid());
     } else {
-      log.error(unifiedOrder.get("return_msg").toString());
+      log.error(unifiedOrder.toString());
       unifiedOrder.clear();
       unifiedOrder.put("err_msg", "出现未知错误,请联系管理员或稍后重试");
       return unifiedOrder;

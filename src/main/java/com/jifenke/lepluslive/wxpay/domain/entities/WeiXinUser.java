@@ -34,6 +34,7 @@ public class WeiXinUser {
   private String province;
   private String country;
 
+  private String unionId;
 
   private String headImageUrl;
 
@@ -53,6 +54,14 @@ public class WeiXinUser {
   Date dateCreated;
   Date lastUpdated;
   Date lastUserInfoDate;   //上次从微信服务器抓取用户信息的时间
+
+  public String getUnionId() {
+    return unionId;
+  }
+
+  public void setUnionId(String unionId) {
+    this.unionId = unionId;
+  }
 
   public Integer getHongBaoState() {
     return hongBaoState;

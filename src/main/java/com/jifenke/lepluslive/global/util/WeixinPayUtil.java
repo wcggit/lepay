@@ -131,28 +131,31 @@ public class WeixinPayUtil {
   }
 
 
-  public static AccessToken getAccessToken(Long wxId) {
+  public static String getUnionIdByAccessTokenAndOpenId(String accessToken, String openId) {
     String
         getUrl =
-        "http://www.lepluslife.com:8081/accessToken/" + wxId;
+        "https://api.weixin.qq.com/cgi-bin/user/info";
+    getUrl += "?access_token=" + accessToken;
+    getUrl += "&openid=" + openId;
+    getUrl += "&lang=zh_CN";
     CloseableHttpClient httpclient = HttpClients.createDefault();
     HttpGet httpGet = new HttpGet(getUrl);
     httpGet.addHeader("Content-Type", "application/json;charset=utf8mb4");
     CloseableHttpResponse response = null;
-    AccessToken accessToken = null;
+    Map map = null;
     try {
       response = httpclient.execute(httpGet);
       HttpEntity entity = response.getEntity();
       ObjectMapper mapper = new ObjectMapper();
-      accessToken =
+      map =
           mapper.readValue(new BufferedReader(new InputStreamReader(entity.getContent(), "utf-8")),
-                           AccessToken.class);
+                           Map.class);
       EntityUtils.consume(entity);
       response.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return accessToken;
+    return map.get("unionid").toString();
   }
 
 
@@ -382,6 +385,7 @@ public class WeixinPayUtil {
       e.printStackTrace();
     }
   }
+
 
   public static String getOriginStr(TreeMap parameters) {
     StringBuffer sb = new StringBuffer();
