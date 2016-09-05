@@ -61,7 +61,7 @@ public class PosOrder implements Order {
 
   private Long totalPrice;
 
-  private Long truePay; //实际支付
+  private Long truePay = 0L; //实际支付
 
   private Integer tradeFlag; //0支付宝、3POS刷卡、4微信、5纯积分（会员登录后不能用现金交易） 6现金支付
 

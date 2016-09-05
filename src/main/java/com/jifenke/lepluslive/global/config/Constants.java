@@ -26,10 +26,10 @@ public final class Constants {
     public static final Long VALIDATECODE_EXPIRED = 300000L;  //验证码过期时间
 
     public static final String APPID = "wxe2190d22ce025e4f";
-    public static final String TEST_APPID = "wxec4f3a2fb6ee8f06";
+    public static final String TEST_APPID = "wx0d04fde568a3832f";
 
     public static final String WEI_XIN_ROOT_URL = "http://www.lepluslife.com";
-    public static final String WEI_XIN_TEST_ROOT_URL = "http://www.yibuyingxiao.com";
+    public static final String WEI_XIN_TEST_ROOT_URL = "http://www.lepluslife.com/subTest";
 
     public static final Integer COOKIE_DISABLE_TIME = 604800;
     public static final Integer EXPRESS_COOKIE_DISABLE_TIME = 7200;

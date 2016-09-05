@@ -132,13 +132,13 @@ public class WeixinController {
 
 
   @RequestMapping("/wxpay/userRegister")
-  public void userRegister(@RequestParam String merchantSid, @RequestParam String code,
+  public Long userRegister(@RequestParam String merchantSid, @RequestParam String code,
                            @RequestParam(required = false) String pure,
                            HttpServletResponse response)
       throws IOException {
     Map<String, Object> map = weiXinService.getSnsAccessToken(code);
     if (map.get("openid") == null) {
-      log.error(map.toString());
+      log.error(map.toString() + "=====" + code);
       String callbackUrl = weixinRootUrl + "/lepay/wxpay/userRegister?merchantSid=" + merchantSid;
       if (pure != null && "access".equals(pure)) {
         callbackUrl += "&pure=access";
@@ -150,6 +150,7 @@ public class WeixinController {
           URLEncoder.encode(callbackUrl, "UTF-8")
           + "&response_type=code&scope=snsapi_base&state=123&connect_redirect=1#wechat_redirect";
       response.sendRedirect(redirectUrl);
+      return null;
     }
     String openid = map.get("openid").toString();
     StringBuffer stringBuffer = new StringBuffer();
@@ -161,7 +162,7 @@ public class WeixinController {
       stringBuffer.append("&pure=access");
     }
     response.sendRedirect(stringBuffer.toString());
-
+    return null;
   }
 
   //微信支付非会员接口

@@ -65,7 +65,6 @@ public class PosPayController {
     if (token.equals(md5Encode) && act == 1 && pos == 1 && groupon == 5) {
       posOrderService.createPosOrderForNoNMember(posId, orderNo, orderTime, orderPrice);
     }
-
   }
 
 
@@ -185,7 +184,7 @@ public class PosPayController {
                               tradeFlag, paidType, cardNo);
     }
     paramsInfo.put("usedPoints", paidPoints);
-    paramsInfo.put("getPoints", posOrder==null?0:posOrder.getRebate());
+    paramsInfo.put("getPoints", posOrder == null ? 0 : posOrder.getRebate());
 
     return params;
 
