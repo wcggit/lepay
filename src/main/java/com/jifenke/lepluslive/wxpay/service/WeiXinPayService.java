@@ -38,11 +38,20 @@ public class WeiXinPayService {
   @Value("${weixin.mchId}")
   private String mchId;
 
+  @Value("${app.appId}")
+  private String _appId;
+
+  @Value("${app.mchId}")
+  private String _mchId;
+
   @Value("${weixin.weixinRootUrl}")
   private String weixinRootUrl;
 
   @Value("${weixin.mchKey}")
   private String mchKey;
+
+  @Value("${app.mchKey}")
+  private String _mchKey;
 
   @Value("${weixin.jsapiTicket}")
   private String jsapiTicket;
@@ -70,7 +79,31 @@ public class WeiXinPayService {
     orderParams.put("trade_type", "JSAPI");
     orderParams.put("input_charset", "UTF-8");
     orderParams.put("openid", openid);
-    String sign = createSign("UTF-8", orderParams);
+    String sign = createSign("UTF-8", orderParams, mchKey);
+    orderParams.put("sign", sign);
+    return orderParams;
+  }
+
+  /**
+   * APP支付封装订单参数
+   */
+  @Transactional(readOnly = true)
+  public SortedMap<Object, Object> buildAppOrderParams(HttpServletRequest request,
+                                                       OffLineOrder offLineOrder) {
+    SortedMap<Object, Object> orderParams = new TreeMap<Object, Object>();
+    orderParams.put("appid", _appId);
+    orderParams.put("mch_id", _mchId);
+    orderParams.put("nonce_str", MvUtil.getRandomStr());
+    orderParams.put("body", offLineOrder.getMerchant().getName() + "消费");
+    orderParams.put("out_trade_no", offLineOrder.getOrderSid());
+    orderParams.put("fee_type", "CNY");
+    orderParams.put("total_fee", String.valueOf(offLineOrder.getTruePay()));
+//    orderParams.put("total_fee", "1");
+    orderParams.put("spbill_create_ip", getIpAddr(request));
+    orderParams.put("notify_url", weixinRootUrl + "/lepay/wxpay/afterPay");
+    orderParams.put("trade_type", "APP");
+    orderParams.put("input_charset", "UTF-8");
+    String sign = createSign("UTF-8", orderParams, _mchKey);
     orderParams.put("sign", sign);
     return orderParams;
   }
@@ -153,9 +186,22 @@ public class WeiXinPayService {
     jsapiParams.put("nonceStr", MvUtil.getRandomStr());
     jsapiParams.put("package", "prepay_id=" + prepayId);
     jsapiParams.put("signType", "MD5");
-    String sign = createSign("UTF-8", jsapiParams);
+    String sign = createSign("UTF-8", jsapiParams, mchKey);
     jsapiParams.put("sign", sign);
     jsapiParams.put("orderSid", orderSid);
+    return jsapiParams;
+  }
+
+  public SortedMap buildAppParams(String prepayId) {
+    SortedMap<Object, Object> jsapiParams = new TreeMap<Object, Object>();
+    jsapiParams.put("appid", _appId);
+    jsapiParams.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+    jsapiParams.put("noncestr", MvUtil.getRandomStr());
+    jsapiParams.put("partnerid", _mchId);
+    jsapiParams.put("prepayid", prepayId);
+    jsapiParams.put("package", "Sign=WXPay");
+    String sign = createSign("UTF-8", jsapiParams, _mchKey);
+    jsapiParams.put("sign", sign);
     return jsapiParams;
   }
 

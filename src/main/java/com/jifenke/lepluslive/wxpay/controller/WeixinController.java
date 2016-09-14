@@ -172,9 +172,10 @@ public class WeixinController {
   Map<Object, Object> weixinPay(@RequestParam String truePrice, @RequestParam String openid,
                                 @RequestParam boolean pure,
                                 @RequestParam Long merchantId, HttpServletRequest request) {
+    WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     OffLineOrder
         offLineOrder =
-        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, openid, pure);
+        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, weiXinUser, pure,1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -234,7 +235,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
                                                         strs[4], leJiaUserService
-                .findUserByUserSid(strs[2]));
+                .findUserByUserSid(strs[2]),1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -266,7 +267,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[1], Long.parseLong(strs[2]), "0",
                                                         strs[1], leJiaUserService
-                .findUserByUserSid(strs[0]));
+                .findUserByUserSid(strs[0]),1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -294,12 +295,9 @@ public class WeixinController {
     String result = Des.strDec(ext, "lepluslife", null, null);
     String[] strs = result.split(" ");
     try {
-      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2]);
       return LejiaResult.build(200, "", offLineOrder);
-
     } catch (Exception e) {
       return LejiaResult.build(500, "出现未知错误,请联系管理员");
-
     }
   }
 

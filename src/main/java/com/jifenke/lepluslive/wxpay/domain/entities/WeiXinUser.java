@@ -48,7 +48,11 @@ public class WeiXinUser {
   private LeJiaUser leJiaUser; //真实的乐加会员
 
 
-  private Integer state; //1 代表关注公众号的会员 0 代表未关注公众号会员
+  private Integer state; //1 代表会员 0 代表非会员
+
+  private Integer subState = 0;   //关注状态 0=从未关注过   1=关注   2=曾经关注现取消关注
+
+  private Date subDate;       //关注时间
 
 
   Date dateCreated;
@@ -190,6 +194,22 @@ public class WeiXinUser {
 
   public void setRefreshToken(String refreshToken) {
     this.refreshToken = refreshToken;
+  }
+
+  public Integer getSubState() {
+    return subState;
+  }
+
+  public void setSubState(Integer subState) {
+    this.subState = subState;
+  }
+
+  public Date getSubDate() {
+    return subDate;
+  }
+
+  public void setSubDate(Date subDate) {
+    this.subDate = subDate;
   }
 
   public Integer getState() {
