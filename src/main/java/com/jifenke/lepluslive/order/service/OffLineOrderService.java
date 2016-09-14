@@ -80,10 +80,9 @@ public class OffLineOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,
-                                                     String openid, boolean pure) {
+                                                     WeiXinUser weiXinUser, boolean pure,Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     Long truePirce = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
-    WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     offLineOrder.setLeJiaUser(weiXinUser.getLeJiaUser());
     offLineOrder.setTotalPrice(truePirce);
     offLineOrder.setTruePay(truePirce);
@@ -114,7 +113,7 @@ public class OffLineOrderService {
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setTransferMoneyFromTruePay(
         offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
-    offLineOrder.setPayWay(new PayWay(1L));
+    offLineOrder.setPayWay(new PayWay(payWay));
     repository.save(offLineOrder);
     long scoreB = Math.round(truePirce * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
@@ -125,7 +124,7 @@ public class OffLineOrderService {
   public OffLineOrder createOffLineOrderForMember(String truePrice, Long merchantId,
                                                   String trueScore,
                                                   String totalPrice,
-                                                  LeJiaUser leJiaUser
+                                                  LeJiaUser leJiaUser,Long payWay
   ) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long truePay = Long.parseLong(truePrice);
@@ -140,7 +139,7 @@ public class OffLineOrderService {
     offLineOrder.setMerchant(merchant);
     offLineOrder.setRebateWay(2);
     offLineOrder.setWxCommission(Math.round(truePay * 6 / 1000.0));
-    offLineOrder.setPayWay(new PayWay(1L));
+    offLineOrder.setPayWay(new PayWay(payWay));
     if (merchant.getLjCommission().doubleValue() != 0) {
       long
           ljCommission =
@@ -227,7 +226,7 @@ public class OffLineOrderService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice) {
+  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice,Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long scoreA = Long.parseLong(totalPrice);
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
@@ -239,7 +238,7 @@ public class OffLineOrderService {
     Merchant merchant = merchantService.findMerchantById(Long.parseLong(merchantId));
     offLineOrder.setMerchant(merchant);
     offLineOrder.setState(1);
-    offLineOrder.setPayWay(new PayWay(2L));
+    offLineOrder.setPayWay(new PayWay(payWay));
     long scoreB = Math.round(scoreA * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     if (merchant.getLjCommission().doubleValue() != 0) {

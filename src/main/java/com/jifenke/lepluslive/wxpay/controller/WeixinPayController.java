@@ -3,9 +3,15 @@ package com.jifenke.lepluslive.wxpay.controller;
 import com.jifenke.lepluslive.global.util.LejiaResult;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
+import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
+import com.jifenke.lepluslive.score.domain.entities.ScoreA;
+import com.jifenke.lepluslive.score.domain.entities.ScoreB;
 import com.jifenke.lepluslive.score.service.ScoreAService;
+import com.jifenke.lepluslive.score.service.ScoreBService;
+import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
+import com.jifenke.lepluslive.wxpay.service.DictionaryService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinService;
 import com.jifenke.lepluslive.wxpay.service.WeixinPayLogService;
@@ -24,6 +30,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -44,6 +51,15 @@ public class WeixinPayController {
 
   @Inject
   private WeixinPayLogService weixinPayLogService;
+
+  @Inject
+  private ScoreAService scoreAService;
+
+  @Inject
+  private DictionaryService dictionaryService;
+
+  @Inject
+  private ScoreBService scoreBService;
 
   /**
    * 微信回调函数
@@ -103,5 +119,40 @@ public class WeixinPayController {
       return MvUtil.go("/weixin/paySuccessForMember");
     }
   }
+
+//  @RequestMapping(value = "/paySuccess")
+//  public ModelAndView goPaySuccessPageForMember(@RequestParam String orderSid, Model model) {
+//    offLineOrderService.checkOrderState(orderSid);
+//    OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
+//    model.addAttribute("offLineOrder", offLineOrder);
+//    LeJiaUser leJiaUser = offLineOrder.getLeJiaUser();
+//    Map<String, Object> map = new HashMap<>();
+//    int tanChuang = 0;  //0=无弹窗|1=展示|2=发红包
+//    if (leJiaUser != null) {
+//      WeiXinUser weiXinUser = leJiaUser.getWeiXinUser();
+//      ScoreA scoreA = scoreAService.findScoreAByLeJiaUser(leJiaUser);
+//      ScoreB scoreB = scoreBService.findScoreBByleJiaUser(leJiaUser);
+//      if (weiXinUser != null && scoreA != null) {
+//        if (weiXinUser.getState() == 1 && offLineOrder.getRebate() != 0) {
+//          //是乐加会员且订单返红包不为0,弹出领取红包财神爷,滑动仅是展示效果,无实际作用
+//          tanChuang = 1;
+//          map.put("score", offLineOrder.getRebate());
+//        } else if (weiXinUser.getState() == 0 && weiXinUser.getSubState() == 1) {
+//          //不是乐加会员且已关注,弹出邀请您成为乐加会员财神爷,滑动触发发红包交互,并跳转到我的钱包页面
+//          tanChuang = 2;
+//          map.put("score", dictionaryService.findDictionaryById(29L).getValue());//发红包额度
+//        }
+//        map.put("currScoreA", scoreA.getScore());
+//        map.put("totalScoreA", scoreA.getTotalScore());
+//        if (scoreB != null) {
+//          map.put("currScoreB", scoreB.getScore());
+//        }
+//      }
+//    }
+//    map.put("status", tanChuang);
+//    model.addAttribute("map", map);
+//
+//    return MvUtil.go("/weixin/paySuccess");
+//  }
 
 }
