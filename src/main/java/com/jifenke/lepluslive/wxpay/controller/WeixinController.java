@@ -295,6 +295,7 @@ public class WeixinController {
     String result = Des.strDec(ext, "lepluslife", null, null);
     String[] strs = result.split(" ");
     try {
+      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2],2L);
       return LejiaResult.build(200, "", offLineOrder);
     } catch (Exception e) {
       return LejiaResult.build(500, "出现未知错误,请联系管理员");
