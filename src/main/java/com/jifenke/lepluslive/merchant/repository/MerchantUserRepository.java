@@ -15,4 +15,6 @@ public interface MerchantUserRepository extends JpaRepository<MerchantUser,Long>
   MerchantUser findByName(String userName);
 
   List<MerchantUser> findAllByMerchant(Merchant merchant);
+
+  MerchantUser findByMerchantAndType(Merchant merchant, int i);
 }

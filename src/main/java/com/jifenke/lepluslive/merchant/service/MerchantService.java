@@ -222,4 +222,7 @@ public class MerchantService {
 
   }
 
+  public MerchantUser findBossAccountByMerchant(Merchant merchant) {
+    return merchantUserRepository.findByMerchantAndType(merchant,1);
+  }
 }

@@ -4,6 +4,7 @@ package com.jifenke.lepluslive.global.util;
  * Created by wcg on 16/3/30.
  */
 public class DataInfo {
+
   private String value;
   private String color;
 

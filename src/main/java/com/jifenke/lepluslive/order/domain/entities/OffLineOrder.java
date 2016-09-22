@@ -64,11 +64,21 @@ public class OffLineOrder implements Order {
 
   private Integer
       rebateWay;
-      //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
+  //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
 
   private Integer messageState = 0; //发送模版消息状态
 
+  private Long monthlyOrderCount;//每月第几笔订单
+
   private String lepayCode = MvUtil.getLePayCode();
+
+  public Long getMonthlyOrderCount() {
+    return monthlyOrderCount;
+  }
+
+  public void setMonthlyOrderCount(Long monthlyOrderCount) {
+    this.monthlyOrderCount = monthlyOrderCount;
+  }
 
   public Long getTransferMoneyFromTruePay() {
     return transferMoneyFromTruePay;

@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.order.service;
 
+import com.jifenke.lepluslive.activity.service.InitialOrderRebateActivityService;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.SortedMap;
@@ -49,7 +51,7 @@ public class OffLineOrderService {
   private OffLineOrderRepository repository;
 
   @Inject
-  private WeiXinUserService weiXinUserService;
+  private InitialOrderRebateActivityService initialOrderRebateActivityService;
 
   @Inject
   private MerchantService merchantService;
@@ -76,11 +78,10 @@ public class OffLineOrderService {
   private OrderShareService orderShareService;
 
 
-
-
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,
-                                                     WeiXinUser weiXinUser, boolean pure,Long payWay) {
+                                                     WeiXinUser weiXinUser, boolean pure,
+                                                     Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     Long truePirce = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
     offLineOrder.setLeJiaUser(weiXinUser.getLeJiaUser());
@@ -124,7 +125,7 @@ public class OffLineOrderService {
   public OffLineOrder createOffLineOrderForMember(String truePrice, Long merchantId,
                                                   String trueScore,
                                                   String totalPrice,
-                                                  LeJiaUser leJiaUser,Long payWay
+                                                  LeJiaUser leJiaUser, Long payWay
   ) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long truePay = Long.parseLong(truePrice);
@@ -172,9 +173,10 @@ public class OffLineOrderService {
 
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder
-        .setTransferMoneyFromTruePay(new BigDecimal(truePay).divide(new BigDecimal(total), 2)
-                                         .multiply(new BigDecimal(
-                                             offLineOrder.getTransferMoney())).longValue());
+        .setTransferMoneyFromTruePay(
+            new BigDecimal(truePay).divide(new BigDecimal(total), 2, BigDecimal.ROUND_HALF_UP)
+                .multiply(new BigDecimal(
+                    offLineOrder.getTransferMoney())).longValue());
     long scoreB = Math.round(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     repository.save(offLineOrder);
@@ -211,13 +213,15 @@ public class OffLineOrderService {
             orderShareService.offLIneOrderShare(offLineOrder);
           }).start();
         }
-
       }
+      //首单返红包活动
+      new Thread(() -> {
+        initialOrderRebateActivityService.checkActivity(offLineOrder);
+      }).start();
       offLineOrder.setState(1);
       repository.save(offLineOrder);
     }
   }
-
 
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -226,7 +230,8 @@ public class OffLineOrderService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice,Long payWay) {
+  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice,
+                                  Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long scoreA = Long.parseLong(totalPrice);
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
@@ -320,12 +325,27 @@ public class OffLineOrderService {
     OffLineOrder offLineOrder = repository.findByOrderSid(orderSid);
     if (offLineOrder.getMessageState() == 0) {
       offLineOrder.setMessageState(1);
+      //统计这是商家当月第几笔订单
+      Long count = countMerchantMonthlyOrder(offLineOrder);
+      offLineOrder.setMonthlyOrderCount(count++);
       repository.save(offLineOrder);
       new Thread(() -> {
         wxTemMsgService.sendToClient(offLineOrder);
         wxTemMsgService.sendToMerchant(offLineOrder);
       }).start();
     }
+  }
+
+  public Long countMerchantMonthlyOrder(OffLineOrder offLineOrder) {
+    //当月第一天
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.DAY_OF_MONTH, 1);
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MINUTE, 0);
+    calendar.set(Calendar.HOUR_OF_DAY, 0);
+    return repository
+        .countMerchantMonthlyOrder(offLineOrder.getMerchant().getId(), calendar.getTime(),
+                                   new Date());
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false, isolation = Isolation.REPEATABLE_READ)
@@ -342,8 +362,11 @@ public class OffLineOrderService {
 
   public void lockCheckMessageState(String orderSid) {
     lock.lock();
-    checkMessageState(orderSid);
-    lock.unlock();
+    try {
+      checkMessageState(orderSid);
+    } finally {
+      lock.unlock();
+    }
   }
 
   public synchronized void lockPaySuccess(String orderSid) {

@@ -29,6 +29,15 @@ public class MerchantUser {
   @ManyToOne
   private Merchant merchant;
 
+  private Integer type; //0收营员 1 店主 一个商户只有一个店主
+
+  public Integer getType() {
+    return type;
+  }
+
+  public void setType(Integer type) {
+    this.type = type;
+  }
 
   public Long getId() {
     return id;

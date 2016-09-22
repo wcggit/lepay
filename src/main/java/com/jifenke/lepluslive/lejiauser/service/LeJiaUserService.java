@@ -86,29 +86,31 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkUserBindMerchant(LeJiaUser leJiaUser, Merchant merchant) {
     //判断是否需要绑定商户
-    if (leJiaUser.getBindMerchant() == null) {
-      long userLimit = leJiaUserRepository.countMerchantBindLeJiaUser(merchant.getId());
-      if (merchant.getUserLimit() > userLimit) {
-        leJiaUser.setBindMerchant(merchant);
-        Partner partner = merchant.getPartner();
-        leJiaUser.setBindMerchantDate(new Date());
-        long partnerUserLimit = leJiaUserRepository.countPartnerBindLeJiaUser(partner.getId());
-        partner = merchant.getPartner();
+    if (leJiaUser.getWeiXinUser().getState() == 1) {
+      if (leJiaUser.getBindMerchant() == null) {
+        long userLimit = leJiaUserRepository.countMerchantBindLeJiaUser(merchant.getId());
+        if (merchant.getUserLimit() > userLimit) {
+          leJiaUser.setBindMerchant(merchant);
+          Partner partner = merchant.getPartner();
+          leJiaUser.setBindMerchantDate(new Date());
+          long partnerUserLimit = leJiaUserRepository.countPartnerBindLeJiaUser(partner.getId());
+          partner = merchant.getPartner();
 
-        if (partner.getUserLimit() > partnerUserLimit) {
-          leJiaUser.setBindPartner(partner);
-          leJiaUser.setBindPartnerDate(new Date());
+          if (partner.getUserLimit() > partnerUserLimit) {
+            leJiaUser.setBindPartner(partner);
+            leJiaUser.setBindPartnerDate(new Date());
+          }
         }
-      }
-    } else {
-      if (leJiaUser.getBindPartner() == null) {
-        //已绑定商户但是未绑定合伙人
-        Merchant bindMerchant = leJiaUser.getBindMerchant();
-        Partner partner = bindMerchant.getPartner();
-        long partnerUserLimit = leJiaUserRepository.countPartnerBindLeJiaUser(partner.getId());
-        if (partner.getUserLimit() > partnerUserLimit) {
-          leJiaUser.setBindPartner(partner);
-          leJiaUser.setBindPartnerDate(new Date());
+      } else {
+        if (leJiaUser.getBindPartner() == null) {
+          //已绑定商户但是未绑定合伙人
+          Merchant bindMerchant = leJiaUser.getBindMerchant();
+          Partner partner = bindMerchant.getPartner();
+          long partnerUserLimit = leJiaUserRepository.countPartnerBindLeJiaUser(partner.getId());
+          if (partner.getUserLimit() > partnerUserLimit) {
+            leJiaUser.setBindPartner(partner);
+            leJiaUser.setBindPartnerDate(new Date());
+          }
         }
       }
     }

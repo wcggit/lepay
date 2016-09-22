@@ -195,7 +195,7 @@ public class WxTemMsgService {
       //如果catch到异常,则跳出递归,并且纪录bug
       boolean falg = true;
       if (!map.get("errmsg").equals("ok") && !String.valueOf(map.get("errcode")).equals("43004")) {
-        log.error("出现异常"+map.get("errmsg").toString());
+        log.error("出现异常" + map.get("errmsg").toString());
         if (falg) {
           try {
             Thread.sleep(10000);
@@ -225,6 +225,9 @@ public class WxTemMsgService {
       HashMap<String, Object> mapRemark = new HashMap<>();
       sb.append("本次支付的乐付码是");
       sb.append(offLineOrder.getLepayCode());
+      sb.append(",本月第");
+      sb.append(offLineOrder.getMonthlyOrderCount());
+      sb.append("笔订单");
       sb.append(",点击查看详情");
       mapRemark.put("value", sb.toString());
       mapRemark.put("color", "#173177");
@@ -234,11 +237,11 @@ public class WxTemMsgService {
           merchantUsers =
           merchantService.findMerchantUserByMerchant(offLineOrder
                                                          .getMerchant());
-      for(MerchantUser merchantUser : merchantUsers){
+      for (MerchantUser merchantUser : merchantUsers) {
         List<MerchantWeiXinUser>
             merchantWeiXinUsers =
             merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser);
-        for(MerchantWeiXinUser merchantWeiXinUser:merchantWeiXinUsers){
+        for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
           sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
                          offLineOrder.getOrderSid(), 9L, map2);
         }

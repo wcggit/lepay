@@ -13,6 +13,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,10 +40,12 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -56,66 +63,14 @@ public class WeixinPayUtil {
   private static Logger log = LoggerFactory.getLogger(WeixinPayUtil.class);
 
   public static Map createUnifiedOrder(String requestUrl, String requestMethod, String outputStr) {
-//    try {
-//      // 创建SSLContext对象，并使用我们指定的信任管理器初始化
-//      Date start = new Date();
-//      TrustManager[] tm = {new MyX509TrustManager()};
-//      SSLContext sslContext = SSLContext.getInstance("SSL", "SunJSSE");
-//      sslContext.init(null, tm, new java.security.SecureRandom());
-//      // 从上述SSLContext对象中得到SSLSocketFactory对象
-//      SSLSocketFactory ssf = sslContext.getSocketFactory();
-//      URL url = new URL(requestUrl);
-//      HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-//      conn.setSSLSocketFactory(ssf);
-//      conn.setDoOutput(true);
-//      conn.setDoInput(true);
-//      conn.setUseCaches(false);
-//      // 设置请求方式（GET/POST）
-//      conn.setRequestMethod(requestMethod);
-//      conn.setRequestProperty("content-type", "application/x-www-form-urlencoded");
-//      // 当outputStr不为null时向输出流写数据
-//      if (null != outputStr) {
-//        OutputStream outputStream = conn.getOutputStream();
-//        // 注意编码格式
-//        outputStream.write(outputStr.getBytes("UTF-8"));
-//        outputStream.close();
-//      }
-//      // 从输入流读取返回内容
-//      InputStream inputStream = conn.getInputStream();
-//      InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "utf-8");
-//      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//      String str = null;
-//      StringBuffer buffer = new StringBuffer();
-//      while ((str = bufferedReader.readLine()) != null) {
-//        buffer.append(str);
-//      }
-//      // 释放资源
-//      bufferedReader.close();
-//      inputStreamReader.close();
-//      inputStream.close();
-//      inputStream = null;
-//      conn.disconnect();
-//      Date end = new Date();
-//      System.out.println(end.getTime()-start.getTime()+"微信请求的时间=========");
-//      return doXMLParse(buffer.toString());
-//    } catch (ConnectException ce) {
-//    } catch (Exception e) {
-//      log.error("https请求异常：{}", e);
-//    }
-
-//    Date start = new Date();
     CloseableHttpClient httpclient = HttpClients.createDefault();
     HttpPost httppost = new HttpPost(requestUrl);
-
     try {
-
       StringEntity myEntity = new StringEntity(outputStr, "utf-8");
       httppost.addHeader("Content-Type", "text/xml");
       httppost.setEntity(myEntity);
       CloseableHttpResponse response = httpclient.execute(httppost);
       HttpEntity resEntity = response.getEntity();
-//      Date end = new Date();
-//      System.out.println(end.getTime() - start.getTime() + "微信请求的时间=========");
       return doXMLParse(EntityUtils.toString(resEntity, "UTF-8"));
     } catch (Exception e) {
       e.printStackTrace();
@@ -128,6 +83,40 @@ public class WeixinPayUtil {
       }
     }
     return null;
+  }
+
+  public static Map initialRebateOrder(String requestUrl, String outputStr, SSLContext sslcontext) {
+    Map map = null;
+    CloseableHttpClient httpclient = null;
+    try {
+      SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+          sslcontext,
+          new String[]{"TLSv1"},
+          null,
+          SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+      httpclient = HttpClients.custom()
+          .setSSLSocketFactory(sslsf)
+          .build();
+      HttpPost
+          httppost =
+          new HttpPost(requestUrl);
+      StringEntity myEntity = new StringEntity(outputStr, "utf-8");
+      httppost.addHeader("Content-Type", "text/xml");
+      httppost.setEntity(myEntity);
+      CloseableHttpResponse response = httpclient.execute(httppost);
+      HttpEntity resEntity = response.getEntity();
+      map = doXMLParse(EntityUtils.toString(resEntity, "UTF-8"));
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      // 关闭连接,释放资源
+      try {
+        httpclient.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return map;
   }
 
 
