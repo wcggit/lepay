@@ -15,6 +15,7 @@ import com.jifenke.lepluslive.score.service.ScoreAService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -36,8 +37,8 @@ public class PosPayController {
 
   private static Logger log = LoggerFactory.getLogger(PosPayController.class);
 
-  String vcpos = "VCPOS:F81DF6823EEE3E7DBEF286EB4DF2FBD1";
-
+  @Value("${pos.vcpos}")
+  private String vcpos;
 
   @Inject
   private LeJiaUserService leJiaUserService;

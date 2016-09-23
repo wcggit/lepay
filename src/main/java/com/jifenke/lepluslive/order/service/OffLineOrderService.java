@@ -327,7 +327,7 @@ public class OffLineOrderService {
       offLineOrder.setMessageState(1);
       //统计这是商家当月第几笔订单
       Long count = countMerchantMonthlyOrder(offLineOrder);
-      offLineOrder.setMonthlyOrderCount(count++);
+      offLineOrder.setMonthlyOrderCount(++count);
       repository.save(offLineOrder);
       new Thread(() -> {
         wxTemMsgService.sendToClient(offLineOrder);

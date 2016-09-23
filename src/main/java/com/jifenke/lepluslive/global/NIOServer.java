@@ -3,6 +3,7 @@ package com.jifenke.lepluslive.global;
 import com.jifenke.lepluslive.global.util.MD5Util;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
+import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -133,14 +134,12 @@ public class NIOServer {
    * 启动服务端测试
    */
   public static void main2(String[] args) throws IOException {
-//    Calendar calendar = Calendar.getInstance();
-//    calendar.set(Calendar.DAY_OF_MONTH, 1);
-//    calendar.set(Calendar.SECOND, 0);
-//    calendar.set(Calendar.MINUTE, 0);
-//    calendar.set(Calendar.HOUR_OF_DAY, 0);
-//    System.out.println(calendar.getTime());
+//    OffLineOrder offLineOrder = new OffLineOrder();
+//    Long aLong = new Long(2);
+//    offLineOrder.setMonthlyOrderCount(++aLong);
+//    System.out.println(offLineOrder.getMonthlyOrderCount());
+//    System.out.println(aLong);
   }
-
 
 
 }

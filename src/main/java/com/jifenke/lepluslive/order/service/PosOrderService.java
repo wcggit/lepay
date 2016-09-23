@@ -5,14 +5,12 @@ import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantPos;
 import com.jifenke.lepluslive.merchant.service.MerchantPosService;
-import com.jifenke.lepluslive.order.domain.entities.PayWay;
 import com.jifenke.lepluslive.order.domain.entities.PosOrder;
 import com.jifenke.lepluslive.order.domain.entities.PosOrderLog;
 import com.jifenke.lepluslive.order.repository.PosOrderLogRepository;
 import com.jifenke.lepluslive.order.repository.PosOrderRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -87,13 +84,11 @@ public class PosOrderService {
     BigDecimal ljCommission;
     try {
       posOrder.setCompleteDate(sdf.parse(paidTime));
-
+      posOrder.setTradeFlag(tradeFlag);
       if (tradeFlag == 0) {//支付宝
         ljCommission =
             merchantPos.getAliCommission().multiply(new BigDecimal(paidMoney));
-        posOrder.setTradeFlag(0);
       } else if (tradeFlag == 3) { //刷卡
-        posOrder.setTradeFlag(3);
         ljCommission =
             merchantPos.getPosCommission().multiply(new BigDecimal(paidMoney));
         if (merchantPos.getType() == 1) {//封顶pos
@@ -102,11 +97,9 @@ public class PosOrderService {
           }
         }
       } else if (tradeFlag == 4) { //微信
-        posOrder.setTradeFlag(4);
         ljCommission =
             merchantPos.getWxCommission().multiply(new BigDecimal(paidMoney));
       } else { //现金
-        posOrder.setTradeFlag(6);
         ljCommission = new BigDecimal(0);
       }
       posOrder
@@ -137,7 +130,7 @@ public class PosOrderService {
     try {
       posOrder.setCreatedDate(sdf.parse(orderTime));
       posOrder.setOrderSid(orderNo);
-      long price = new BigDecimal(orderPrice).multiply(new BigDecimal(100)).longValue();
+      long price = new BigDecimal(orderPrice).longValue();
       posOrder.setTotalPrice(price);
       posOrder.setMerchant(merchantPos.getMerchant());
       posOrder.setLeJiaUser(leJiaUser);
@@ -159,6 +152,7 @@ public class PosOrderService {
     posOrder.setTruePay(truePay.longValue());
     posOrder.setTrueScore(scoreA.longValue());
     posOrder.setTradeFlag(tradeFlag);
+    posOrder.setTotalPrice(totalPrice.longValue());
     posOrder.setPaidType(paidType);
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
     Merchant merchant = merchantPos.getMerchant();
