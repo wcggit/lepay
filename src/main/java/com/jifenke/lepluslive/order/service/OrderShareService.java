@@ -2,6 +2,7 @@ package com.jifenke.lepluslive.order.service;
 
 import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrderShare;
@@ -92,11 +93,16 @@ public class OrderShareService {
             (long) Math.floor(shareMoney.multiply(
                 new BigDecimal(dictionaryService.findDictionaryById(13L).getValue()))
                                   .doubleValue() / 100.0);
-        offLineOrderShare.setToLockMerchant(toLockMerchant);
         //分润给绑定商户
-        merchantService.shareToMerchant(toLockMerchant, leJiaUser.getBindMerchant(),
-                                        order.getOrderSid(), type);
-        offLineOrderShare.setLockMerchant(leJiaUser.getBindMerchant());
+        Merchant bindMerchant = leJiaUser.getBindMerchant();
+        if (bindMerchant.getPartnership() == 2) {//如果是虚拟商户分润方式改变
+          offLineOrderShare.setToLockMerchant(0L);
+        } else {
+          offLineOrderShare.setToLockMerchant(toLockMerchant);
+          merchantService.shareToMerchant(toLockMerchant, bindMerchant,
+                                          order.getOrderSid(), type);
+          offLineOrderShare.setLockMerchant(leJiaUser.getBindMerchant());
+        }
         if (leJiaUser.getBindPartner() != null) {
           toLockPartner =
               (long) Math.floor(shareMoney.multiply(
@@ -105,7 +111,9 @@ public class OrderShareService {
           offLineOrderShare.setToLockPartner(toLockPartner);
           //分润给绑定合伙人
           partnerService
-              .shareToPartner(toLockPartner, leJiaUser.getBindPartner(), order.getOrderSid(),
+              .shareToPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
+                                                                 : toLockPartner,
+                              leJiaUser.getBindPartner(), order.getOrderSid(),
                               type);
           toLockPartnerManager =
               (long) Math.floor(shareMoney.multiply(
