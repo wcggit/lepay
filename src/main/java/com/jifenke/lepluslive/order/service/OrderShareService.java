@@ -130,6 +130,7 @@ public class OrderShareService {
                                            order.getOrderSid(), type);
       offLineOrderShare.setCreateDate(order.getCompleteDate());
       offLineOrderShareRepository.save(offLineOrderShare);
+
     }
   }
 
