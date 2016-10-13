@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.merchant.service;
 
+import com.jifenke.lepluslive.global.util.MD5Util;
 import com.jifenke.lepluslive.merchant.controller.dto.MerchantDto;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantDetail;
@@ -53,13 +54,17 @@ public class MerchantService {
   @Inject
   private MerchantWalletLogRepository merchantWalletLogRepository;
 
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public List<Merchant> findMerchantsByPage(Integer offset) {
-    if (offset == null) {
-      offset = 1;
+  /**
+   * 根据商户账号名获取商户信息   2016/10/10
+   *
+   * @param name 账号名称
+   */
+  public MerchantUser findMerchantUserByName(String name) {
+    Optional<MerchantUser> optional = merchantUserRepository.findByName(name);
+    if (optional.isPresent()) {
+      return optional.get();
     }
-    return merchantRepository.findAll(
-        new PageRequest(offset - 1, 10, new Sort(Sort.Direction.ASC, "sid"))).getContent();
+    return null;
   }
 
   /**
@@ -86,91 +91,6 @@ public class MerchantService {
     return merchantDetailRepository.findAllByMerchant(merchant);
   }
 
-  /**
-   * 按照距离远近对商家排序  以后可以被findMerchantListByCustomCondition取代 open app 暂时使用
-   *
-   * @param latitude  经度
-   * @param longitude 纬度
-   */
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public List<MerchantDto> findOrderByDistance(Double latitude, Double longitude) {
-
-    List<MerchantDto> dtoList = new ArrayList<>();
-    List<Object[]>
-        list =
-        merchantRepository.findOrderByDistance(latitude, longitude, 0, 10);
-    for (Object[] o : list) {
-      MerchantDto merchantDto = new MerchantDto();
-      merchantDto.setId(Long.parseLong(o[0].toString()));
-      merchantDto.setSid(Integer.parseInt(o[1].toString()));
-      merchantDto.setLocation(o[2].toString());
-      merchantDto.setPhoneNumber(o[3].toString());
-      merchantDto.setName(o[4].toString());
-      merchantDto.setPicture(o[5].toString());
-      merchantDto.setDiscount(Integer.parseInt(o[6].toString()));
-      merchantDto.setRebate(Integer.parseInt(o[7].toString()));
-      merchantDto.setLng(Double.parseDouble(o[8].toString()));
-      merchantDto.setLat(Double.parseDouble(o[9].toString()));
-      merchantDto.setDistance(o[10].toString());
-      dtoList.add(merchantDto);
-    }
-    return dtoList;
-  }
-
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public List<MerchantDto> findMerchantListByCustomCondition(Double latitude, Double longitude,
-                                                             Integer page, Long type, Long areaId) {
-    if (page == null) {
-      page = 1;
-    }
-
-    EntityManager em = entityManagerFactory.createEntityManager();
-    //定义SQL
-    String sql = null;
-
-    sql =
-        "SELECT m.id,m.sid,m.location,m.phone_number,m.`name`,m.picture,m.discount,m.rebate,m.lng,m.lat, ROUND( 6378.138 * 2 * ASIN(SQRT(POW(SIN(("
-        + latitude + " * PI() / 180 - m.lat * PI() / 180) / 2),2) + COS(" + latitude
-        + " * PI() / 180) * COS(m.lat * PI() / 180) * POW(SIN((" + longitude
-        + " * PI() / 180 - m.lng * PI() / 180) / 2),2))) * 1000) AS distance FROM merchant m WHERE 1=1";
-
-    if (type != null) {
-      sql += " AND m.merchant_type_id = " + type;
-    }
-
-    if (areaId != null) {
-      sql += " AND m.area_id = " + areaId;
-      sql += " ORDER BY sid LIMIT " + (page - 1) + "," + 10 + "";
-    } else if (latitude != null) {
-      sql += " ORDER BY distance LIMIT " + (page - 1) + "," + 10 + "";
-    } else {
-      sql += " ORDER BY sid LIMIT " + (page - 1) * 10 + "," + 10 + "";
-    }
-
-    //创建原生SQL查询QUERY实例
-    Query query = em.createNativeQuery(sql);
-
-    List<Object[]> list = query.getResultList();
-
-    List<MerchantDto> dtoList = new ArrayList<>();
-    for (Object[] o : list) {
-      MerchantDto merchantDto = new MerchantDto();
-      merchantDto.setId(Long.parseLong(o[0].toString()));
-      merchantDto.setSid(Integer.parseInt(o[1].toString()));
-      merchantDto.setLocation(o[2].toString());
-      merchantDto.setPhoneNumber(o[3].toString());
-      merchantDto.setName(o[4].toString());
-      merchantDto.setPicture(o[5].toString());
-      merchantDto.setDiscount(Integer.parseInt(o[6].toString()));
-      merchantDto.setRebate(Integer.parseInt(o[7].toString()));
-      merchantDto.setLng(Double.parseDouble(o[8].toString()));
-      merchantDto.setLat(Double.parseDouble(o[9].toString()));
-      merchantDto.setDistance(o[10] != null ? o[10].toString() : null);
-      dtoList.add(merchantDto);
-    }
-    return dtoList;
-  }
-
   public MerchantWallet findMerchantWalletByMerchant(Merchant merchant) {
     return merchantWalletRepository.findByMerchant(merchant);
   }
@@ -188,6 +108,26 @@ public class MerchantService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public List<MerchantUser> findMerchantUserByMerchant(Merchant merchant) {
     return merchantUserRepository.findAllByMerchant(merchant);
+  }
+
+  /**
+   * 获取商户账号信息 16/10/10
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public MerchantUser findMerchantUserById(Long merchantUserId) {
+    return merchantUserRepository.findOne(merchantUserId);
+  }
+
+  /**
+   * 修改商户登录账号密码 16/10/10
+   *
+   * @param merchantUser 商户账号
+   * @param newPwd       新密码
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void resetPwd(MerchantUser merchantUser, String newPwd) {
+    merchantUser.setPassword(MD5Util.MD5Encode(newPwd, "utf-8"));
+    merchantUserRepository.save(merchantUser);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -223,6 +163,6 @@ public class MerchantService {
   }
 
   public MerchantUser findBossAccountByMerchant(Merchant merchant) {
-    return merchantUserRepository.findByMerchantAndType(merchant,1);
+    return merchantUserRepository.findByMerchantAndType(merchant, 1);
   }
 }

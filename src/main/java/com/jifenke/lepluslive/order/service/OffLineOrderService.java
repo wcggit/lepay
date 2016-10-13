@@ -77,6 +77,14 @@ public class OffLineOrderService {
   @Inject
   private OrderShareService orderShareService;
 
+  /**
+   * 用户在某个商户消费成功的次数和总额 16/10/10
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public Object[] countByLeJiaUserAndMerchant(Long leJiaUserId, Long merchantId) {
+    return repository.countByLeJiaUserAndMerchantAndState(leJiaUserId, merchantId).get(0);
+  }
+
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,

@@ -61,9 +61,9 @@ public class Merchant {
 
   private Integer partnership; //合作关系
 
-  private Double lng=0.0;
+  private Double lng = 0.0;
 
-  private Double lat=0.0;
+  private Double lat = 0.0;
 
   private String payee; //收款人
 
@@ -88,6 +88,9 @@ public class Merchant {
   private String contact; //联系人
 
   private Date createDate = new Date();
+
+  @OneToOne(cascade = CascadeType.ALL)
+  private MerchantInfo merchantInfo;   //商家详情介绍
 
   public BigDecimal getMemberCommission() {
     return memberCommission;
@@ -270,6 +273,13 @@ public class Merchant {
     this.phoneNumber = phoneNumber;
   }
 
+  public MerchantInfo getMerchantInfo() {
+    return merchantInfo;
+  }
+
+  public void setMerchantInfo(MerchantInfo merchantInfo) {
+    this.merchantInfo = merchantInfo;
+  }
 
   public MerchantType getMerchantType() {
     return merchantType;

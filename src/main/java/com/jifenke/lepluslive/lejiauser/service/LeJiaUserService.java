@@ -16,7 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -37,6 +42,11 @@ public class LeJiaUserService {
   @Inject
   private BankCardRepository bankCardRepository;
 
+  /**
+   * 根据用户token获取用户信息  16/10/10
+   *
+   * @param userSid token
+   */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public LeJiaUser findUserByUserSid(String userSid) {
     return leJiaUserRepository.findByUserSid(userSid);
@@ -51,33 +61,40 @@ public class LeJiaUserService {
   }
 
   /**
-   * 设置密码
+   * POS机分页查询商家绑定的会员信息 16/10/12
    *
-   * @param pwd 加密前密码
+   * @param merchantId 商家ID
+   * @param currPage   当前页码
    */
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public void setPwd(LeJiaUser leJiaUser, String pwd) {
-    String md5Pwd = MD5Util.MD5Encode(pwd, null);
-    leJiaUser.setPwd(md5Pwd);
-    leJiaUserRepository.save(leJiaUser);
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public List<Map> findUserByMerchantAndPage(Long merchantId, Integer currPage) {
+    if (currPage == null || currPage < 0) {
+      currPage = 1;
+    }
+    List<Object[]>
+        list =
+        leJiaUserRepository.findUserByMerchantAndPage(merchantId, (currPage - 1) * 10);
+    List<Map> mapList = new ArrayList<>();
+    if (list.size() > 0) {
+      for (Object[] o : list) {
+        Map<Object, Object> map = new HashMap<>();
+        map.put("headImageUrl", o[0]);
+        map.put("nickname", o[1]);
+        map.put("date", o[2]);
+        map.put("source", o[3]);
+        mapList.add(map);
+      }
+      return mapList;
+    }
+    return null;
   }
 
-
   /**
-   * 登录
+   * POS机查询商家绑定的会员数量 16/10/12
    */
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public LeJiaUser login(String phoneNumber, String pwd, String token) {
-
-    LeJiaUser leJiaUser = leJiaUserRepository.findByPhoneNumber(phoneNumber);
-    if (!leJiaUser.getPwd().equals(MD5Util.MD5Encode(pwd, null))) {
-      return null;
-    }
-    if (token != null && (!token.equals(leJiaUser.getToken()))) { //更新推送token
-      leJiaUser.setToken(token);
-      leJiaUserRepository.save(leJiaUser);
-    }
-    return leJiaUser;
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public Long countUserByMerchant(Long merchantId) {
+    return leJiaUserRepository.countMerchantBindLeJiaUser(merchantId);
   }
 
   /**
