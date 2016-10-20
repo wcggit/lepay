@@ -1,20 +1,30 @@
 package com.jifenke.lepluslive.pospay.controller;
 
+import com.jifenke.lepluslive.global.util.LejiaResult;
 import com.jifenke.lepluslive.global.util.RSAUtil;
+import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.service.UnionPosOrderLogService;
+import com.jifenke.lepluslive.order.service.UnionPosOrderService;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+
+import io.swagger.annotations.ApiOperation;
 
 /**
  * Created by wcg on 16/8/8.
@@ -25,6 +35,82 @@ public class UnionPosPayController {
 
   @Inject
   private UnionPosOrderLogService unionPosOrderLogService;
+
+  @Inject
+  private UnionPosOrderService unionOrderService;
+
+  @Inject
+  private MerchantService merchantService;
+
+  @Inject
+  private LeJiaUserService userService;
+
+  /**
+   * POS机全积分支付 16/10/14
+   */
+  @ApiOperation(value = "POS机全积分支付")
+  @RequestMapping(value = "/pospay/u_pay/pure", method = RequestMethod.POST)
+  public
+  @ResponseBody
+  LejiaResult pure(@RequestParam Long merchantId, @RequestParam String account,
+                   @RequestParam Long userId,
+                   @RequestParam Long money) {
+    Merchant m = merchantService.findMerchantById(merchantId);
+    LeJiaUser u = userService.findUserById(userId);
+    Map result = unionOrderService.pureScorePay(m, account, u, money);
+    if (!"200".equals("" + result.get("status"))) {
+      return LejiaResult
+          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
+    }
+    return LejiaResult.ok(result.get("data"));
+  }
+
+  /**
+   * POS机混合支付掉支付插件前创建订单 16/10/19
+   */
+  @ApiOperation(value = "POS机混合支付掉支付插件前创建订单")
+  @RequestMapping(value = "/pospay/u_pay/create", method = RequestMethod.POST)
+  public
+  @ResponseBody
+  LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
+                          @RequestParam Long userId,
+                          @RequestParam Long totalPrice, @RequestParam Long truePrice,
+                          @RequestParam Long trueScore) {
+    Merchant m = merchantService.findMerchantById(merchantId);
+    LeJiaUser u = userService.findUserById(userId);
+
+    Map result = unionOrderService.createOrder(m, account, u, totalPrice, truePrice, trueScore);
+    if (!"200".equals("" + result.get("status"))) {
+      return LejiaResult
+          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
+    }
+    return LejiaResult.ok(result.get("data"));
+  }
+
+  /**
+   * POS机混合支付成功后通知 16/10/19
+   */
+  @ApiOperation(value = "POS机混合支付成功后通知")
+  @RequestMapping(value = "/pospay/u_pay/success", method = RequestMethod.POST)
+  public
+  @ResponseBody
+  LejiaResult paySuccess(@RequestParam Long orderId, @RequestParam Long merchantId,
+                         @RequestParam Long userId,
+                         @RequestParam String account, @RequestParam String data) {
+    Merchant m = merchantService.findMerchantById(merchantId);
+    LeJiaUser u = null;
+    if (userId != null && userId != 0) {
+      u = userService.findUserById(userId);
+    }
+    Map
+        result =
+        unionOrderService.PaySuccess(orderId, account, m, u, data);
+    if (!"200".equals("" + result.get("status"))) {
+      return LejiaResult
+          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
+    }
+    return LejiaResult.ok();
+  }
 
   @RequestMapping(value = "/pospay/union_pay/search", method = RequestMethod.POST)
   public Map unionPosOrderSearch(HttpServletRequest request) {

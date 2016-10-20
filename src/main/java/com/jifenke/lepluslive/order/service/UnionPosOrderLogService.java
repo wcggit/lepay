@@ -1,7 +1,7 @@
 package com.jifenke.lepluslive.order.service;
 
 import com.jifenke.lepluslive.order.domain.entities.UnionPosOrderLog;
-import com.jifenke.lepluslive.order.repository.UnionPosOrderRepository;
+import com.jifenke.lepluslive.order.repository.UnionPosOrderLogRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,7 +16,7 @@ import javax.inject.Inject;
 public class UnionPosOrderLogService {
 
   @Inject
-  private UnionPosOrderRepository unionPosOrderRepository;
+  private UnionPosOrderLogRepository orderLogRepository;
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void createPosOrderLog(String msgSysSn, String params,Integer interfaceType,String reqSerialNo) {
@@ -24,7 +24,7 @@ public class UnionPosOrderLogService {
     unionPosOrderLog.setInterfaceType(interfaceType);
     unionPosOrderLog.setParams(params);
     unionPosOrderLog.setReturnParams(params);
-    unionPosOrderRepository.save(unionPosOrderLog);
+    orderLogRepository.save(unionPosOrderLog);
   }
 
 
