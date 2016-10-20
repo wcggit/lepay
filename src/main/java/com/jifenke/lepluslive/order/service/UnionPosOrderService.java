@@ -1,6 +1,5 @@
 package com.jifenke.lepluslive.order.service;
 
-import com.jifenke.lepluslive.global.util.JsonUtils;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
@@ -13,7 +12,6 @@ import com.jifenke.lepluslive.score.service.ScoreBService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 
 import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
