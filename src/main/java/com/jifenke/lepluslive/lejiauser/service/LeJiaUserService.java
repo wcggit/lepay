@@ -43,6 +43,15 @@ public class LeJiaUserService {
   private BankCardRepository bankCardRepository;
 
   /**
+   * 根据用户ID获取用户信息  16/10/14
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public LeJiaUser findUserById(Long id) {
+    return leJiaUserRepository.findOne(id);
+  }
+
+
+  /**
    * 根据用户token获取用户信息  16/10/10
    *
    * @param userSid token
@@ -68,7 +77,7 @@ public class LeJiaUserService {
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public List<Map> findUserByMerchantAndPage(Long merchantId, Integer currPage) {
-    if (currPage == null || currPage < 0) {
+    if (currPage == null || currPage <= 0) {
       currPage = 1;
     }
     List<Object[]>
@@ -103,7 +112,7 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkUserBindMerchant(LeJiaUser leJiaUser, Merchant merchant) {
     //判断是否需要绑定商户
-    if (leJiaUser.getWeiXinUser().getState() == 1) {
+    if (leJiaUser.getWeiXinUser() != null && leJiaUser.getWeiXinUser().getState() == 1) {
       if (leJiaUser.getBindMerchant() == null) {
         long userLimit = leJiaUserRepository.countMerchantBindLeJiaUser(merchant.getId());
         if (merchant.getUserLimit() > userLimit) {

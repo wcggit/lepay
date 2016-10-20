@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "UNION_POS_ORDER")
-public class UnionPosOrder  implements Order {
+public class UnionPosOrder implements Order {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,8 +36,10 @@ public class UnionPosOrder  implements Order {
   @ManyToOne
   private Merchant merchant;
 
-  private Integer rebateWay; //1 代表非会员消费 2 代表会员消费,3 代表会员刷卡,或者纯积分消费 导流订单
+  //记录的是实际的会员与商户关系
+  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单
 
+  //有些订单是会员订单但是按照导流订单费率结算，由于银联只有两种rebateWay：1和3
   private Long ljCommission = 0L; //乐加佣金
 
   private Long wxCommission = 0L; //三方手续费
@@ -48,13 +50,13 @@ public class UnionPosOrder  implements Order {
 
   private Integer state = 0; //支付状态
 
-  private Long transferMoney; //每笔应该转给商户的金额=transferByBank+transferByScore
+  private Long transferMoney = 0L; //每笔应该转给商户的金额=transferByBank+transferByScore
 
-  private Long transferByBank; //银联转给商户的金额
+  private Long transferByBank = 0L; //银联转给商户的金额
 
-  private Long transferByScore; //红包部分转给商户的金额
+  private Long transferByScore = 0L; //红包部分转给商户的金额
 
-  private Long totalPrice;  //订单总额=truePay+trueScore
+  private Long totalPrice = 0L;  //订单总额=truePay+trueScore
 
   private Long truePay = 0L; //实际支付
 
@@ -63,6 +65,8 @@ public class UnionPosOrder  implements Order {
   private Integer paidType;  //1纯刷卡   2纯红包  3银行卡+红包
 
   private String account;  //操作账户名
+
+  private String data;    //支付成功后接受的参数JSON
 
   public Long getTransferByBank() {
     return transferByBank;
@@ -118,6 +122,14 @@ public class UnionPosOrder  implements Order {
 
   public void setCompleteDate(Date completeDate) {
     this.completeDate = completeDate;
+  }
+
+  public String getData() {
+    return data;
+  }
+
+  public void setData(String data) {
+    this.data = data;
   }
 
   public LeJiaUser getLeJiaUser() {
