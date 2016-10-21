@@ -107,10 +107,16 @@ public class PosOrderService {
           posOrder.setCardType(1);
           ljCommission =
               merchantPos.getCreditCardCommission().multiply(new BigDecimal(paidMoney));
+          thirdCommission =
+              new BigDecimal(dictionaryService.findDictionaryById(46L).getValue())
+                  .multiply(new BigDecimal(paidMoney));
         } else if (request.indexOf("借") != -1) {
           posOrder.setCardType(0);
           ljCommission =
               merchantPos.getDebitCardCommission().multiply(new BigDecimal(paidMoney));
+          thirdCommission =
+              new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
+                  .multiply(new BigDecimal(paidMoney));
         } else {
           posOrder.setCardType(2);
         }
