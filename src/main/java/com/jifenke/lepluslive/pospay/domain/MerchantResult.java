@@ -7,6 +7,8 @@ public class MerchantResult {
 
   private Long id; //商户id(merchantId)
 
+  private Integer partnership;
+
   private String account;  //账户名称
 
   private Long accountId; //账户信息(MerchantUserId)
@@ -35,6 +37,14 @@ public class MerchantResult {
 
   public void setQrCode(String qrCode) {
     this.qrCode = qrCode;
+  }
+
+  public Integer getPartnership() {
+    return partnership;
+  }
+
+  public void setPartnership(Integer partnership) {
+    this.partnership = partnership;
   }
 
   public Long getAccountId() {

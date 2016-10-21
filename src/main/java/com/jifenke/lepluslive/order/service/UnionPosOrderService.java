@@ -295,6 +295,7 @@ public class UnionPosOrderService {
       order.setTruePay(totalPrice);
       order.setState(1);
       order.setData(data);
+      order.setRebateWay(0);
     } else {
       order = orderRepository.findOne(orderId);
       if (order != null) {
