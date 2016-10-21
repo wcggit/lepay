@@ -85,6 +85,11 @@ public class WeixinController {
 
   }
 
+  @RequestMapping("/merchant/{id}")
+  public void rootMerchantId() {
+
+  }
+
   @RequestMapping("/wxpay/pay")
   public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
                                 @RequestParam(required = false) String pure,
@@ -175,7 +180,8 @@ public class WeixinController {
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     OffLineOrder
         offLineOrder =
-        offLineOrderService.createOffLineOrderForNoNMember(truePrice, merchantId, weiXinUser, pure,1L);
+        offLineOrderService
+            .createOffLineOrderForNoNMember(truePrice, merchantId, weiXinUser, pure, 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -235,7 +241,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
                                                         strs[4], leJiaUserService
-                .findUserByUserSid(strs[2]),1L);
+                .findUserByUserSid(strs[2]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -267,7 +273,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[1], Long.parseLong(strs[2]), "0",
                                                         strs[1], leJiaUserService
-                .findUserByUserSid(strs[0]),1L);
+                .findUserByUserSid(strs[0]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -295,7 +301,7 @@ public class WeixinController {
     String result = Des.strDec(ext, "lepluslife", null, null);
     String[] strs = result.split(" ");
     try {
-      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2],2L);
+      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2], 2L);
       return LejiaResult.build(200, "", offLineOrder);
     } catch (Exception e) {
       return LejiaResult.build(500, "出现未知错误,请联系管理员");
