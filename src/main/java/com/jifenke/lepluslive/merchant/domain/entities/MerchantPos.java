@@ -29,9 +29,7 @@ public class MerchantPos {
 
   private String psamCard;
 
-  private Integer type; //1 封顶类pos 0 非封顶pos
-
-  private BigDecimal posCommission; //pos 佣金 针对非会员消费
+  private BigDecimal debitCardCommission; //借记卡佣金比
 
   private BigDecimal ljCommission; //会员刷卡消费佣金
 
@@ -39,7 +37,7 @@ public class MerchantPos {
 
   private BigDecimal aliCommission; //阿里佣金
 
-  private BigDecimal bdCommission; //百度佣金
+  private BigDecimal creditCardCommission; //贷记卡佣金比
 
   private Long ceil; //封顶手续费
 
@@ -59,21 +57,6 @@ public class MerchantPos {
     this.psamCard = psamCard;
   }
 
-  public Integer getType() {
-    return type;
-  }
-
-  public void setType(Integer type) {
-    this.type = type;
-  }
-
-  public BigDecimal getPosCommission() {
-    return posCommission;
-  }
-
-  public void setPosCommission(BigDecimal posCommission) {
-    this.posCommission = posCommission;
-  }
 
   public BigDecimal getWxCommission() {
     return wxCommission;
@@ -89,14 +72,6 @@ public class MerchantPos {
 
   public void setAliCommission(BigDecimal aliCommission) {
     this.aliCommission = aliCommission;
-  }
-
-  public BigDecimal getBdCommission() {
-    return bdCommission;
-  }
-
-  public void setBdCommission(BigDecimal bdCommission) {
-    this.bdCommission = bdCommission;
   }
 
   public Long getCeil() {
@@ -137,5 +112,22 @@ public class MerchantPos {
 
   public void setSshKey(String sshKey) {
     this.sshKey = sshKey;
+  }
+
+
+  public BigDecimal getDebitCardCommission() {
+    return debitCardCommission;
+  }
+
+  public void setDebitCardCommission(BigDecimal debitCardCommission) {
+    this.debitCardCommission = debitCardCommission;
+  }
+
+  public BigDecimal getCreditCardCommission() {
+    return creditCardCommission;
+  }
+
+  public void setCreditCardCommission(BigDecimal creditCardCommission) {
+    this.creditCardCommission = creditCardCommission;
   }
 }

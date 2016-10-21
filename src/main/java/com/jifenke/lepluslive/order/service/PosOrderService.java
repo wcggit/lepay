@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.order.service;
 
+import com.jifenke.lepluslive.global.util.PosCardCheckUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -11,6 +12,7 @@ import com.jifenke.lepluslive.order.repository.PosOrderLogRepository;
 import com.jifenke.lepluslive.order.repository.PosOrderRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
+import com.jifenke.lepluslive.wxpay.service.DictionaryService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -49,6 +51,9 @@ public class PosOrderService {
   @Inject
   private OrderShareService orderShareService;
 
+  @Inject
+  private DictionaryService dictionaryService;
+
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void createPosOrderForNoNMember(String posId, String orderNo,
@@ -76,21 +81,40 @@ public class PosOrderService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void nonMemberAfterPay(String posId, String orderNo, String paidTime, String orderPrice,
-                                String paidPoints, String paidMoney, Integer tradeFlag) {
+                                String paidPoints, String paidMoney, Integer tradeFlag,
+                                String cardNo) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     PosOrder posOrder = posOrderRepository.findByOrderSid(orderNo);
     posOrder.setState(1);
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
     BigDecimal ljCommission;
+    BigDecimal thirdCommission;
     try {
       posOrder.setCompleteDate(sdf.parse(paidTime));
       posOrder.setTradeFlag(tradeFlag);
       if (tradeFlag == 0) {//支付宝
         ljCommission =
             merchantPos.getAliCommission().multiply(new BigDecimal(paidMoney));
+        thirdCommission =
+            new BigDecimal(dictionaryService.findDictionaryById(42L).getValue())
+                .multiply(new BigDecimal(paidMoney));
       } else if (tradeFlag == 3) { //刷卡
-        ljCommission =
-            merchantPos.getPosCommission().multiply(new BigDecimal(paidMoney));
+        String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
+        String httpArg = "cardnum=" + cardNo;
+        String request = PosCardCheckUtil.request(httpUrl, httpArg);
+        posOrder.setCardNo(cardNo);
+        if (request.indexOf("贷") != -1) {
+          posOrder.setCardType(1);
+          ljCommission =
+              merchantPos.getCreditCardCommission().multiply(new BigDecimal(paidMoney));
+        } else if (request.indexOf("借") != -1) {
+          posOrder.setCardType(0);
+          ljCommission =
+              merchantPos.getDebitCardCommission().multiply(new BigDecimal(paidMoney));
+        } else {
+          posOrder.setCardType(2);
+        }
+
         if (merchantPos.getType() == 1) {//封顶pos
           if (ljCommission.longValue() >= merchantPos.getCeil()) {
             ljCommission = new BigDecimal(merchantPos.getCeil());
@@ -102,11 +126,11 @@ public class PosOrderService {
       } else { //现金
         ljCommission = new BigDecimal(0);
       }
-      posOrder
-          .setLjCommission(Math.round(ljCommission.multiply(new BigDecimal(100)).doubleValue()));
+//      posOrder
+//          .setLjCommission(Math.round(ljCommission.multiply(new BigDecimal(100)).doubleValue()));
       posOrder.setWxCommission(posOrder.getLjCommission());
-      posOrder.setTransferMoney(new BigDecimal(paidMoney).multiply(new BigDecimal(100))
-                                    .subtract(ljCommission).longValue());
+//      posOrder.setTransferMoney(new BigDecimal(paidMoney).multiply(new BigDecimal(100))
+//                                    .subtract(ljCommission).longValue());
     } catch (ParseException e) {
       e.printStackTrace();
     }
@@ -171,8 +195,8 @@ public class PosOrderService {
       } else if (tradeFlag == 3) { //刷卡
         posOrder.setRebateWay(3);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
-        thirdCommission =
-            merchantPos.getPosCommission().multiply(truePay);
+//        thirdCommission =
+//            merchantPos.getPosCommission().multiply(truePay);
         posOrder.setRebate(
             Math.round(
                 ljCommission.multiply(merchant.getScoreARebate().divide(new BigDecimal(10000)))

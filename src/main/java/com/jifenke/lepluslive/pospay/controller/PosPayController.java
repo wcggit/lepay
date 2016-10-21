@@ -80,12 +80,13 @@ public class PosPayController {
                                            @RequestParam Integer paid,
                                            @RequestParam String paidPoints,
                                            @RequestParam String paidMoney,
+                                           @RequestParam String cardNo,
                                            HttpServletRequest request) {
     String queryString = request.getQueryString();
     posOrderService.createPosOrderLog(orderNo, queryString);
     if (act == 10 && pos == 1 && groupon == 5 && paidType == 1 && paid == 1) {
       posOrderService.nonMemberAfterPay(posId, orderNo, paidTime, orderPrice, paidPoints, paidMoney,
-                                        tradeFlag);
+                                        tradeFlag,cardNo);
     }
   }
 

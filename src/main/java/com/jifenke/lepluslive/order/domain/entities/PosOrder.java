@@ -67,6 +67,26 @@ public class PosOrder implements Order {
 
   private Integer paidType;  //1,非会员消费   2只用货币完成交易、3混用了货币积分完成交易、4只用积分完成了交易
 
+  private String cardNo; //如果刷卡支付 则为卡号
+
+  private Integer cardType; //卡的类型
+
+  public String getCardNo() {
+    return cardNo;
+  }
+
+  public void setCardNo(String cardNo) {
+    this.cardNo = cardNo;
+  }
+
+  public Integer getCardType() {
+    return cardType;
+  }
+
+  public void setCardType(Integer cardType) {
+    this.cardType = cardType;
+  }
+
   public Long getTransferByBank() {
     return transferByBank;
   }
