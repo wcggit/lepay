@@ -2,6 +2,7 @@ package com.jifenke.lepluslive.merchant.controller;
 
 import com.jifenke.lepluslive.global.util.LejiaResult;
 import com.jifenke.lepluslive.global.util.MD5Util;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantInfo;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
@@ -44,10 +45,12 @@ public class MerchantController {
       String origin = MD5Util.MD5Encode(pwd, "utf-8");
       if (merchantUser.getPassword().equals(origin)) {
         MerchantResult result = new MerchantResult();
-        result.setId(merchantUser.getMerchant().getId());
+        Merchant merchant = merchantUser.getMerchant();
+        result.setId(merchant.getId());
+        result.setPartnership(merchant.getPartnership());
         result.setAccountId(merchantUser.getId());
         result.setAccount(name);
-        MerchantInfo info = merchantUser.getMerchant().getMerchantInfo();
+        MerchantInfo info = merchant.getMerchantInfo();
         String qrCode = "";
         if (info != null) {
           if (info.getTicket() != null) {
