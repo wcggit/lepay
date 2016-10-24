@@ -217,15 +217,26 @@ public class PosOrderService {
         }
       } else if (tradeFlag == 3) { //刷卡
         posOrder.setRebateWay(3);
+        posOrder.setCardNo(cardNo);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
         truePayCommission = truePay.multiply(merchantPos.getLjCommission());
-        thirdCommission =
-            new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
-                .multiply(new BigDecimal(paidMoney));
-        BigDecimal thirdCommissionLimit = new BigDecimal(
-            dictionaryService.findDictionaryById(47L).getValue());
-        if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
-          thirdCommission = thirdCommissionLimit;
+        String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
+        String httpArg = "cardnum=" + cardNo;
+        String request = PosCardCheckUtil.request(httpUrl, httpArg);
+        posOrder.setCardNo(cardNo);
+        if (request.indexOf("贷") != -1) {
+          thirdCommission =
+              new BigDecimal(dictionaryService.findDictionaryById(46L).getValue())
+                  .multiply(truePay);
+        } else {
+          thirdCommission =
+              new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
+                  .multiply(truePay);
+          BigDecimal thirdCommissionLimit = new BigDecimal(
+              dictionaryService.findDictionaryById(47L).getValue());
+          if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
+            thirdCommission = thirdCommissionLimit;
+          }
         }
       } else if (tradeFlag == 4) { //微信
         posOrder.setRebateWay(2);
