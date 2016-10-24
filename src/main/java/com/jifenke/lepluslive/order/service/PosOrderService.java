@@ -87,9 +87,9 @@ public class PosOrderService {
     PosOrder posOrder = posOrderRepository.findByOrderSid(orderNo);
     posOrder.setState(1);
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
-    BigDecimal ljCommission;
-    BigDecimal thirdCommission;
     try {
+      BigDecimal ljCommission = null;
+      BigDecimal thirdCommission = null;
       posOrder.setCompleteDate(sdf.parse(paidTime));
       posOrder.setTradeFlag(tradeFlag);
       if (tradeFlag == 0) {//支付宝
@@ -114,29 +114,37 @@ public class PosOrderService {
           posOrder.setCardType(0);
           ljCommission =
               merchantPos.getDebitCardCommission().multiply(new BigDecimal(paidMoney));
+          if (ljCommission.longValue() > merchantPos.getCeil()) {//封顶手续费
+            ljCommission = new BigDecimal(merchantPos.getCeil());
+          }
           thirdCommission =
               new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
                   .multiply(new BigDecimal(paidMoney));
+          BigDecimal thirdCommissionLimit = new BigDecimal(
+              dictionaryService.findDictionaryById(47L).getValue());
+          if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
+            thirdCommission = thirdCommissionLimit;
+          }
         } else {
           posOrder.setCardType(2);
-        }
-
-        if (merchantPos.getType() == 1) {//封顶pos
-          if (ljCommission.longValue() >= merchantPos.getCeil()) {
-            ljCommission = new BigDecimal(merchantPos.getCeil());
-          }
         }
       } else if (tradeFlag == 4) { //微信
         ljCommission =
             merchantPos.getWxCommission().multiply(new BigDecimal(paidMoney));
+        thirdCommission =
+            new BigDecimal(dictionaryService.findDictionaryById(43L).getValue())
+                .multiply(new BigDecimal(paidMoney));
       } else { //现金
         ljCommission = new BigDecimal(0);
       }
-//      posOrder
-//          .setLjCommission(Math.round(ljCommission.multiply(new BigDecimal(100)).doubleValue()));
+      posOrder
+          .setLjCommission(Math.round(ljCommission.multiply(new BigDecimal(100)).doubleValue()));
       posOrder.setWxCommission(posOrder.getLjCommission());
-//      posOrder.setTransferMoney(new BigDecimal(paidMoney).multiply(new BigDecimal(100))
-//                                    .subtract(ljCommission).longValue());
+      posOrder
+          .setWxCommission(thirdCommission == null ? null : Math
+              .round(thirdCommission.multiply(new BigDecimal(100)).doubleValue()));
+      posOrder.setTransferMoney(new BigDecimal(paidMoney).multiply(new BigDecimal(100))
+                                    .subtract(ljCommission).longValue());
     } catch (ParseException e) {
       e.printStackTrace();
     }
@@ -189,54 +197,97 @@ public class PosOrderService {
     try {
       BigDecimal thirdCommission = null;
       BigDecimal ljCommission = null;
+      BigDecimal truePayCommission = null;
+      boolean flag = false;
       posOrder.setCompleteDate(sdf.parse(paidTime));
-      posOrder.setScoreB(
-          Math.round(totalPrice.multiply(merchant.getScoreBRebate()).divide(new BigDecimal(10000))
-                         .doubleValue()));
       if (tradeFlag == 0) {//支付宝
-        posOrder.setRebateWay(2);
         thirdCommission =
-            merchantPos.getAliCommission().multiply(truePay);
-        ljCommission = thirdCommission;
+            new BigDecimal(dictionaryService.findDictionaryById(42L).getValue())
+                .multiply(truePay);
+        if (merchantPos.getAliUserCommission() == null) {
+          ljCommission = merchantPos.getAliCommission()
+              .multiply(totalPrice);
+          truePayCommission = merchantPos.getAliCommission()
+              .multiply(truePay);
+          flag = true;
+        } else {
+          ljCommission = merchantPos.getAliUserCommission().multiply(totalPrice);
+          truePayCommission = merchantPos.getAliUserCommission()
+              .multiply(truePay);
+        }
       } else if (tradeFlag == 3) { //刷卡
         posOrder.setRebateWay(3);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
-//        thirdCommission =
-//            merchantPos.getPosCommission().multiply(truePay);
-        posOrder.setRebate(
-            Math.round(
-                ljCommission.multiply(merchant.getScoreARebate().divide(new BigDecimal(10000)))
-                    .doubleValue()));
+        truePayCommission = truePay.multiply(merchantPos.getLjCommission());
+        thirdCommission =
+            new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
+                .multiply(new BigDecimal(paidMoney));
+        BigDecimal thirdCommissionLimit = new BigDecimal(
+            dictionaryService.findDictionaryById(47L).getValue());
+        if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
+          thirdCommission = thirdCommissionLimit;
+        }
       } else if (tradeFlag == 4) { //微信
         posOrder.setRebateWay(2);
         thirdCommission =
-            merchantPos.getWxCommission().multiply(truePay);
-        ljCommission = thirdCommission;
+            new BigDecimal(dictionaryService.findDictionaryById(43L).getValue())
+                .multiply(truePay);
+        if (merchantPos.getWxUserCommission() == null) {
+          ljCommission = merchantPos.getWxCommission()
+              .multiply(totalPrice);
+          flag = true;
+          truePayCommission = merchantPos.getWxCommission()
+              .multiply(truePay);
+        } else {
+          ljCommission = merchantPos.getWxUserCommission()
+              .multiply(totalPrice);
+          truePayCommission = merchantPos.getWxUserCommission()
+              .multiply(truePay);
+        }
       } else if (tradeFlag == 5) { //纯积分
-        posOrder.setRebateWay(3);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
+        truePayCommission = new BigDecimal(0);
         thirdCommission =
             new BigDecimal(0);
-        posOrder.setRebate(Math.round(ljCommission.multiply(merchant.getScoreARebate().divide(
-            new BigDecimal(10000))).doubleValue()));
       }
       posOrder
           .setWxCommission(Math.round(thirdCommission.divide(new BigDecimal(100)).doubleValue()));
       posOrder
           .setLjCommission(Math.round(ljCommission.divide(new BigDecimal(100)).doubleValue()));
+      posOrder.setTruePayCommission(
+          Math.round(truePayCommission.divide(new BigDecimal(100)).doubleValue()));
       posOrder.setTransferMoney(
           Math.round(totalPrice.subtract(ljCommission.divide(new BigDecimal(100))).doubleValue()));
-      if (tradeFlag != 3) { //只有刷卡消费时,由银行转给商户的钱为实际支付减去佣金
-        posOrder.setTransferByBank(
-            Math.round(
-                truePay.subtract(thirdCommission.divide(new BigDecimal(100))).doubleValue()));
+      posOrder.setTransferByBank(
+          Math.round(
+              truePay.subtract(truePayCommission.divide(new BigDecimal(100))).doubleValue()));
+      if (!flag) {
+        if (posOrder.getLeJiaUser().getBindMerchant() != null && posOrder.getLeJiaUser()
+            .getBindMerchant().getId()
+            .equals(merchant.getId())) {//判断时导流订单还是会员订单
+          //会员订单
+          posOrder.setRebateWay(2);
+          posOrder.setScoreB(
+              Math.round(
+                  totalPrice.multiply(merchantPos.getUserScoreBRebate())
+                      .divide(new BigDecimal(10000))
+                      .doubleValue()));
+          posOrder
+              .setRebate(Math.round(ljCommission.multiply(merchantPos.getUserScoreARebate().divide(
+                  new BigDecimal(10000))).doubleValue()));
+        } else {
+          posOrder.setRebateWay(3);
+          posOrder
+              .setRebate(Math.round(ljCommission.multiply(merchantPos.getScoreARebate().divide(
+                  new BigDecimal(10000))).doubleValue()));
+          posOrder.setScoreB(
+              Math.round(
+                  totalPrice.multiply(merchantPos.getScoreBRebate()).divide(new BigDecimal(10000))
+                      .doubleValue()));
+        }
       } else {
-        posOrder.setTransferByBank(
-            Math.round(truePay.subtract(
-                truePay.multiply(merchantPos.getLjCommission()).divide(new BigDecimal(100)))
-                           .doubleValue()));
+        posOrder.setRebateWay(4);
       }
-
       leJiaUserService.checkUserBindCard(posOrder.getLeJiaUser(), cardNo);
       scoreAService.paySuccessForMember(posOrder);
       scoreBService.paySuccess(posOrder);

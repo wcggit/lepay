@@ -41,7 +41,9 @@ public class PosOrder implements Order {
   @ManyToOne
   private Merchant merchant;
 
-  private Integer rebateWay; //1 代表非会员消费 2 代表会员消费,3 代表会员刷卡,或者纯积分消费 导流订单
+  private Long truePayCommission;//实际支付手续费
+
+  private Integer rebateWay; //1 代表非会员消费 2 代表会员订单 3 导流订单 4 会员普通订单
 
   private Long ljCommission = 0L; //乐加佣金
 
@@ -70,6 +72,14 @@ public class PosOrder implements Order {
   private String cardNo; //如果刷卡支付 则为卡号
 
   private Integer cardType; //卡的类型
+
+  public Long getTruePayCommission() {
+    return truePayCommission;
+  }
+
+  public void setTruePayCommission(Long truePayCommission) {
+    this.truePayCommission = truePayCommission;
+  }
 
   public String getCardNo() {
     return cardNo;

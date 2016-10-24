@@ -112,12 +112,14 @@ public class OffLineOrderService {
       if (merchant.getLjCommission().doubleValue() != 0) {
         offLineOrder.setLjCommission(
             Math.round(truePirce * merchant.getLjCommission().doubleValue() / 100.0));
+        offLineOrder.setTruePayCommission(offLineOrder.getLjCommission());
       }
     } else {
       if (merchant.getLjBrokerage().doubleValue() != 0) {
         offLineOrder.setLjCommission(
             Math.round(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
       }
+      offLineOrder.setTruePayCommission(offLineOrder.getLjCommission());
     }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setTransferMoneyFromTruePay(
@@ -155,7 +157,14 @@ public class OffLineOrderService {
           Math.round(
               new BigDecimal(total).multiply(merchant.getLjCommission()).divide(new BigDecimal(100))
                   .doubleValue());
+      long
+          truePayCommission =
+          Math.round(
+              new BigDecimal(truePay).multiply(merchant.getLjCommission())
+                  .divide(new BigDecimal(100))
+                  .doubleValue());
       offLineOrder.setLjCommission(ljCommission);
+      offLineOrder.setTruePayCommission(truePayCommission);
       if (merchant.getPartnership() != 0) { //代表联盟商户
         if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
             .getId()) { //代表会员订单
@@ -165,7 +174,13 @@ public class OffLineOrderService {
                   new BigDecimal(total).multiply(merchant.getMemberCommission())
                       .divide(new BigDecimal(100))
                       .doubleValue());
+          truePayCommission =
+              Math.round(
+                  new BigDecimal(truePay).multiply(merchant.getMemberCommission())
+                      .divide(new BigDecimal(100))
+                      .doubleValue());
           offLineOrder.setLjCommission(ljCommission);
+          offLineOrder.setTruePayCommission(truePayCommission);
           if (ljCommission - offLineOrder.getWxCommission() > 0) { //如果会员佣金大于微信手续费则发红包
             offLineOrder.setRebate(ljCommission - offLineOrder.getWxCommission());
           }
@@ -182,9 +197,7 @@ public class OffLineOrderService {
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder
         .setTransferMoneyFromTruePay(
-            new BigDecimal(truePay).divide(new BigDecimal(total), 2, BigDecimal.ROUND_HALF_UP)
-                .multiply(new BigDecimal(
-                    offLineOrder.getTransferMoney())).longValue());
+            new BigDecimal(truePay).longValue() - offLineOrder.getTruePayCommission());
     long scoreB = Math.round(total * merchant.getScoreBRebate().doubleValue() / 10000.0);
     offLineOrder.setScoreB(scoreB);
     repository.save(offLineOrder);

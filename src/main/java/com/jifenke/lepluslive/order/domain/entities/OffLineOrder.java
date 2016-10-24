@@ -46,7 +46,7 @@ public class OffLineOrder implements Order {
 
   private Long truePay = 0L;
 
-  private Long ljCommission = 0L; //乐加佣金
+  private Long ljCommission = 0L; //支付总手续费
 
   private Long trueScore = 0L; //实际使用红包
 
@@ -62,6 +62,8 @@ public class OffLineOrder implements Order {
 
   private Long transferMoneyFromTruePay; //每笔订单中现金支付转给商户的金额
 
+  private Long truePayCommission = 0L;//实际支付手续费
+
   private Integer
       rebateWay;
   //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单 4 非会员扫纯支付码 5 会员扫纯支付码
@@ -71,6 +73,14 @@ public class OffLineOrder implements Order {
   private Long monthlyOrderCount;//每月第几笔订单
 
   private String lepayCode = MvUtil.getLePayCode();
+
+  public Long getTruePayCommission() {
+    return truePayCommission;
+  }
+
+  public void setTruePayCommission(Long truePayCommission) {
+    this.truePayCommission = truePayCommission;
+  }
 
   public Long getMonthlyOrderCount() {
     return monthlyOrderCount;
