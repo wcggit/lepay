@@ -31,7 +31,10 @@ public class OffLineOrderShare {
   @OneToOne
   private PosOrder posOrder;
 
-  private Integer type; //1 代表线下订单分润 2代表中慧pos订单分润
+  @OneToOne
+  private UnionPosOrder unionPosOrder;
+
+  private Integer type; //1 代表线下订单分润 2代表中慧pos订单分润 3 银联pos
 
   private Long shareMoney;
 
@@ -48,6 +51,14 @@ public class OffLineOrderShare {
   private Long toLePlusLife = 0L;
 
   private Date createDate = new Date();
+
+  public UnionPosOrder getUnionPosOrder() {
+    return unionPosOrder;
+  }
+
+  public void setUnionPosOrder(UnionPosOrder unionPosOrder) {
+    this.unionPosOrder = unionPosOrder;
+  }
 
   @ManyToOne
   private Partner tradePartner;

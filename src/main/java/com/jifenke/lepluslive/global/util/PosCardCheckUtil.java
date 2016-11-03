@@ -46,13 +46,13 @@ public class PosCardCheckUtil {
     return result;
   }
 
-  public static void main(String[] args) {
-    String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
-    String httpArg = "cardnum=6214830122180408";
-    String jsonResult = request(httpUrl, httpArg);
-    System.out.println(jsonResult.indexOf("贷"));
-    System.out.println(jsonResult);
-  }
+//  public static void main(String[] args) {
+//    String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
+//    String httpArg = "cardnum=6214830122180408";
+//    String jsonResult = request(httpUrl, httpArg);
+//    System.out.println(jsonResult.indexOf("贷"));
+//    System.out.println(jsonResult);
+//  }
 
 
 }
