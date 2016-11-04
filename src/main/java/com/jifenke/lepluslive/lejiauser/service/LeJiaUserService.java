@@ -164,6 +164,5 @@ public class LeJiaUserService {
       newCard.setNumber(cardNo);
       bankCardRepository.save(newCard);
     }
-
   }
 }

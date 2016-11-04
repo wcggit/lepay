@@ -6,17 +6,12 @@ import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
-import com.jifenke.lepluslive.order.domain.entities.OffLineOrderShare;
 import com.jifenke.lepluslive.order.domain.entities.PayWay;
 import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
-import com.jifenke.lepluslive.order.repository.OffLineOrderShareRepository;
-import com.jifenke.lepluslive.partner.service.PartnerService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
-import com.jifenke.lepluslive.wxpay.service.DictionaryService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
-import com.jifenke.lepluslive.wxpay.service.WeiXinUserService;
 import com.jifenke.lepluslive.wxpay.service.WeixinPayLogService;
 import com.jifenke.lepluslive.wxpay.service.WxTemMsgService;
 

@@ -75,13 +75,13 @@ public class Merchant {
 
   private Long userLimit; //会员绑定上线
 
-  private BigDecimal ljCommission; //乐加佣金 单位百分比
+  private BigDecimal ljCommission; //乐加佣金 单位百分比 若是普通商户则为普通手续费
 
   private BigDecimal ljBrokerage = new BigDecimal(0); //只有联盟商户才不为空 , 代表非乐加会员消费时,收取的手续费
 
   private BigDecimal memberCommission = new BigDecimal(0); //只有联盟商户才不为空 , 代表会员在绑定商户消费时的手续费
 
-  private BigDecimal scoreARebate; //返a积分比 单位百分比
+  private BigDecimal scoreARebate; //返a积分占lj佣金的摆放比 单位百分比
 
   private BigDecimal scoreBRebate;
 
