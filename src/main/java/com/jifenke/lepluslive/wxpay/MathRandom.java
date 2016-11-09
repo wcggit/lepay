@@ -9,40 +9,16 @@ import java.util.Random;
 /**
  * JAVA 返回随机数，并根据概率、比率
  *
- * @author zhanglei
+ * @author
  */
 public class MathRandom {
 
   /**
-   * 0出现的概率为%50
-   */
-  public static int rate0 = 2;
-  /**
-   * 1出现的概率为%20
-   */
-  public static int rate1 = 80;
-  /**
-   * 2出现的概率为%15
-   */
-  public static int rate2 = 6;
-  /**
-   * 3出现的概率为%10
-   */
-  public static int rate3 = 6;
-  /**
-   * 4出现的概率为%5
-   */
-  public static int rate4 = 6;
-  /**
-   * 5出现的概率为%1
-   */
-
-  /**
-   * Math.random()产生一个double型的随机数，判断一下 例如0出现的概率为%50，则介于0到0.50中间的返回0
+   * 百分比概率
    *
    * @return int
    */
-  private int PercentageRandom() {
+  public static int PercentageRandom(int rate0, int rate1, int rate2, int rate3) {
     Random r = new Random();
     int point = r.nextInt(100) + 1;
     if (point <= rate0) {
@@ -53,7 +29,7 @@ public class MathRandom {
       return 2;
     } else if (point <= rate0 + rate1 + rate2 + rate3) {
       return 3;
-    } else  {
+    } else {
       return 4;
     }
   }
@@ -72,10 +48,10 @@ public class MathRandom {
     MathRandom a = new MathRandom();
     for (i = 0; i < j; i++)//打印100个测试概率的准确性
     {
-      int result = a.PercentageRandom();
+      int result = MathRandom.PercentageRandom(10, 20, 30, 40);
       if (result == 1) {
         a2++;
-      } else if (result== 2) {
+      } else if (result == 2) {
         a3++;
       } else if (result == 3) {
         a4++;
@@ -85,11 +61,11 @@ public class MathRandom {
         a1++;
       }
     }
-    System.out.println(a1 );
-    System.out.println(a2 );
-    System.out.println(a3 );
-    System.out.println(a4 );
-    System.out.println(a5 );
+    System.out.println(a1);
+    System.out.println(a2);
+    System.out.println(a3);
+    System.out.println(a4);
+    System.out.println(a5);
   }
 }
 

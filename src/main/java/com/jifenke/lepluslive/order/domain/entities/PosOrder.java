@@ -73,6 +73,16 @@ public class PosOrder implements Order {
 
   private Integer cardType; //卡的类型
 
+  private Long ljProfit = 0L;//每笔订单的额外收入
+
+  public Long getLjProfit() {
+    return ljProfit;
+  }
+
+  public void setLjProfit(Long ljProfit) {
+    this.ljProfit = ljProfit;
+  }
+
   public Long getTruePayCommission() {
     return truePayCommission;
   }

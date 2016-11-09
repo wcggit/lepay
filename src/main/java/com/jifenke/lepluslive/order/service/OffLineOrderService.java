@@ -1,9 +1,11 @@
 package com.jifenke.lepluslive.order.service;
 
 import com.jifenke.lepluslive.activity.service.InitialOrderRebateActivityService;
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantRebatePolicy;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.PayWay;
@@ -26,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 import java.util.SortedMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -387,5 +390,48 @@ public class OffLineOrderService {
 
   public synchronized void lockPaySuccess(String orderSid) {
     paySuccess(orderSid);
+  }
+
+  public void merchantRebatePolicy(Long scoreA, Long scoreB,
+                                   MerchantRebatePolicy merchantRebatePolicy, Merchant merchant,
+                                   Integer orderType, Long totalPrice, Long ljCommission) {
+    if (orderType == 0) {//0代表普通订单 1导流订单 2 会员订单
+      //普通订单，scoreA=0
+      scoreA = 0L;
+      scoreB = Math.round(totalPrice * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    } else if (orderType == 1) {
+      scoreA = Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
+      //为最大可获得红包 落桶观察到底是那一部分分账
+      scoreB = Math.round(
+          totalPrice * merchantRebatePolicy.getImportScoreBScale().doubleValue() / 10000.0);
+    } else {
+
+    }
+  }
+
+  public Long returnScoreA(int bucket, int commission) {
+    int rebate = 0;
+    switch (bucket) {
+      case 0:
+        rebate = new Random().nextInt(((commission * 20 / 100 + 1)));
+        break;
+      case 1:
+        rebate =
+            new Random().nextInt((commission * 40 / 100 - commission * 20 / 100 + 1))
+            + commission * 20 / 100;
+        break;
+      case 2:
+        rebate = new Random().nextInt((commission * 60 / 100 - commission * 40 / 100 + 1))
+                 + commission * 40 / 100;
+        break;
+      case 3:
+        rebate = new Random().nextInt((commission * 80 / 100 - commission * 60 / 100 + 1))
+                 + commission * 60 / 100;
+        break;
+      default:
+        rebate = new Random().nextInt((commission - commission * 80 / 100 + 1))
+                 + commission * 80 / 100;
+    }
+    return (long) rebate;
   }
 }

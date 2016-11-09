@@ -28,4 +28,8 @@ public interface Order {
 
   Long getScoreB();
 
+  Long getTruePay();
+
+  Long getTotalPrice();
+
 }
