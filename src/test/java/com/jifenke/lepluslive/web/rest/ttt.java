@@ -3,16 +3,10 @@
 //import com.jifenke.lepluslive.Application;
 //import com.jifenke.lepluslive.activity.service.InitialOrderRebateActivityService;
 //import com.jifenke.lepluslive.global.config.Constants;
+//import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 //import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
-//import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
-//import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
-//import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
-//import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 //import com.jifenke.lepluslive.order.service.OffLineOrderService;
-//import com.jifenke.lepluslive.score.repository.ScoreARepository;
-//import com.jifenke.lepluslive.score.service.ScoreAService;
 //import com.jifenke.lepluslive.wxpay.repository.WeiXinUserRepository;
-//import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
 //
 //import org.junit.Test;
 //import org.junit.runner.RunWith;
@@ -32,8 +26,8 @@
 //import javax.persistence.Query;
 //
 ///**
-// * Created by wcg on 16/4/15.
-// */
+//* Created by wcg on 16/4/15.
+//*/
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@SpringApplicationConfiguration(classes = Application.class)
 //@WebAppConfiguration
@@ -57,9 +51,8 @@
 //
 //  @Test
 //  public void tttt() {
-//    System.out.println(offLineOrderService.countMerchantMonthlyOrder(offLineOrderService
-//                                                                         .findOffLineOrderByOrderSid("16052701272426406")));;
-//
+//    LeJiaUser one = leJiaUserRepository.findOne(51L);
+//    offLineOrderService.createOffLineOrderForMember("1000",1L,"0","1000",one,1L);
 //  }
 //
 ////  public static void main(String[] args) {

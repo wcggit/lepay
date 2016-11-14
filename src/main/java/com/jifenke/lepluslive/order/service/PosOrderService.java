@@ -5,6 +5,8 @@ import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantPos;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantRebatePolicy;
+import com.jifenke.lepluslive.merchant.repository.MerchantRebatePolicyRepository;
 import com.jifenke.lepluslive.merchant.service.MerchantPosService;
 import com.jifenke.lepluslive.order.domain.entities.PosOrder;
 import com.jifenke.lepluslive.order.domain.entities.PosOrderLog;
@@ -53,6 +55,12 @@ public class PosOrderService {
 
   @Inject
   private DictionaryService dictionaryService;
+
+  @Inject
+  private MerchantRebatePolicyRepository merchantRebatePolicyRepository;
+
+  @Inject
+  private OffLineOrderService offLineOrderService;
 
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -193,7 +201,13 @@ public class PosOrderService {
     posOrder.setTotalPrice(totalPrice.longValue());
     posOrder.setPaidType(paidType);
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
+    Long rebateScoreA = 0L;
+    Long rebateScoreB = 0L;
+    Long[] rebates = null;
     Merchant merchant = merchantPos.getMerchant();
+    MerchantRebatePolicy
+        merchantRebatePolicy =
+        merchantRebatePolicyRepository.findByMerchantId(merchant.getId());
     try {
       BigDecimal thirdCommission = null;
       BigDecimal ljCommission = null;
@@ -277,28 +291,34 @@ public class PosOrderService {
             .getBindMerchant().getId()
             .equals(merchant.getId())) {//判断时导流订单还是会员订单
           //会员订单
+          rebates =
+              offLineOrderService
+                  .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
+                                        merchant, 2,
+                                        scoreA.longValue(), ljCommission.longValue(),
+                                        posOrder.getWxCommission());
           posOrder.setRebateWay(2);
-          posOrder.setScoreB(
-              Math.round(
-                  totalPrice.multiply(merchantPos.getUserScoreBRebate())
-                      .divide(new BigDecimal(10000))
-                      .doubleValue()));
-          posOrder
-              .setRebate(Math.round(ljCommission.multiply(merchantPos.getUserScoreARebate().divide(
-                  new BigDecimal(10000))).doubleValue()));
         } else {
           posOrder.setRebateWay(3);
-          posOrder
-              .setRebate(Math.round(ljCommission.multiply(merchantPos.getScoreARebate().divide(
-                  new BigDecimal(10000))).doubleValue()));
-          posOrder.setScoreB(
-              Math.round(
-                  totalPrice.multiply(merchantPos.getScoreBRebate()).divide(new BigDecimal(10000))
-                      .doubleValue()));
+          rebates =
+              offLineOrderService
+                  .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
+                                        merchant, 1,
+                                        scoreA.longValue(), ljCommission.longValue(),
+                                        posOrder.getWxCommission());
         }
       } else {
         posOrder.setRebateWay(4);
+        rebates =
+            offLineOrderService
+                .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
+                                      merchant, 0,
+                                      scoreA.longValue(), ljCommission.longValue(),
+                                      posOrder.getWxCommission());
       }
+      posOrder.setScoreB(rebates[1]);
+      posOrder.setRebate(rebates[0]);
+      posOrder.setLjProfit(rebates[3]);
       leJiaUserService.checkUserBindCard(posOrder.getLeJiaUser(), cardNo);
       scoreAService.paySuccessForMember(posOrder);
       scoreBService.paySuccess(posOrder);

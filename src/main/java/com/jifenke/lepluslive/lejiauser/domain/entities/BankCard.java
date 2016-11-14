@@ -25,7 +25,7 @@ public class BankCard {
   @ManyToOne
   private LeJiaUser leJiaUser;
 
-  private Date bindDate;
+  private Date bindDate = new Date();
 
   private String number;
 
