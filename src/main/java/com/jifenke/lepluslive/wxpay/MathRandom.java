@@ -34,39 +34,6 @@ public class MathRandom {
     }
   }
 
-  /**
-   * 测试主程序
-   */
-  public static void main(String[] agrs) {
-    int i = 0;
-    int j = 1000;
-    int a1 = 0;
-    int a2 = 0;
-    int a3 = 0;
-    int a4 = 0;
-    int a5 = 0;
-    MathRandom a = new MathRandom();
-    for (i = 0; i < j; i++)//打印100个测试概率的准确性
-    {
-      int result = MathRandom.PercentageRandom(10, 20, 30, 40);
-      if (result == 1) {
-        a2++;
-      } else if (result == 2) {
-        a3++;
-      } else if (result == 3) {
-        a4++;
-      } else if (result == 4) {
-        a5++;
-      } else if (result == 0) {
-        a1++;
-      }
-    }
-    System.out.println(a1);
-    System.out.println(a2);
-    System.out.println(a3);
-    System.out.println(a4);
-    System.out.println(a5);
-  }
 }
 
 

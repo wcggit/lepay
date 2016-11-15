@@ -465,7 +465,7 @@ public class OffLineOrderService {
     Long[] result = new Long[3];
     result[0] = scoreA;
     result[1] = scoreB;
-    result[3] = ljProfit;
+    result[2] = ljProfit;
     return result;
   }
 
