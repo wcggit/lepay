@@ -245,9 +245,6 @@ public class UnionPosOrderService {
               rebate =
               Math.round(ljCommission * m.getScoreARebate().doubleValue() / 100.0);
           order.setRebate(rebate);
-          new Thread(() -> {
-            orderShareService.offLIneOrderShare(order);
-          }).start();
         } else {
           order.setRebateWay(2); //会员普通订单
         }
