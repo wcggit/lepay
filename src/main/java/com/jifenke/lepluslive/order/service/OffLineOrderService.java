@@ -209,9 +209,11 @@ public class OffLineOrderService {
     offLineOrder
         .setTransferMoneyFromTruePay(
             new BigDecimal(truePay).longValue() - offLineOrder.getTruePayCommission());
-    offLineOrder.setScoreB(rebates[1]);
-    offLineOrder.setRebate(rebates[0]);
-    offLineOrder.setLjProfit(rebates[2]);
+    if (rebates != null) {
+      offLineOrder.setScoreB(rebates[1]);
+      offLineOrder.setRebate(rebates[0]);
+      offLineOrder.setLjProfit(rebates[2]);
+    }
     repository.save(offLineOrder);
     return offLineOrder;
   }
@@ -321,19 +323,23 @@ public class OffLineOrderService {
         offLineOrder.setRebateWay(2); //会员普通订单
       }
     }
+    if (rebates != null) {
+      offLineOrder.setScoreB(rebates[1]);
+      offLineOrder.setRebate(rebates[0]);
+      offLineOrder.setLjProfit(rebates[2]);
+    }
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setTransferMoneyFromTruePay(0L);
     scoreAService.paySuccessForMember(offLineOrder);
     scoreBService.paySuccess(offLineOrder);
     offLineOrder.setCompleteDate(new Date());
     merchantService.paySuccess(offLineOrder);
+    Long count = countMerchantMonthlyOrder(offLineOrder);
+    offLineOrder.setMonthlyOrderCount(++count);
     wxTemMsgService.sendToClient(offLineOrder);
     wxTemMsgService.sendToMerchant(offLineOrder);
     offLineOrder.setMessageState(1);
     repository.save(offLineOrder);
-    offLineOrder.setScoreB(rebates[1]);
-    offLineOrder.setRebate(rebates[0]);
-    offLineOrder.setLjProfit(rebates[2]);
     //判断是否需要绑定商户
     leJiaUserService
         .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
