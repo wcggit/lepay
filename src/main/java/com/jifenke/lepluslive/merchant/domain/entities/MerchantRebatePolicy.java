@@ -32,14 +32,54 @@ public class MerchantRebatePolicy {
 
   private BigDecimal userScoreAScale;//会员订单按比例发放积分策略返红包比
 
-  private Integer stageOne;//0%~20%
+  private Integer stageOne;//区间一的概率
 
-  private Integer stageTwo;//20%~40%
+  private Integer stageTwo;//区间二的概率
 
-  private Integer stageThree;//40%·60%
+  private Integer stageThree;//区间三的概率
 
-  private Integer stageFour;//60%~80%
+  private Integer stageFour;//区间四的概率
 
+  private  Integer regionOne; //区间一 0%～regionOne%
+
+  private Integer regionTwo; //区间二 regionOne%～regionTwo%
+
+  private Integer regionThree;  //区间三 regionTwo%～regionThree%
+
+  private Integer regionFour;//区间4 regionThree%～regionFour%
+
+
+  public Integer getRegionOne() {
+    return regionOne;
+  }
+
+  public void setRegionOne(Integer regionOne) {
+    this.regionOne = regionOne;
+  }
+
+  public Integer getRegionTwo() {
+    return regionTwo;
+  }
+
+  public void setRegionTwo(Integer regionTwo) {
+    this.regionTwo = regionTwo;
+  }
+
+  public Integer getRegionThree() {
+    return regionThree;
+  }
+
+  public void setRegionThree(Integer regionThree) {
+    this.regionThree = regionThree;
+  }
+
+  public Integer getRegionFour() {
+    return regionFour;
+  }
+
+  public void setRegionFour(Integer regionFour) {
+    this.regionFour = regionFour;
+  }
 
   public Long getId() {
     return id;

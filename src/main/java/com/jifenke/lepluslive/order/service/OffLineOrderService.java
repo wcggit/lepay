@@ -438,7 +438,7 @@ public class OffLineOrderService {
                                                         merchantRebatePolicy.getStageTwo(),
                                                         merchantRebatePolicy.getStageThree(),
                                                         merchantRebatePolicy.getStageFour()),
-                            maxScoreA.intValue());
+                            maxScoreA.intValue(),merchantRebatePolicy);
       scoreB = Math.round(
           totalPrice * merchantRebatePolicy.getImportScoreBScale().doubleValue() / 10000.0);
       ljProfit = maxScoreA - scoreA;
@@ -452,7 +452,7 @@ public class OffLineOrderService {
                                                           merchantRebatePolicy.getStageTwo(),
                                                           merchantRebatePolicy.getStageThree(),
                                                           merchantRebatePolicy.getStageFour()),
-                              maxScoreA.intValue());
+                              maxScoreA.intValue(),merchantRebatePolicy);
         scoreB = Math.round(
             totalPrice * merchantRebatePolicy.getUserScoreBScale().doubleValue() / 10000.0);
         ljProfit = maxScoreA - scoreA;
@@ -475,28 +475,28 @@ public class OffLineOrderService {
     return result;
   }
 
-  public Long returnScoreA(int bucket, int commission) {
+  public Long returnScoreA(int bucket, int commission,MerchantRebatePolicy merchantRebatePolicy) {
     int rebate = 0;
     switch (bucket) {
       case 0:
-        rebate = new Random().nextInt(((commission * 20 / 100 + 1)));
+        rebate = new Random().nextInt(((commission * merchantRebatePolicy.getRegionOne() / 100 + 1)));
         break;
       case 1:
         rebate =
-            new Random().nextInt((commission * 40 / 100 - commission * 20 / 100 + 1))
-            + commission * 20 / 100;
+            new Random().nextInt((commission * merchantRebatePolicy.getRegionTwo() / 100 - commission * merchantRebatePolicy.getRegionOne() / 100 + 1))
+            + commission * merchantRebatePolicy.getRegionOne() / 100;
         break;
       case 2:
-        rebate = new Random().nextInt((commission * 60 / 100 - commission * 40 / 100 + 1))
-                 + commission * 40 / 100;
+        rebate = new Random().nextInt((commission * merchantRebatePolicy.getRegionThree() / 100 - commission * merchantRebatePolicy.getRegionTwo() / 100 + 1))
+                 + commission * merchantRebatePolicy.getRegionTwo() / 100;
         break;
       case 3:
-        rebate = new Random().nextInt((commission * 80 / 100 - commission * 60 / 100 + 1))
-                 + commission * 60 / 100;
+        rebate = new Random().nextInt((commission * merchantRebatePolicy.getRegionFour() / 100 - commission * merchantRebatePolicy.getRegionThree() / 100 + 1))
+                 + commission * merchantRebatePolicy.getRegionThree() / 100;
         break;
       default:
-        rebate = new Random().nextInt((commission - commission * 80 / 100 + 1))
-                 + commission * 80 / 100;
+        rebate = new Random().nextInt((commission - commission * merchantRebatePolicy.getRegionFour() / 100 + 1))
+                 + commission * merchantRebatePolicy.getRegionFour() / 100;
     }
     return (long) rebate;
   }
