@@ -158,7 +158,7 @@ public class OffLineOrderService {
     Merchant merchant = merchantService.findMerchantById(merchantId);
     offLineOrder.setMerchant(merchant);
     offLineOrder.setRebateWay(2);
-    offLineOrder.setWxCommission(Math.round(truePay * 6 / 1000.0));
+    offLineOrder.setWxCommission(Math.round(total * 6 / 1000.0));
     offLineOrder.setPayWay(new PayWay(payWay));
     if (merchant.getLjCommission().doubleValue() != 0) {
       long
@@ -177,8 +177,13 @@ public class OffLineOrderService {
       //代表联盟商户
       if (merchant.getPartnership() != 0) {
         if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
-            .getId()) { //代表会员订单
-          offLineOrder.setRebateWay(3);
+            .getId()) {
+          if (merchant.getMemberCommission().doubleValue() > merchant.getLjBrokerage()
+              .doubleValue()) {
+            offLineOrder.setRebateWay(3);//代表会员订单
+          }else{
+            offLineOrder.setRebateWay(6);//会员联盟商户消费普通费率订单
+          }
           ljCommission =
               Math.round(
                   new BigDecimal(total).multiply(merchant.getMemberCommission())
@@ -243,7 +248,7 @@ public class OffLineOrderService {
             .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
 
         //对于返庸订单分润
-        if (offLineOrder.getRebateWay() == 1) {
+        if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
           new Thread(() -> {
             orderShareService.offLIneOrderShare(offLineOrder);
           }).start();
@@ -275,6 +280,7 @@ public class OffLineOrderService {
     offLineOrder.setTrueScore(scoreA);
     offLineOrder.setTruePay(0L);
     offLineOrder.setCreatedDate(new Date());
+    offLineOrder.setWxCommission(Math.round(scoreA * 6 / 1000.0));
     Merchant merchant = merchantService.findMerchantById(Long.parseLong(merchantId));
     MerchantRebatePolicy
         merchantRebatePolicy =
@@ -294,8 +300,13 @@ public class OffLineOrderService {
 
       if (merchant.getPartnership() != 0) { //代表乐加会员在签约商家消费
         if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
-            .getId()) { //代表会员订单
-          offLineOrder.setRebateWay(3);
+            .getId()) {
+          if (merchant.getMemberCommission().doubleValue() > merchant.getLjBrokerage()
+              .doubleValue()) {
+            offLineOrder.setRebateWay(3);//代表会员订单
+          }else{
+            offLineOrder.setRebateWay(6);//会员联盟商户消费普通订单
+          }
           ljCommission =
               Math.round(
                   new BigDecimal(scoreA).multiply(merchant.getMemberCommission())
@@ -438,7 +449,7 @@ public class OffLineOrderService {
                                                         merchantRebatePolicy.getStageTwo(),
                                                         merchantRebatePolicy.getStageThree(),
                                                         merchantRebatePolicy.getStageFour()),
-                            maxScoreA.intValue(),merchantRebatePolicy);
+                            maxScoreA.intValue(), merchantRebatePolicy);
       scoreB = Math.round(
           totalPrice * merchantRebatePolicy.getImportScoreBScale().doubleValue() / 10000.0);
       ljProfit = maxScoreA - scoreA;
@@ -452,7 +463,7 @@ public class OffLineOrderService {
                                                           merchantRebatePolicy.getStageTwo(),
                                                           merchantRebatePolicy.getStageThree(),
                                                           merchantRebatePolicy.getStageFour()),
-                              maxScoreA.intValue(),merchantRebatePolicy);
+                              maxScoreA.intValue(), merchantRebatePolicy);
         scoreB = Math.round(
             totalPrice * merchantRebatePolicy.getUserScoreBScale().doubleValue() / 10000.0);
         ljProfit = maxScoreA - scoreA;
@@ -475,28 +486,36 @@ public class OffLineOrderService {
     return result;
   }
 
-  public Long returnScoreA(int bucket, int commission,MerchantRebatePolicy merchantRebatePolicy) {
+  public Long returnScoreA(int bucket, int commission, MerchantRebatePolicy merchantRebatePolicy) {
     int rebate = 0;
     switch (bucket) {
       case 0:
-        rebate = new Random().nextInt(((commission * merchantRebatePolicy.getRegionOne() / 100 + 1)));
+        rebate =
+            new Random().nextInt(((commission * merchantRebatePolicy.getRegionOne() / 100 + 1)));
         break;
       case 1:
         rebate =
-            new Random().nextInt((commission * merchantRebatePolicy.getRegionTwo() / 100 - commission * merchantRebatePolicy.getRegionOne() / 100 + 1))
+            new Random().nextInt((commission * merchantRebatePolicy.getRegionTwo() / 100
+                                  - commission * merchantRebatePolicy.getRegionOne() / 100 + 1))
             + commission * merchantRebatePolicy.getRegionOne() / 100;
         break;
       case 2:
-        rebate = new Random().nextInt((commission * merchantRebatePolicy.getRegionThree() / 100 - commission * merchantRebatePolicy.getRegionTwo() / 100 + 1))
-                 + commission * merchantRebatePolicy.getRegionTwo() / 100;
+        rebate =
+            new Random().nextInt((commission * merchantRebatePolicy.getRegionThree() / 100
+                                  - commission * merchantRebatePolicy.getRegionTwo() / 100 + 1))
+            + commission * merchantRebatePolicy.getRegionTwo() / 100;
         break;
       case 3:
-        rebate = new Random().nextInt((commission * merchantRebatePolicy.getRegionFour() / 100 - commission * merchantRebatePolicy.getRegionThree() / 100 + 1))
-                 + commission * merchantRebatePolicy.getRegionThree() / 100;
+        rebate =
+            new Random().nextInt((commission * merchantRebatePolicy.getRegionFour() / 100
+                                  - commission * merchantRebatePolicy.getRegionThree() / 100 + 1))
+            + commission * merchantRebatePolicy.getRegionThree() / 100;
         break;
       default:
-        rebate = new Random().nextInt((commission - commission * merchantRebatePolicy.getRegionFour() / 100 + 1))
-                 + commission * merchantRebatePolicy.getRegionFour() / 100;
+        rebate =
+            new Random()
+                .nextInt((commission - commission * merchantRebatePolicy.getRegionFour() / 100 + 1))
+            + commission * merchantRebatePolicy.getRegionFour() / 100;
     }
     return (long) rebate;
   }
