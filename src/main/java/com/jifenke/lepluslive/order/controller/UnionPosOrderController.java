@@ -35,6 +35,27 @@ public class UnionPosOrderController {
   private UnionPosOrderService orderService;
 
   /**
+   * POS机吊起支付插件前创建订单 16/11/23
+   */
+  @ApiOperation(value = "POS机吊起支付插件前创建订单")
+  @RequestMapping(value = "/create", method = RequestMethod.POST)
+  public
+  @ResponseBody
+  LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
+                          @RequestParam Long userId,
+                          @RequestParam Long totalPrice, @RequestParam Long truePrice,
+                          @RequestParam Long trueScore) {
+    Map
+        result =
+        orderService.createOrder(merchantId, account, userId, totalPrice, truePrice, trueScore);
+    if (!"200".equals("" + result.get("status"))) {
+      return LejiaResult
+          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
+    }
+    return LejiaResult.ok(result.get("data"));
+  }
+
+  /**
    * 银联POS机查看订单详情  16/10/11
    *
    * @param orderId 订单ID

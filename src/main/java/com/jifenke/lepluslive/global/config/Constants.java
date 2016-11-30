@@ -26,7 +26,8 @@ public final class Constants {
     public static final String LE_PAY_MCH_ID = "1363466902";
     public static final String LE_PAY_APP_ID = "wx16edfa0dda02edd5";
 
-
+    public static final String MSG_SENDER = "214"; //银联商务分配的渠道号
+    public static final String EVENT_NO = "666"; //银联商务活动号
 
     private Constants() {
     }

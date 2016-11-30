@@ -114,6 +114,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--银联商务加解密-->
         <dependency>
             <groupId>com.yinlian</groupId>
             <artifactId>encode</artifactId>
@@ -376,6 +377,16 @@
         <repository>
             <id>spring-milestones</id>
             <url>http://repo.spring.io/milestone</url>
+        </repository>
+        <repository>
+            <id>releases</id>
+            <url>http://123.57.185.8:8054/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>
