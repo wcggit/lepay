@@ -10,4 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface WeiXinUserRepository extends JpaRepository<WeiXinUser,Long> {
 
   WeiXinUser findByOpenId(String openId);
+
+  WeiXinUser findByUnionId(String unionId);
 }

@@ -16,6 +16,8 @@ public interface UnionPosOrderRepository extends JpaRepository<UnionPosOrder, Lo
 
   UnionPosOrder findByOrderSid(String orderNo);
 
+  UnionPosOrder findByOrderCode(String orderCode);
+
   /**
    * 用户在某个商户用银联POS消费成功的次数 16/10/10
    */
@@ -25,7 +27,9 @@ public interface UnionPosOrderRepository extends JpaRepository<UnionPosOrder, Lo
   /**
    * 根据起止时间查看POS订单列表
    */
-  List<UnionPosOrder> findByMerchantAndStateAndCompleteDateBetweenOrderByIdDesc(Merchant merchant,Integer state, Date startDate,
-                                                           Date endDate);
+  List<UnionPosOrder> findByMerchantAndStateAndCompleteDateBetweenOrderByIdDesc(Merchant merchant,
+                                                                                Integer state,
+                                                                                Date startDate,
+                                                                                Date endDate);
 
 }
