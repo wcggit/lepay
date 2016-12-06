@@ -67,21 +67,21 @@ public class PosOrderService {
   public void createPosOrderForNoNMember(String posId, String orderNo,
                                          String orderTime, String orderPrice) {
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
-    if (merchantPos != null) {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-      PosOrder posOrder = new PosOrder();
-      posOrder.setMerchantPos(merchantPos);
-      try {
-        posOrder.setCreatedDate(sdf.parse(orderTime));
-        posOrder.setOrderSid(orderNo);
-        long price = new BigDecimal(orderPrice).multiply(new BigDecimal(100)).longValue();
-        posOrder.setTotalPrice(price);
-        posOrder.setPaidType(1);
-        posOrder.setMerchant(merchantPos.getMerchant());
-        posOrder.setTruePay(price);
-        posOrder.setRebateWay(1);
-        posOrderRepository.save(posOrder);
-      } catch (Exception e) {
+        if (merchantPos != null) {
+          SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+          PosOrder posOrder = new PosOrder();
+          posOrder.setMerchantPos(merchantPos);
+          try {
+            posOrder.setCreatedDate(sdf.parse(orderTime));
+            posOrder.setOrderSid(orderNo);
+            long price = new BigDecimal(orderPrice).multiply(new BigDecimal(100)).longValue();
+            posOrder.setTotalPrice(price);
+            posOrder.setPaidType(1);
+            posOrder.setMerchant(merchantPos.getMerchant());
+            posOrder.setTruePay(price);
+            posOrder.setRebateWay(1);
+            posOrderRepository.save(posOrder);
+          } catch (Exception e) {
       }
     }
 
