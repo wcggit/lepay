@@ -2,7 +2,6 @@ package com.jifenke.lepluslive.wxpay.service;
 
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.RegisterOrigin;
-import com.jifenke.lepluslive.lejiauser.service.BarcodeService;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.domain.entities.ScoreB;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
@@ -61,11 +60,16 @@ public class WeiXinUserService {
       String
           unionId =
           WeixinPayUtil.getUnionIdByAccessTokenAndOpenId(accessToken, openid);
-      weiXinUser = new WeiXinUser();
+
+      weiXinUser = weiXinUserRepository.findByUnionId(unionId);
+      if (weiXinUser == null) {
+        weiXinUser = new WeiXinUser();
+      }
+      Date date = new Date();
       weiXinUser.setUnionId(unionId);
       weiXinUser.setOpenId(openid);
-      weiXinUser.setDateCreated(new Date());
-      weiXinUser.setLastUpdated(new Date());
+      weiXinUser.setDateCreated(date);
+      weiXinUser.setLastUpdated(date);
       LeJiaUser leJiaUser = new LeJiaUser();
       leJiaUser.setWeiXinUser(weiXinUser);
       RegisterOrigin registerOrigin = new RegisterOrigin();
