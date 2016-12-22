@@ -60,7 +60,7 @@ public class PosPayController {
                                    @RequestParam String orderTime, @RequestParam
   String orderPrice, @RequestParam String token, HttpServletRequest request) {
     if(posId!=null)
-    posId = posId.substring(0,posId.length()-1);
+     posId = posId.substring(0,posId.length()-1);
     String queryString = request.getQueryString();
     posOrderService.createPosOrderLog(orderNo, queryString);
     String content = queryString.split("&token")[0];
@@ -164,8 +164,8 @@ public class PosPayController {
                                 @RequestParam String cardNo,
                                 HttpServletRequest request) {
     String queryString = request.getQueryString();
-//    if(posId!=null)
-//      posId = posId.substring(0,posId.length()-1);
+    if(posId!=null)
+      posId = posId.substring(0,posId.length()-1);
     posOrderService.createPosOrderLog(orderNo, queryString);
     PosOrderResult params = new PosOrderResult();
     Map paramsInfo = new HashMap<>();
