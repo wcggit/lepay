@@ -12,6 +12,6 @@ import java.util.Optional;
  */
 public interface BankCardRepository extends JpaRepository<BankCard, Long> {
 
-   Optional<BankCard> findByNumber(String number);
+   Optional<BankCard> findByNumberAndState(String number,Integer state);
 
 }

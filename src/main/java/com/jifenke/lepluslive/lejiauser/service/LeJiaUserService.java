@@ -148,7 +148,7 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public LeJiaUser findLeJiaUserByCard(String cardNumber) {
 
-    Optional<BankCard> bankCard = bankCardRepository.findByNumber(cardNumber);
+    Optional<BankCard> bankCard = bankCardRepository.findByNumberAndState(cardNumber, 1);
     if (bankCard.isPresent()) {
       return bankCard.get().getLeJiaUser();
     }
@@ -158,7 +158,7 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkUserBindCard(LeJiaUser leJiaUser, String cardNo) {
     if (cardNo != null) {
-      Optional<BankCard> bankCard = bankCardRepository.findByNumber(cardNo);
+      Optional<BankCard> bankCard = bankCardRepository.findByNumberAndState(cardNo,1);
       if (!bankCard.isPresent()) {
         BankCard newCard = new BankCard();
         newCard.setLeJiaUser(leJiaUser);

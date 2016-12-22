@@ -29,7 +29,15 @@ public class BankCard {
 
   private String number;
 
-  private String bankName;
+  private Integer state = 1;
+
+  public Integer getState() {
+    return state;
+  }
+
+  public void setState(Integer state) {
+    this.state = state;
+  }
 
   public String getNumber() {
     return number;
