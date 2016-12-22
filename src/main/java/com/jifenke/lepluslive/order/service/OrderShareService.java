@@ -114,7 +114,8 @@ public class OrderShareService {
               (long) Math.floor(shareMoney.multiply(
                   new BigDecimal(dictionaryService.findDictionaryById(14L).getValue()))
                                     .doubleValue() / 100.0);
-          offLineOrderShare.setToLockPartner(toLockPartner);
+          offLineOrderShare.setToLockPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
+                  : toLockPartner);
           //分润给绑定合伙人
           partnerService
               .shareToPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner

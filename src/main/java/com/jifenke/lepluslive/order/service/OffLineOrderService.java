@@ -344,7 +344,7 @@ public class OffLineOrderService {
     scoreAService.paySuccessForMember(offLineOrder);
     scoreBService.paySuccess(offLineOrder);
     offLineOrder.setCompleteDate(new Date());
-    merchantService.paySuccess(offLineOrder);
+//    merchantService.paySuccess(offLineOrder);
     Long count = countMerchantMonthlyOrder(offLineOrder);
     offLineOrder.setMonthlyOrderCount(++count);
     wxTemMsgService.sendToClient(offLineOrder);

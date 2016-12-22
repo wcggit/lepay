@@ -59,6 +59,8 @@ public class PosPayController {
                                    @RequestParam Integer groupon,
                                    @RequestParam String orderTime, @RequestParam
   String orderPrice, @RequestParam String token, HttpServletRequest request) {
+    if(posId!=null)
+     posId = posId.substring(0,posId.length()-1);
     String queryString = request.getQueryString();
     posOrderService.createPosOrderLog(orderNo, queryString);
     String content = queryString.split("&token")[0];
@@ -82,6 +84,8 @@ public class PosPayController {
                                            @RequestParam String paidMoney,
                                            @RequestParam String cardNo,
                                            HttpServletRequest request) {
+    if(posId!=null)
+      posId = posId.substring(0,posId.length()-1);
     String queryString = request.getQueryString();
     posOrderService.createPosOrderLog(orderNo, queryString);
     if (act == 10 && pos == 1 && groupon == 5 && paidType == 1 && paid == 1) {
@@ -99,6 +103,8 @@ public class PosPayController {
                                        @RequestParam String orderTime, @RequestParam
   String orderPrice, @RequestParam String cardNo, @RequestParam String token,
                                        HttpServletRequest request) {
+    if(posId!=null)
+      posId = posId.substring(0,posId.length()-1);
     String queryString = request.getQueryString();
     posOrderService.createPosOrderLog(orderNo, queryString);
     String content = queryString.split("&token")[0];
@@ -158,6 +164,8 @@ public class PosPayController {
                                 @RequestParam String cardNo,
                                 HttpServletRequest request) {
     String queryString = request.getQueryString();
+    if(posId!=null)
+      posId = posId.substring(0,posId.length()-1);
     posOrderService.createPosOrderLog(orderNo, queryString);
     PosOrderResult params = new PosOrderResult();
     Map paramsInfo = new HashMap<>();
