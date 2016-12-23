@@ -295,7 +295,7 @@ public class PosOrderService {
               offLineOrderService
                   .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
                                         merchant, 2,
-                                        scoreA.longValue(), ljCommission.longValue(),
+                                        scoreA.longValue(), posOrder.getLjCommission(),
                                         posOrder.getWxCommission());
           posOrder.setRebateWay(2);
         } else {
@@ -304,7 +304,7 @@ public class PosOrderService {
               offLineOrderService
                   .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
                                         merchant, 1,
-                                        scoreA.longValue(), ljCommission.longValue(),
+                                        scoreA.longValue(), posOrder.getLjCommission(),
                                         posOrder.getWxCommission());
         }
       } else {
@@ -313,12 +313,12 @@ public class PosOrderService {
             offLineOrderService
                 .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
                                       merchant, 0,
-                                      scoreA.longValue(), ljCommission.longValue(),
+                                      scoreA.longValue(),posOrder.getLjCommission(),
                                       posOrder.getWxCommission());
       }
       posOrder.setScoreB(rebates[1]);
       posOrder.setRebate(rebates[0]);
-      posOrder.setLjProfit(rebates[3]);
+      posOrder.setLjProfit(rebates[2]);
       leJiaUserService.checkUserBindCard(posOrder.getLeJiaUser(), cardNo);
       scoreAService.paySuccessForMember(posOrder);
       scoreBService.paySuccess(posOrder);
