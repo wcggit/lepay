@@ -1,41 +1,31 @@
 package com.jifenke.lepluslive.wxpay.controller;
 
-import com.jifenke.lepluslive.global.util.LejiaResult;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
-import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
-import com.jifenke.lepluslive.score.domain.entities.ScoreA;
-import com.jifenke.lepluslive.score.domain.entities.ScoreB;
+import com.jifenke.lepluslive.printer.service.PrinterService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
-import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.DictionaryService;
-import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
-import com.jifenke.lepluslive.wxpay.service.WeiXinService;
 import com.jifenke.lepluslive.wxpay.service.WeixinPayLogService;
-
 import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
 
 /**
  * Created by wcg on 16/3/21.
@@ -60,6 +50,9 @@ public class WeixinPayController {
 
   @Inject
   private ScoreBService scoreBService;
+
+  @Inject
+  private PrinterService printerService;
 
   /**
    * 微信回调函数
@@ -113,6 +106,10 @@ public class WeixinPayController {
     offLineOrderService.checkOrderState(orderSid);
     OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
     model.addAttribute("offLineOrder", offLineOrder);
+    try {
+      printerService.addReceipt(orderSid);
+    }catch (Exception e){
+    }
     if (offLineOrder.getRebateWay() != 1&&offLineOrder.getRebateWay() != 3) {
       return MvUtil.go("/weixin/paySuccessForNoNMember");
     } else {
