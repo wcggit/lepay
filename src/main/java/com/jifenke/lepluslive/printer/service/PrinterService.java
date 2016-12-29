@@ -38,7 +38,7 @@ public class PrinterService {
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     public void addReceipt(String orderSid) {
         Map<String, String> params = new HashMap<String, String>();
-        orderSid = "16122009304115520";
+        //orderSid = "16122009304115520";
         params.put("orderSid", orderSid);
         params.put("apiKey", apiKey);
         String sign = MD5.MD5Encode(apiKey + orderSid).toUpperCase();
