@@ -11,6 +11,7 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.PayWay;
 import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
+import com.jifenke.lepluslive.printer.service.PrinterService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
 import com.jifenke.lepluslive.wxpay.MathRandom;
@@ -80,6 +81,8 @@ public class OffLineOrderService {
   @Inject
   private MerchantRebatePolicyRepository merchantRebatePolicyRepository;
 
+  @Inject
+  private PrinterService printerService;
   /**
    * 用户在某个商户消费成功的次数和总额 16/10/10
    */
@@ -260,6 +263,11 @@ public class OffLineOrderService {
       }).start();
       offLineOrder.setState(1);
       repository.save(offLineOrder);
+      //调易连云打印机接口
+      try {
+        printerService.addReceipt(orderSid);
+      }catch (Exception e){
+      }
     }
   }
 
