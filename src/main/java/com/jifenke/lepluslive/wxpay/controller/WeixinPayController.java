@@ -106,10 +106,6 @@ public class WeixinPayController {
     offLineOrderService.checkOrderState(orderSid);
     OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
     model.addAttribute("offLineOrder", offLineOrder);
-    try {
-      printerService.addReceipt(orderSid);
-    }catch (Exception e){
-    }
     if (offLineOrder.getRebateWay() != 1&&offLineOrder.getRebateWay() != 3) {
       return MvUtil.go("/weixin/paySuccessForNoNMember");
     } else {

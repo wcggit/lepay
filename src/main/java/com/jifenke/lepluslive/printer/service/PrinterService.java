@@ -3,6 +3,8 @@ package com.jifenke.lepluslive.printer.service;
 import com.jifenke.lepluslive.merchant.repository.MerchantRepository;
 import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 import com.jifenke.lepluslive.printer.domain.MD5;
+import com.jifenke.lepluslive.printer.domain.entities.MeasurementUrl;
+import com.jifenke.lepluslive.printer.repository.MeasurementRepository;
 import com.jifenke.lepluslive.printer.repository.PrinterRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,13 +34,15 @@ public class PrinterService {
     @Inject
     private OffLineOrderRepository offLineOrderRepository;
 
+    @Inject
+    private MeasurementRepository measurementRepository;
+
     @Value("${printer.apiKey}")
     private String apiKey;
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
     public void addReceipt(String orderSid) {
         Map<String, String> params = new HashMap<String, String>();
-        //orderSid = "16122009304115520";
         params.put("orderSid", orderSid);
         params.put("apiKey", apiKey);
         String sign = MD5.MD5Encode(apiKey + orderSid).toUpperCase();
@@ -49,8 +53,9 @@ public class PrinterService {
 
     public boolean addR(Map<String, String> params) {
         try {
+            MeasurementUrl measurementUrl=measurementRepository.findUrlByName("printerUrl");
             byte[] data = ("orderSid=" + params.get("orderSid") + "&sign=" + params.get("sign")).getBytes();
-            URL url = new URL("http://www.vr52pk.com/manage/addReceipt");
+            URL url = new URL(measurementUrl.getUrl());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setConnectTimeout(5 * 1000);
@@ -82,6 +87,7 @@ public class PrinterService {
             return false;
         }
     }
+
 
 
 }
