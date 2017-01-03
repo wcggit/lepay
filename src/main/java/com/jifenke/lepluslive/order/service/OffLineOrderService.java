@@ -362,6 +362,11 @@ public class OffLineOrderService {
     //判断是否需要绑定商户
     leJiaUserService
         .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
+    //调易连云打印机接口
+    try {
+      printerService.addReceipt(offLineOrder.getOrderSid());
+    }catch (Exception e){
+    }
     return offLineOrder;
   }
 
