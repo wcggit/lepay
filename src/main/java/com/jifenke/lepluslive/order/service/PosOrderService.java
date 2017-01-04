@@ -67,21 +67,21 @@ public class PosOrderService {
   public void createPosOrderForNoNMember(String posId, String orderNo,
                                          String orderTime, String orderPrice) {
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
-        if (merchantPos != null) {
-          SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-          PosOrder posOrder = new PosOrder();
-          posOrder.setMerchantPos(merchantPos);
-          try {
-            posOrder.setCreatedDate(sdf.parse(orderTime));
-            posOrder.setOrderSid(orderNo);
-            long price = new BigDecimal(orderPrice).multiply(new BigDecimal(100)).longValue();
-            posOrder.setTotalPrice(price);
-            posOrder.setPaidType(1);
-            posOrder.setMerchant(merchantPos.getMerchant());
-            posOrder.setTruePay(price);
-            posOrder.setRebateWay(1);
-            posOrderRepository.save(posOrder);
-          } catch (Exception e) {
+    if (merchantPos != null) {
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+      PosOrder posOrder = new PosOrder();
+      posOrder.setMerchantPos(merchantPos);
+      try {
+        posOrder.setCreatedDate(sdf.parse(orderTime));
+        posOrder.setOrderSid(orderNo);
+        long price = new BigDecimal(orderPrice).multiply(new BigDecimal(100)).longValue();
+        posOrder.setTotalPrice(price);
+        posOrder.setPaidType(1);
+        posOrder.setMerchant(merchantPos.getMerchant());
+        posOrder.setTruePay(price);
+        posOrder.setRebateWay(1);
+        posOrderRepository.save(posOrder);
+      } catch (Exception e) {
       }
     }
 
@@ -95,6 +95,7 @@ public class PosOrderService {
     PosOrder posOrder = posOrderRepository.findByOrderSid(orderNo);
     posOrder.setState(1);
     MerchantPos merchantPos = merchantPosService.findMerchantPosByPosId(posId);
+    BigDecimal paid = new BigDecimal(paidMoney).multiply(new BigDecimal(100));
     try {
       BigDecimal ljCommission = null;
       BigDecimal thirdCommission = null;
@@ -105,7 +106,7 @@ public class PosOrderService {
             merchantPos.getAliCommission().multiply(new BigDecimal(paidMoney));
         thirdCommission =
             new BigDecimal(dictionaryService.findDictionaryById(42L).getValue())
-                .multiply(new BigDecimal(paidMoney));
+                .multiply(paid);
       } else if (tradeFlag == 3) { //刷卡
         String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
         String httpArg = "cardnum=" + cardNo;
@@ -114,20 +115,20 @@ public class PosOrderService {
         if (request.indexOf("贷") != -1) {
           posOrder.setCardType(1);
           ljCommission =
-              merchantPos.getCreditCardCommission().multiply(new BigDecimal(paidMoney));
+              merchantPos.getCreditCardCommission().multiply(paid);
           thirdCommission =
               new BigDecimal(dictionaryService.findDictionaryById(46L).getValue())
-                  .multiply(new BigDecimal(paidMoney));
+                  .multiply(paid);
         } else if (request.indexOf("借") != -1) {
           posOrder.setCardType(0);
           ljCommission =
-              merchantPos.getDebitCardCommission().multiply(new BigDecimal(paidMoney));
+              merchantPos.getDebitCardCommission().multiply(paid);
           if (ljCommission.longValue() > merchantPos.getCeil()) {//封顶手续费
             ljCommission = new BigDecimal(merchantPos.getCeil());
           }
           thirdCommission =
               new BigDecimal(dictionaryService.findDictionaryById(45L).getValue())
-                  .multiply(new BigDecimal(paidMoney));
+                  .multiply(paid);
           BigDecimal thirdCommissionLimit = new BigDecimal(
               dictionaryService.findDictionaryById(47L).getValue());
           if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
@@ -138,25 +139,23 @@ public class PosOrderService {
         }
       } else if (tradeFlag == 4) { //微信
         ljCommission =
-            merchantPos.getWxCommission().multiply(new BigDecimal(paidMoney));
+            merchantPos.getWxCommission().multiply(paid);
         thirdCommission =
             new BigDecimal(dictionaryService.findDictionaryById(43L).getValue())
-                .multiply(new BigDecimal(paidMoney));
+                .multiply(paid);
       } else { //现金
         ljCommission = new BigDecimal(0);
       }
       posOrder
-          .setLjCommission(Math.round(ljCommission.multiply(new BigDecimal(100)).doubleValue()));
-      posOrder.setWxCommission(posOrder.getLjCommission());
+          .setLjCommission(Math.round(ljCommission.doubleValue()));
       posOrder
-          .setWxCommission(thirdCommission == null ? null : Math
-              .round(thirdCommission.multiply(new BigDecimal(100)).doubleValue()));
-      posOrder.setTransferMoney(new BigDecimal(paidMoney).multiply(new BigDecimal(100))
-                                    .subtract(ljCommission).longValue());
+          .setWxCommission(thirdCommission == null ? 0 : Math
+              .round(thirdCommission.doubleValue()));
+      posOrder.setTransferMoney(paid.subtract(ljCommission).longValue());
+      posOrder.setTransferByBank(paid.subtract(ljCommission).longValue());
     } catch (ParseException e) {
       e.printStackTrace();
     }
-
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -313,7 +312,7 @@ public class PosOrderService {
             offLineOrderService
                 .merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy,
                                       merchant, 0,
-                                      scoreA.longValue(),posOrder.getLjCommission(),
+                                      scoreA.longValue(), posOrder.getLjCommission(),
                                       posOrder.getWxCommission());
       }
       posOrder.setScoreB(rebates[1]);
