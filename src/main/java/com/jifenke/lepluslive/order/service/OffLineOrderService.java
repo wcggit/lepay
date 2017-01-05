@@ -330,9 +330,9 @@ public class OffLineOrderService {
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 1,
                                    scoreA, ljCommission, offLineOrder.getWxCommission());
-          new Thread(() -> {
-            orderShareService.offLIneOrderShare(offLineOrder);
-          }).start();
+//          new Thread(() -> {
+//            orderShareService.offLIneOrderShare(offLineOrder);
+//          }).start();
         }
       } else {
         rebates =
@@ -358,6 +358,12 @@ public class OffLineOrderService {
     wxTemMsgService.sendToClient(offLineOrder);
     wxTemMsgService.sendToMerchant(offLineOrder);
     offLineOrder.setMessageState(1);
+    //对于返庸订单分润
+    if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
+      new Thread(() -> {
+        orderShareService.offLIneOrderShare(offLineOrder);
+      }).start();
+    }
     repository.save(offLineOrder);
     //判断是否需要绑定商户
     leJiaUserService
