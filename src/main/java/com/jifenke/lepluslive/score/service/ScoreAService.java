@@ -3,6 +3,7 @@ package com.jifenke.lepluslive.score.service;
 import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
+import com.jifenke.lepluslive.printer.service.PrinterService;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.domain.entities.ScoreADetail;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
@@ -29,6 +30,9 @@ public class ScoreAService {
 
   @Inject
   private ScoreADetailRepository scoreADetailRepository;
+
+  @Inject
+  private PrinterService printerService;
 
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -94,6 +98,11 @@ public class ScoreAService {
         scoreADetailRepository.save(rebate);
       }
       scoreARepository.save(scoreA);
+        //调易连云打印机接口
+        try {
+          printerService.addReceipt(order.getOrderSid());
+        }catch (Exception e){
+        }
     } else {
       throw new RuntimeException();
     }
