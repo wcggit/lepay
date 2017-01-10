@@ -10,6 +10,7 @@ import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
+import com.jifenke.lepluslive.printer.service.PrinterService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
@@ -77,6 +78,9 @@ public class WeixinController {
 
   @Inject
   private OffLineOrderService offLineOrderService;
+
+  @Inject
+  private PrinterService printerService;
 
 // String openid = "oVmqjxLVGMaHMX7dRsAzZg7BlpgE";
 
@@ -302,6 +306,11 @@ public class WeixinController {
     String[] strs = result.split(" ");
     try {
       OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2], 2L);
+      //调易连云打印机接口
+      try {
+        printerService.addReceipt(offLineOrder.getOrderSid());
+      }catch (Exception e){
+      }
       return LejiaResult.build(200, "", offLineOrder);
     } catch (Exception e) {
       return LejiaResult.build(500, "出现未知错误,请联系管理员");

@@ -98,11 +98,6 @@ public class ScoreAService {
         scoreADetailRepository.save(rebate);
       }
       scoreARepository.save(scoreA);
-        //调易连云打印机接口
-        try {
-          printerService.addReceipt(order.getOrderSid());
-        }catch (Exception e){
-        }
     } else {
       throw new RuntimeException();
     }
