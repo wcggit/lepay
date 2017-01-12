@@ -103,7 +103,7 @@ public class PosOrderService {
       posOrder.setTradeFlag(tradeFlag);
       if (tradeFlag == 0) {//支付宝
         ljCommission =
-            merchantPos.getAliCommission().multiply(new BigDecimal(paidMoney));
+            merchantPos.getAliCommission().multiply(paid);
         thirdCommission =
             new BigDecimal(dictionaryService.findDictionaryById(42L).getValue())
                 .multiply(paid);
@@ -146,11 +146,12 @@ public class PosOrderService {
       } else { //现金
         ljCommission = new BigDecimal(0);
       }
+      ljCommission = ljCommission.divide(new BigDecimal(100));
       posOrder
           .setLjCommission(Math.round(ljCommission.doubleValue()));
       posOrder
           .setWxCommission(thirdCommission == null ? 0 : Math
-              .round(thirdCommission.doubleValue()));
+              .round(thirdCommission.divide(new BigDecimal(100)).doubleValue()));
       posOrder.setTransferMoney(paid.subtract(ljCommission).longValue());
       posOrder.setTransferByBank(paid.subtract(ljCommission).longValue());
     } catch (ParseException e) {
