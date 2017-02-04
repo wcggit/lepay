@@ -83,6 +83,7 @@ public class OffLineOrderService {
 
   @Inject
   private PrinterService printerService;
+
   /**
    * 用户在某个商户消费成功的次数和总额 16/10/10
    */
@@ -184,7 +185,7 @@ public class OffLineOrderService {
           if (merchant.getMemberCommission().doubleValue() > merchant.getLjBrokerage()
               .doubleValue()) {
             offLineOrder.setRebateWay(3);//代表会员订单
-          }else{
+          } else {
             offLineOrder.setRebateWay(6);//会员联盟商户消费普通费率订单
           }
           ljCommission =
@@ -265,8 +266,10 @@ public class OffLineOrderService {
       repository.save(offLineOrder);
       //调易连云打印机接口
       try {
-        printerService.addReceipt(orderSid);
-      }catch (Exception e){
+        new Thread(() -> {
+          printerService.addReceipt(orderSid);
+        }).start();
+      } catch (Exception e) {
       }
     }
   }
@@ -312,7 +315,7 @@ public class OffLineOrderService {
           if (merchant.getMemberCommission().doubleValue() > merchant.getLjBrokerage()
               .doubleValue()) {
             offLineOrder.setRebateWay(3);//代表会员订单
-          }else{
+          } else {
             offLineOrder.setRebateWay(6);//会员联盟商户消费普通订单
           }
           ljCommission =
@@ -370,8 +373,10 @@ public class OffLineOrderService {
         .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
     //调易连云打印机接口
     try {
-      printerService.addReceipt(offLineOrder.getOrderSid());
-    }catch (Exception e){
+      new Thread(() -> {
+        printerService.addReceipt(offLineOrder.getOrderSid());
+      }).start();
+    } catch (Exception e) {
     }
     return offLineOrder;
   }

@@ -224,7 +224,6 @@ public class WeixinController {
     if (merchant.getReceiptAuth() == 0) {
       return MvUtil.go("/weixin/userPayNonScore");
     }
-
     return MvUtil.go("/weixin/wxUserPay");
   }
 
