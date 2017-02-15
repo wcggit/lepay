@@ -165,4 +165,20 @@ public class MerchantService {
   public MerchantUser findBossAccountByMerchant(Merchant merchant) {
     return merchantUserRepository.findByMerchantAndType(merchant, 1);
   }
+
+  /**
+   * 全红包支付后增加钱包金额  16/12/19
+   *
+   * @param merchant      商户
+   * @param transferMoney 商户实际入账
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void paySuccess(Merchant merchant, Long transferMoney) {
+    MerchantWallet
+        merchantWallet =
+        findMerchantWalletByMerchant(merchant);
+    merchantWallet.setTotalTransferMoney(
+        merchantWallet.getTotalTransferMoney() + transferMoney);
+    merchantWalletRepository.save(merchantWallet);
+  }
 }

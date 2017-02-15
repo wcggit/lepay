@@ -31,6 +31,13 @@ public class Category {
 
   private String typeExplain; //小分类代表的意思，用于后台识别添加
 
+  public Category(Long id) {
+    this.id = id;
+  }
+
+  public Category() {
+  }
+
   public Long getId() {
     return id;
   }
