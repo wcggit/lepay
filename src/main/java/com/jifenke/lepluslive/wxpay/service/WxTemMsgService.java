@@ -3,6 +3,7 @@ package com.jifenke.lepluslive.wxpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jifenke.lepluslive.global.util.WeixinPayUtil;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantWeiXinUser;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
@@ -260,6 +261,125 @@ public class WxTemMsgService {
 //          Collectors.toList());
 
       //为商户发送模版消息
+    }).start();
+  }
+
+  /**
+   * 发送支付成功模板消息给消费者   16/12/19
+   *
+   * @param merchantName 商户名称
+   * @param trueScore    使用红包
+   * @param truePay      实际支付
+   * @param totalPrice   总支付
+   * @param rebate       发红包
+   * @param scoreB       发积分
+   * @param openId       用户openId
+   * @param orderSid     订单号
+   */
+  public void sendToClient(String merchantName, Long trueScore, Long truePay, Long totalPrice,
+                           Long rebate, Long scoreB, String openId, String orderSid) {
+    new Thread(() -> {
+      //为用户推送
+      StringBuffer sb = new StringBuffer();
+      String[] keys = new String[4];
+      keys[0] = merchantName;
+      if (trueScore != 0) {
+        if (truePay != 0) {
+          sb.append("¥");
+          sb.append(totalPrice / 100.0);
+          sb.append("(");
+          sb.append("微信¥");
+          sb.append(truePay / 100.0);
+          sb.append(",红包¥");
+          sb.append(trueScore / 100.0);
+          sb.append(")");
+          keys[1] = sb.toString();
+        } else {
+          sb.append("¥");
+          sb.append(totalPrice / 100.0);
+          sb.append("(");
+          sb.append("红包¥");
+          sb.append(trueScore / 100.0);
+          sb.append(")");
+          keys[1] = sb.toString();
+        }
+      } else {
+        sb.append("¥");
+        sb.append(totalPrice / 100.0);
+        sb.append("(");
+        sb.append("微信¥");
+        sb.append(totalPrice / 100.0);
+        sb.append(")");
+        keys[1] = sb.toString();
+      }
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+      keys[2] = dateFormat.format(new Date());
+
+      HashMap<String, Object> mapRemark = new HashMap<>();
+      sb.setLength(0);
+      sb.append("您本次消费获得");
+      if (rebate != 0L) {
+        sb.append("¥");
+        sb.append(rebate / 100.0);
+        sb.append("红包+");
+      }
+      sb.append("¥");
+      sb.append(scoreB);
+      sb.append("积分,");
+      sb.append("点击查看详情");
+      mapRemark.put("value", sb.toString());
+      mapRemark.put("color", "#173177");
+      HashMap<String, Object> map2 = new HashMap<>();
+      map2.put("remark", mapRemark);
+
+      sendTemMessage(openId, 7L, keys, orderSid, 7L, map2);
+
+      //为商户发送模版消息
+    }).start();
+  }
+
+
+  /**
+   * 给商家发送支付成功模板消息  2016/12/9
+   *
+   * @param totalPrice 订单总价
+   * @param orderSid   订单号
+   * @param lePayCode  乐付码
+   * @param merchant   商户
+   */
+  public void sendToMerchant(Long totalPrice, String orderSid, String lePayCode,
+                             Merchant merchant) {
+
+    new Thread(() -> {
+      //为商家推送
+      StringBuffer sb = new StringBuffer();
+      String[] keys = new String[4];
+      keys[0] = totalPrice / 100.0 + "";
+      keys[1] = orderSid;
+      HashMap<String, Object> mapRemark = new HashMap<>();
+      sb.append("本次支付的乐付码是");
+      sb.append(lePayCode);
+//      sb.append(",本月第");
+//      sb.append(offLineOrder.getMonthlyOrderCount());
+//      sb.append("笔订单");
+      sb.append(",点击查看详情");
+      mapRemark.put("value", sb.toString());
+      mapRemark.put("color", "#173177");
+      HashMap<String, Object> map2 = new HashMap<>();
+      map2.put("remark", mapRemark);
+      List<MerchantUser>
+          merchantUsers =
+          merchantService.findMerchantUserByMerchant(merchant);
+      for (MerchantUser merchantUser : merchantUsers) {
+        List<MerchantWeiXinUser>
+            merchantWeiXinUsers =
+            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser);
+        for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
+          sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
+                         orderSid, 9L, map2);
+        }
+      }
     }).start();
   }
 }

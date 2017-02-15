@@ -52,6 +52,14 @@ public class MvUtil {
   }
 
   /**
+   * 生成随机字符串
+   */
+  public static String getRandomStr(int count) {
+    return RandomStringUtils
+        .random(count, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
+  }
+
+  /**
    * 生成六位数验证码
    */
   public static String getRandomNumber() {
@@ -60,7 +68,7 @@ public class MvUtil {
   }
 
   /**
-   * 生成六位数验证码
+   * 生成n位数验证码
    */
   public static String getRandomNumber(Integer number) {
     return RandomStringUtils.random(number, "0123456789");

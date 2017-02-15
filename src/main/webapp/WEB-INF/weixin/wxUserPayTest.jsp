@@ -33,7 +33,7 @@
         <p class="form-name">￥<font>${totalPrice/100.0}</font>
         </p>
         <label for="monetary">
-            使用红包<input type="text" id="monetary" placeholder="老板比较懒,还没有开通红包功能,快去催催他" readonly><span
+            使用红包（元）<input type="text" id="monetary" placeholder="不使用红包" readonly><span
                 class="close"></span><span class="guangBiao"></span>
         </label>
 
@@ -41,25 +41,25 @@
                 class="icon-hongbao"></span>您有<span>￥<font>${scoreA.score/100.0}</font></span>红包余额
         </p>
 
-        <div class="need-pay"><span>还需支付</span><span>${totalPrice/100.0}￥<font></font></span></div>
+        <div class="need-pay"><span>还需支付</span><span>￥<font></font></span></div>
         <div class="form-btn">确认支付</div>
     </form>
 </div>
 <!--键盘-->
-<%--<div id="keyboard">--%>
-<%--<button>1</button>--%>
-<%--<button>2</button>--%>
-<%--<button>3</button>--%>
-<%--<button>4</button>--%>
-<%--<button>5</button>--%>
-<%--<button>6</button>--%>
-<%--<button>7</button>--%>
-<%--<button>8</button>--%>
-<%--<button>9</button>--%>
-<%--<button>.</button>--%>
-<%--<button>0</button>--%>
-<%--<button><i></i></button>--%>
-<%--</div>--%>
+<div id="keyboard">
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button>.</button>
+    <button>0</button>
+    <button><i></i></button>
+</div>
 <!--弹层-->
 <div class="conform">
     <ul>
@@ -76,127 +76,127 @@
 <script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
     document.title = "${merchant.name}";
-    <%--$(function () {--%>
-    <%--&lt;%&ndash;var val = ${scoreA.score/100>totalPrice/100}&ndash;%&gt;--%>
-    <%--&lt;%&ndash;? $('.form-name font').text() : $('.back-hongbao font').text();&ndash;%&gt;--%>
-    <%--&lt;%&ndash;$("#monetary").val(val);&ndash;%&gt;--%>
-    <%--fontFUn();--%>
-    <%--var spans = $('#keyboard button:not(:last-child)');--%>
-    <%--spans.each(function (i) {--%>
-    <%--spans.eq(i).attr({'unselectable': 'on'}).css({'-webkit-user-select': 'none'}).on('selectstart'), function () {--%>
-    <%--return false;--%>
-    <%--};--%>
-    <%--spans.eq(i).on("touchstart", function () {--%>
-    <%--var _this = $(this);--%>
-    <%--$(this).addClass('btn-orange');--%>
-    <%--setTimeout(function () {--%>
-    <%--_this.removeClass('btn-orange');--%>
-    <%--}, 100);--%>
-    <%--var getValue = $(this).text();--%>
-    <%--if ($("#monetary").val().indexOf(".") != -1) {--%>
-    <%--if ($("#monetary").val() >= 9999.99 || $("#monetary").val().length == 7) {--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--} else {--%>
-    <%--if (getValue.indexOf('.') != 0) {--%>
-    <%--if ($("#monetary").val() >= 9999 || $("#monetary").val().length == 4) {--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--}--%>
-    <%--}--%>
-    <%--//                //控制第一个不能输入小数点"."--%>
-    <%--if ($("#monetary").val().length == 1 && $("#monetary").val() == 0--%>
-    <%--&& getValue.indexOf('.') != 0) {--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--if ($("#monetary").val().length == 0--%>
-    <%--&& getValue.indexOf('.') != -1) {--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--//控制只能输入一个小数点"."--%>
-    <%--if ($("#monetary").val().indexOf('.') != -1 && getValue.indexOf('.') != -1) {--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--var str = $("#monetary").val() + $(this).text();--%>
-    <%--var strNum = $("#monetary").val().toString().indexOf('.');--%>
-    <%--$("#monetary").val(str.replace(/^(.*\..{2}).*$/, "$1"));--%>
-    <%--fontFUn();--%>
-    <%--})--%>
-    <%--})--%>
-    <%--$('#keyboard button:last-child').on('touchstart', function () {--%>
-    <%--var str = $("#monetary").val();--%>
-    <%--$("#monetary").val($("#monetary").val().substring(0, str.length - 1));--%>
-    <%--fontFUn();--%>
-    <%--});--%>
-    <%--$(".close").on("touchstart", function () {--%>
-    <%--$("#monetary").val("");--%>
-    <%--fontFUn();--%>
-    <%--})--%>
+    $(function () {
+        var val = ${scoreA.score/100>totalPrice/100}
+                ? $('.form-name font').text() : $('.back-hongbao font').text();
+        $("#monetary").val(val);
+        fontFUn();
+        var spans = $('#keyboard button:not(:last-child)');
+        spans.each(function (i) {
+            spans.eq(i).attr({'unselectable': 'on'}).css({'-webkit-user-select': 'none'}).on('selectstart'), function () {
+                return false;
+            };
+            spans.eq(i).on("touchstart", function () {
+                var _this = $(this);
+                $(this).addClass('btn-orange');
+                setTimeout(function () {
+                    _this.removeClass('btn-orange');
+                }, 100);
+                var getValue = $(this).text();
+                if ($("#monetary").val().indexOf(".") != -1) {
+                    if ($("#monetary").val() >= 9999.99 || $("#monetary").val().length == 7) {
+                        return;
+                    }
+                } else {
+                    if (getValue.indexOf('.') != 0) {
+                        if ($("#monetary").val() >= 9999 || $("#monetary").val().length == 4) {
+                            return;
+                        }
+                    }
+                }
+//                //控制第一个不能输入小数点"."
+                if ($("#monetary").val().length == 1 && $("#monetary").val() == 0
+                    && getValue.indexOf('.') != 0) {
+                    return;
+                }
+                if ($("#monetary").val().length == 0
+                    && getValue.indexOf('.') != -1) {
+                    return;
+                }
+                //控制只能输入一个小数点"."
+                if ($("#monetary").val().indexOf('.') != -1 && getValue.indexOf('.') != -1) {
+                    return;
+                }
+                var str = $("#monetary").val() + $(this).text();
+                var strNum = $("#monetary").val().toString().indexOf('.');
+                $("#monetary").val(str.replace(/^(.*\..{2}).*$/, "$1"));
+                fontFUn();
+            })
+        })
+        $('#keyboard button:last-child').on('touchstart', function () {
+            var str = $("#monetary").val();
+            $("#monetary").val($("#monetary").val().substring(0, str.length - 1));
+            fontFUn();
+        });
+        $(".close").on("touchstart", function () {
+            $("#monetary").val("");
+            fontFUn();
+        })
 
-    //    判断所输入的值
-    <%--function fontFUn() {--%>
-    <%--if ($("#monetary").val() == '' || $("#monetary").val() == null) {--%>
-    <%--$("#monetary").css({'font-size': '3.2vw'});--%>
-    <%--$(".close").css({'display': 'none'});--%>
-    <%--} else {--%>
-    <%--$("#monetary").css({'font-size': '5.2vw'});--%>
-    <%--$(".close").css({'display': 'block'});--%>
-    <%--if (eval($("#monetary").val()) > val) {--%>
-    <%--$("#monetary").val(val);--%>
-    <%--}--%>
-    <%--//   console.log(eval($("#monetary").val()) > eval($(".back-hongbao font").text()));--%>
-    <%--}--%>
-    <%--$('.need-pay font').text(toDecimal(${totalPrice/100} -$("#monetary").val()));--%>
-    <%--}--%>
+        //    判断所输入的值
+        function fontFUn() {
+            if ($("#monetary").val() == '' || $("#monetary").val() == null) {
+                $("#monetary").css({'font-size': '3.2vw'});
+                $(".close").css({'display': 'none'});
+            } else {
+                $("#monetary").css({'font-size': '5.2vw'});
+                $(".close").css({'display': 'block'});
+                if (eval($("#monetary").val()) > val) {
+                    $("#monetary").val(val);
+                }
+                //   console.log(eval($("#monetary").val()) > eval($(".back-hongbao font").text()));
+            }
+            $('.need-pay font').text(toDecimal(${totalPrice/100} -$("#monetary").val()));
+        }
 
-    //强制保留两位小数
-    //        function toDecimal(x) {
-    //            var f = parseFloat(x);
-    //            if (isNaN(f)) {
-    //                return false;
-    //            }
-    //            var f = Math.round(x * 100) / 100;
-    //            var s = f.toString();
-    //            var rs = s.indexOf('.');
-    //            if (rs < 0) {
-    //                rs = s.length;
-    //                s += '.';
-    //            }
-    //            while (s.length <= rs + 2) {
-    //                s += '0';
-    //            }
-    //            return s;
-    //        }
+        //强制保留两位小数
+        function toDecimal(x) {
+            var f = parseFloat(x);
+            if (isNaN(f)) {
+                return false;
+            }
+            var f = Math.round(x * 100) / 100;
+            var s = f.toString();
+            var rs = s.indexOf('.');
+            if (rs < 0) {
+                rs = s.length;
+                s += '.';
+            }
+            while (s.length <= rs + 2) {
+                s += '0';
+            }
+            return s;
+        }
 
-    //    确认支付按钮
-    $('.form-btn').on('touchstart', function () {
-        $('.form-btn').unbind('touchstart');
-        <%--if ($('.need-pay font').text() == 0) {--%>
+        //    确认支付按钮
+        $('.form-btn').on('touchstart', function () {
+            $('.form-btn').unbind('touchstart');
+            if ($('.need-pay font').text() == 0) {
 
-        <%--$('.conform .showOut').html("确认使用乐+红包支付￥${totalPrice/100}吗?");--%>
-        <%--$('.conform').css({'display': 'block'});--%>
-        <%--$('.conform .cancel').on('click', function () {--%>
-        <%--$('.conform').css({'display': 'none'});--%>
-        <%--})--%>
-        <%--return;--%>
-        <%--}--%>
-        $(this).empty().text("正在支付,请稍后")
-        pay();
+                $('.conform .showOut').html("确认使用乐+红包支付￥${totalPrice/100}吗?");
+                $('.conform').css({'display': 'block'});
+                $('.conform .cancel').on('click', function () {
+                    $('.conform').css({'display': 'none'});
+                })
+                return;
+            }
+            $(this).empty().text("正在支付,请稍后")
+            pay();
+        });
+
     });
-
-    // });
     function bindPay() {
         $('.form-btn').on('touchstart', function () {
             $('.form-btn').unbind('touchstart');
-            <%--if ($('.need-pay font').text() == 0) {--%>
+            if ($('.need-pay font').text() == 0) {
 
-            <%--$('.conform .showOut').html("确认使用乐+红包支付￥${totalPrice/100}吗?");--%>
-            <%--$('.conform').css({'display': 'block'});--%>
-            <%--$('.conform .cancel').on('click', function () {--%>
-            <%--$('.conform').css({'display': 'none'});--%>
-            <%--})--%>
-            <%--return;--%>
-            <%--}--%>
+                $('.conform .showOut').html("确认使用乐+红包支付￥${totalPrice/100}吗?");
+                $('.conform').css({'display': 'block'});
+                $('.conform .cancel').on('click', function () {
+                    $('.conform').css({'display': 'none'});
+                })
+                return;
+            }
             $(this).empty().text("正在支付,请稍后")
             pay();
         });
@@ -207,16 +207,16 @@
 
     function pay() {
         var totalPrice = ${totalPrice};
-        var truePrice = ${totalPrice};
-//        if ($('.need-pay font').text() != "" && $('.need-pay font').text() != null) {
-//            truePrice =
-//            parseInt(new BigDecimal($('.need-pay font').text()).multiply(new BigDecimal("100")));
-//        }
+        var truePrice = 0;
+        if ($('.need-pay font').text() != "" && $('.need-pay font').text() != null) {
+            truePrice =
+            parseInt(new BigDecimal($('.need-pay font').text()).multiply(new BigDecimal("100")));
+        }
         var trueScore = 0;
-//        if ($("#monetary").val() != "" && $("#monetary").val() != null) {
-//            trueScore =
-//            parseInt(new BigDecimal($("#monetary").val()).multiply(new BigDecimal("100")));
-//        }
+        if ($("#monetary").val() != "" && $("#monetary").val() != null) {
+            trueScore =
+            parseInt(new BigDecimal($("#monetary").val()).multiply(new BigDecimal("100")));
+        }
         var ext = ljhash(truePrice + " " + trueScore
                          + " ${leJiaUser.userSid} ${merchantId} " + totalPrice
                          + " ${openid}", "lepluslife");
@@ -256,23 +256,23 @@
         });
     });
     <%--wx.config({--%>
-                  <%--"debug": false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。--%>
-                  <%--"appId": "wxe2190d22ce025e4f", // 必填，公众号的唯一标识--%>
-                  <%--"timestamp": "${wxConfig['timestamp']}", // 必填，生成签名的时间戳--%>
-                  <%--"nonceStr": "${wxConfig['noncestr']}", // 必填，生成签名的随机串--%>
-                  <%--"signature": "${wxConfig['signature']}",// 必填，签名，见附录1--%>
-                  <%--"jsApiList": [--%>
-                      <%--'chooseWXPay'--%>
-                  <%--] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2--%>
-              <%--});--%>
+    <%--debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。--%>
+    <%--appId: '${wxConfig['appId']}', // 必填，公众号的唯一标识--%>
+    <%--timestamp: ${wxConfig['timestamp']}, // 必填，生成签名的时间戳--%>
+    <%--nonceStr: '${wxConfig['noncestr']}', // 必填，生成签名的随机串--%>
+    <%--signature: '${wxConfig['signature']}',// 必填，签名，见附录1--%>
+    <%--jsApiList: [--%>
+    <%--'chooseWXPay'--%>
+    <%--] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2--%>
+    <%--});--%>
     <%--wx.ready(function () {--%>
-        <%--// config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。--%>
-<%--//       隐藏菜单--%>
-        <%--wx.hideOptionMenu();--%>
+    <%--// config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。--%>
+    <%--//       隐藏菜单--%>
+    <%--wx.hideOptionMenu();--%>
 
     <%--});--%>
     <%--wx.error(function (res) {--%>
-        <%--// config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。--%>
+    <%--// config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。--%>
 
     <%--});--%>
     <%--$('#confirm-pay').on('click', function () {--%>
@@ -332,8 +332,8 @@
                     "signType":  res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
                     "paySign":   res['sign'] + "" // 支付签名
                 },
-                function (reslut) {
-                    if (reslut.err_msg == "get_brand_wcpay_request:ok") {
+                function (res) {
+                    if (res.err_msg == "get_brand_wcpay_request：ok") {
                         window.location.href =
                         '/lepay/wxpay/paySuccess?orderSid='
                         + res['orderSid'];

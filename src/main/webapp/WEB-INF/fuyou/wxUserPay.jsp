@@ -75,7 +75,7 @@
 <script src="${resourceUrl}/js/MathContext.js"></script>
 <script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
-    document.title = "${merchant.name}";
+    document.title = "${merchant.name}222";
     $(function () {
         var val = ${scoreA.score/100>totalPrice/100}
                 ? $('.form-name font').text() : $('.back-hongbao font').text();
@@ -220,7 +220,7 @@
         var ext = ljhash(truePrice + " " + trueScore
                          + " ${leJiaUser.userSid} ${merchantId} " + totalPrice
                          + " ${openid}", "lepluslife");
-        $.post('/lepay/wxpay/offLineOrderForUser', {
+        $.post('/pay/wxpay/offLineOrderForUser', {
             ext: ext
         }, function (res) {
             $(this).removeClass('btn-disabled');
@@ -233,127 +233,58 @@
                 return;
             }
         });
-
     }
 
     $("#pay-confrim").on('touchstart', function () {
         $('#pay-confrim').unbind('touchstart');
         var ext = ljhash("${leJiaUser.userSid} ${merchantId} ${totalPrice}", "lepluslife");
-        $.post('/lepay/wxpay/payByScoreA', {
+        $.post('/pay/wxpay/payByScoreA', {
             ext: ext
         }, function (res) {
             if (res.status == 200) {
-                <%--if (res.data.rebateWay == 1) {--%>
-                    <%--window.location.href =--%>
-                    <%--'${wxRootUrl}/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;--%>
-                <%--} else {--%>
-                    window.location.href =
-                    '/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
-               // }
+                window.location.href = '/pay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
             } else {
-                alert(res.msg)
+                alert(res.msg);
             }
         });
     });
-    <%--wx.config({--%>
-                  <%--debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。--%>
-                  <%--appId: '${wxConfig['appId']}', // 必填，公众号的唯一标识--%>
-                  <%--timestamp: ${wxConfig['timestamp']}, // 必填，生成签名的时间戳--%>
-                  <%--nonceStr: '${wxConfig['noncestr']}', // 必填，生成签名的随机串--%>
-                  <%--signature: '${wxConfig['signature']}',// 必填，签名，见附录1--%>
-                  <%--jsApiList: [--%>
-                      <%--'chooseWXPay'--%>
-                  <%--] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2--%>
-              <%--});--%>
-    <%--wx.ready(function () {--%>
-        <%--// config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。--%>
-<%--//       隐藏菜单--%>
-        <%--wx.hideOptionMenu();--%>
+    wx.config({
+                  debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                  appId: '${wxConfig['appId']}', // 必填，公众号的唯一标识
+                  timestamp: ${wxConfig['timestamp']}, // 必填，生成签名的时间戳
+                  nonceStr: '${wxConfig['noncestr']}', // 必填，生成签名的随机串
+                  signature: '${wxConfig['signature']}',// 必填，签名，见附录1
+                  jsApiList: [
+                      'chooseWXPay'
+                  ]
+              });
+    wx.ready(function () {
+        wx.hideOptionMenu();
+    });
+    wx.error(function (res) {});
+    function weixinPay(result) {
 
-    <%--});--%>
-    <%--wx.error(function (res) {--%>
-        <%--// config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。--%>
+        WeixinJSBridge.invoke('getBrandWCPayRequest', {
+            "appId": result.sdk_appid,//"wx2421b1c4370ec43b", //公众号名称，由商户传入
+            "timeStamp": result.sdk_timestamp,//"1395712654", //时间戳，自1970年以来的秒数
+            "nonceStr": result.sdk_noncestr,//"e61463f8efa94090b1f366cccfbbb444", //随机串
+            "package": result.sdk_package,//"prepay_id=u802345jgfjsdfgsdg888",
+            "signType": result.sdk_signtype,//"MD5", //微信签名方式:
+            "paySign": result.sdk_paysign//"70EA570631E4BB79628FBCA90534C63FF7FADD89" //微信签名
+        }, function (res) { // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
 
-    <%--});--%>
-    <%--$('#confirm-pay').on('click', function () {--%>
-    <%--var totalPrice = $("#monetary").val();--%>
-    <%--if (${openid!=null}) {--%>
-    <%--// 首先提交请求，生成预支付订单--%>
-    <%--$.post('${wxRootUrl}/lepay/wxpay/offLineOrder', {--%>
-    <%--truePrice: totalPrice,--%>
-    <%--merchantId: ${merchantId},--%>
-    <%--openid:${openid!=null}--%>
-    <%--}, function (res) {--%>
-    <%--$(this).removeClass('btn-disabled');--%>
-    <%--//            调用微信支付js-api接口--%>
-    <%--if (res['err_msg'] != null && res['err_msg'] != "") {--%>
-    <%--alert(res['err_msg']);--%>
-    <%--return;--%>
-    <%--} else {--%>
-    <%--weixinPay(res);--%>
-    <%--return;--%>
-    <%--}--%>
-    <%--});--%>
-    <%--} else {--%>
-    <%--if (${scoreA.score>0}) {--%>
-    <%--var ext = ljhash("${leJiaUser.userSid} " + totalPrice + " ${merchant.id}",--%>
-    <%--"lepluslife");--%>
-    <%--location.href = "www.lepluslife.com/lepay/wxpay/userpay?ext=" + ext;--%>
-    <%--} else {--%>
-
-    <%--}--%>
-    <%--}--%>
-    <%--});--%>
-    function weixinPay(res) {
-//        wx.chooseWXPay({
-//                           timestamp: res['timeStamp'], // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
-//                           nonceStr: res['nonceStr'], // 支付签名随机串，不长于 32 位
-//                           package: res['package'], // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-//                           signType: res['signType'], // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-//                           paySign: res['sign'], // 支付签名
-//                           success: function (data) {
-//                               window.location.href =
-//                               '/lepay/wxpay/paySuccess?orderSid='
-//                               + res['orderSid'];
-//                           },
-//                           cancel: function (res) {
-//                               $('.form-btn').empty().text("确认支付");
-//                               bindPay();
-//                           },
-//                           fail: function (res) {
-//                           }
-//                       });
-        WeixinJSBridge.invoke(
-                'getBrandWCPayRequest', {
-                    "appId":     res['appId'] + "",     //公众号名称，由商户传入
-                    "timeStamp": res['timeStamp'] + "", // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
-                    "nonceStr":  res['nonceStr'] + "", // 支付签名随机串，不长于 32 位
-                    "package":   res['package'] + "", // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-                    "signType":  res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-                    "paySign":   res['sign'] + "" // 支付签名
-                },
-                function (reslut) {
-                    if (reslut.err_msg == "get_brand_wcpay_request:ok") {
-                        window.location.href =
-                        '/lepay/wxpay/paySuccess?orderSid='
-                        + res['orderSid'];
-                    }     // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
-                    else {
-                        $('.form-btn').empty().text("确认支付");
-                        bindPay();
-                    }
-                }
-        );
-        if (typeof WeixinJSBridge == "undefined") {
-            if (document.addEventListener) {
-                document.addEventListener('WeixinJSBridgeReady', weixinPay, false);
-            } else if (document.attachEvent) {
-                document.attachEvent('WeixinJSBridgeReady', weixinPay);
-                document.attachEvent('onWeixinJSBridgeReady', weixinPay);
+            if (res.err_msg == "get_brand_wcpay_request:ok") {
+                window.location.href = '/pay/wxpay/paySuccess?orderSid=' + result['orderSid'];
             }
-        } else {
-            weixinPay();
-        }
+            if (res.err_msg == "get_brand_wcpay_request:cancel") {
+                $('.form-btn').empty().text("确认支付");
+                bindPay();
+            }
+            if (res.err_msg == "get_brand_wcpay_request:fail") {
+                alert("支付失败");
+            }
+        });
     }
+
 </script>
 </html>

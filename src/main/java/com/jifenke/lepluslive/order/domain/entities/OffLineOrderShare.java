@@ -34,7 +34,10 @@ public class OffLineOrderShare {
   @OneToOne
   private UnionPosOrder unionPosOrder;
 
-  private Integer type; //1 代表线下订单分润 2代表中慧pos订单分润 3 银联pos
+  @OneToOne
+  private ScanCodeOrder scanCodeOrder;
+
+  private Integer type; //1 代表线下订单分润 2代表中慧pos订单分润 3 银联pos  4 代表富友线下订单分润
 
   private Long shareMoney;
 
@@ -92,6 +95,14 @@ public class OffLineOrderShare {
 
   public void setType(Integer type) {
     this.type = type;
+  }
+
+  public ScanCodeOrder getScanCodeOrder() {
+    return scanCodeOrder;
+  }
+
+  public void setScanCodeOrder(ScanCodeOrder scanCodeOrder) {
+    this.scanCodeOrder = scanCodeOrder;
   }
 
   public Merchant getTradeMerchant() {

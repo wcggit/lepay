@@ -19,7 +19,7 @@ public class MerchantSettlementStore {
   private Long id;
 
   @Column(nullable = false)
-  private Integer type = 0;  //签约类型  0=普通协议|1=联盟协议
+  private Integer type = 0;  //签约类型  0=普通协议|1=联盟协议  废弃不用 ，使用partnership
 
   @Column(nullable = false)
   private Long commonSettlementId;  //普通协议ID=MerchantSettlement.id

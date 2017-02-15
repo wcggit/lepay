@@ -7,6 +7,7 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrderShare;
 import com.jifenke.lepluslive.order.domain.entities.PosOrder;
+import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.order.repository.OffLineOrderShareRepository;
 import com.jifenke.lepluslive.partner.service.PartnerService;
@@ -46,24 +47,34 @@ public class OrderShareService {
         shareMoney =
         new BigDecimal(order.getLjCommission() - order.getRebate() - order
             .getWxCommission());
-    offLineOrderShare = new OffLineOrderShare();
     Long type = 0L;
+    offLineOrderShare = new OffLineOrderShare();
+    if (order instanceof OffLineOrder) {
+      type = 1L;
+      OffLineOrder offLineOrder = (OffLineOrder) order;
+      offLineOrderShare.setOffLineOrder(offLineOrder);
+      shareMoney = shareMoney.subtract(new BigDecimal(offLineOrder.getLjProfit()));
+      offLineOrderShare.setType(1);
+    }
+    if (order instanceof PosOrder) {
+      type = 2L;
+      PosOrder posOrder = (PosOrder) order;
+      offLineOrderShare.setPosOrder(posOrder);
+      shareMoney = shareMoney.subtract(new BigDecimal(posOrder.getLjProfit()));
+      offLineOrderShare.setType(2);
+    }
+    if (order instanceof UnionPosOrder) {
+      type = 3L;
+      offLineOrderShare.setUnionPosOrder((UnionPosOrder) order);
+      offLineOrderShare.setType(3);
+    }
+    if (order instanceof ScanCodeOrder) {
+      type = 4L;
+      offLineOrderShare.setScanCodeOrder((ScanCodeOrder) order);
+      offLineOrderShare.setType(4);
+    }
     if (shareMoney.doubleValue() > 0) {
-      if (order instanceof OffLineOrder) {
-        type = 1L;
-        offLineOrderShare.setOffLineOrder((OffLineOrder) order);
-        offLineOrderShare.setType(1);
-      }
-      if (order instanceof PosOrder) {
-        type = 2L;
-        offLineOrderShare.setPosOrder((PosOrder) order);
-        offLineOrderShare.setType(2);
-      }
-      if (order instanceof UnionPosOrder) {
-        type = 2L;
-        offLineOrderShare.setUnionPosOrder((UnionPosOrder) order);
-        offLineOrderShare.setType(3);
-      }
+
       offLineOrderShare.setShareMoney(shareMoney.longValue());
       offLineOrderShare.setTradeMerchant(order.getMerchant());
       //分润给交易合伙人
@@ -114,8 +125,9 @@ public class OrderShareService {
               (long) Math.floor(shareMoney.multiply(
                   new BigDecimal(dictionaryService.findDictionaryById(14L).getValue()))
                                     .doubleValue() / 100.0);
-          offLineOrderShare.setToLockPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
-                  : toLockPartner);
+          offLineOrderShare
+              .setToLockPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
+                                                                   : toLockPartner);
           //分润给绑定合伙人
           partnerService
               .shareToPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner

@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import io.swagger.annotations.ApiOperation;
 
 /**
- * Created by wcg on 16/3/18.
+ * APP 扫码支付 Created by zhangwen on 16/10/18.
  */
 @RestController
 @RequestMapping("/lepay")

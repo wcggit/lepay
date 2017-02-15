@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.merchant.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class MerchantUser {
   private String password;
 
   @ManyToOne
+  @JsonIgnore
   private Merchant merchant;
 
   private Integer type; //0收营员 1 店主 一个商户只有一个店主

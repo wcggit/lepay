@@ -59,6 +59,12 @@
     </properties>
 
     <dependencies>
+        <!--富友加解密jar-->
+        <dependency>
+            <groupId>com.zhangfu</groupId>
+            <artifactId>fuiou-encrypt</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>
             <artifactId>aliyun-sdk-oss</artifactId>
