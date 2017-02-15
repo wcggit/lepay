@@ -64,32 +64,16 @@ public class OrderShareService {
       offLineOrderShare.setType(2);
     }
     if (order instanceof UnionPosOrder) {
-      type = 2L;
+      type = 3L;
       offLineOrderShare.setUnionPosOrder((UnionPosOrder) order);
       offLineOrderShare.setType(3);
     }
+    if (order instanceof ScanCodeOrder) {
+      type = 4L;
+      offLineOrderShare.setScanCodeOrder((ScanCodeOrder) order);
+      offLineOrderShare.setType(4);
+    }
     if (shareMoney.doubleValue() > 0) {
-
-      if (order instanceof OffLineOrder) {
-        type = 1L;
-        offLineOrderShare.setOffLineOrder((OffLineOrder) order);
-        offLineOrderShare.setType(1);
-      }
-      if (order instanceof PosOrder) {
-        type = 2L;
-        offLineOrderShare.setPosOrder((PosOrder) order);
-        offLineOrderShare.setType(2);
-      }
-      if (order instanceof UnionPosOrder) {
-        type = 3L;
-        offLineOrderShare.setUnionPosOrder((UnionPosOrder) order);
-        offLineOrderShare.setType(3);
-      }
-      if (order instanceof ScanCodeOrder) {
-        type = 4L;
-        offLineOrderShare.setScanCodeOrder((ScanCodeOrder) order);
-        offLineOrderShare.setType(4);
-      }
 
       offLineOrderShare.setShareMoney(shareMoney.longValue());
       offLineOrderShare.setTradeMerchant(order.getMerchant());
