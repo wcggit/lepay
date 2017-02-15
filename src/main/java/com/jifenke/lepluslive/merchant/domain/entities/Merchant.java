@@ -59,7 +59,7 @@ public class Merchant {
 
   private String phoneNumber; //服务电话
 
-  private Integer partnership; //合作关系
+  private Integer partnership; //合作关系 0=普通商户|1=联盟商户
 
   private Double lng = 0.0;
 
@@ -91,6 +91,9 @@ public class Merchant {
 
   @OneToOne(cascade = CascadeType.ALL)
   private MerchantInfo merchantInfo;   //商家详情介绍
+
+  @ManyToOne
+  private MerchantUser merchantUser;
 
   public BigDecimal getMemberCommission() {
     return memberCommission;
@@ -207,6 +210,13 @@ public class Merchant {
     this.receiptAuth = receiptAuth;
   }
 
+  public MerchantUser getMerchantUser() {
+    return merchantUser;
+  }
+
+  public void setMerchantUser(MerchantUser merchantUser) {
+    this.merchantUser = merchantUser;
+  }
 
   public String getQrCodePicture() {
     return qrCodePicture;

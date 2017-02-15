@@ -1,5 +1,6 @@
 package com.jifenke.lepluslive.order.domain.entities;
 
+import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
@@ -22,16 +23,18 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "SCAN_CODE_ORDER")
-public class ScanCodeOrder {
+public class ScanCodeOrder implements Order {
 
   @Id
   @GeneratedValue(generator = "system-uuid")
   @GenericGenerator(name = "system-uuid", strategy = "uuid")
-  private Long id;
+  private String id;
 
   private String orderSid = MvUtil.getOrderNumber();
 
   private String orderCode;  //第三方渠道流水号
+
+  private String settleDate;  //第三方支付完成时间
 
   private Date createdDate;
 
@@ -85,8 +88,6 @@ public class ScanCodeOrder {
   private Long wxCommission = 0L; //微信手续费(分润用)=totalPrice*0.6%
 
   private Long wxTrueCommission = 0L;  //微信实际手续费(对积分客)=truePay*0.35%
-
-  private Long shareAmount = 0L;  //分润金额(仅导流和会员订单产生)=ljCommission-rebate-wxCommission>=0
 
   private Long rebate = 0L; //返利红包
 
@@ -187,11 +188,11 @@ public class ScanCodeOrder {
     this.transferMoney = transferMoney;
   }
 
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -213,6 +214,11 @@ public class ScanCodeOrder {
 
   public Date getCompleteDate() {
     return completeDate;
+  }
+
+  @Override
+  public Long getLjCommission() {
+    return this.getCommission();
   }
 
   public void setCompleteDate(Date completeDate) {
@@ -273,14 +279,6 @@ public class ScanCodeOrder {
 
   public void setWxTrueCommission(Long wxTrueCommission) {
     this.wxTrueCommission = wxTrueCommission;
-  }
-
-  public Long getShareAmount() {
-    return shareAmount;
-  }
-
-  public void setShareAmount(Long shareAmount) {
-    this.shareAmount = shareAmount;
   }
 
   public Long getTransferMoneyFromScore() {
@@ -377,5 +375,13 @@ public class ScanCodeOrder {
 
   public void setState(Integer state) {
     this.state = state;
+  }
+
+  public String getSettleDate() {
+    return settleDate;
+  }
+
+  public void setSettleDate(String settleDate) {
+    this.settleDate = settleDate;
   }
 }
