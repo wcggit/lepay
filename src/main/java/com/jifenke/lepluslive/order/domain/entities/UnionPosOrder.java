@@ -77,8 +77,6 @@ public class UnionPosOrder implements Order {
 
   private String account;  //操作账户名
 
-  private String data;    //支付成功后接受的参数JSON
-
   public Long getTransferByBank() {
     return transferByBank;
   }
@@ -181,14 +179,6 @@ public class UnionPosOrder implements Order {
 
   public void setCompleteDate(Date completeDate) {
     this.completeDate = completeDate;
-  }
-
-  public String getData() {
-    return data;
-  }
-
-  public void setData(String data) {
-    this.data = data;
   }
 
   public LeJiaUser getLeJiaUser() {

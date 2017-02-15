@@ -7,6 +7,7 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrderShare;
 import com.jifenke.lepluslive.order.domain.entities.PosOrder;
+import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.order.repository.OffLineOrderShareRepository;
 import com.jifenke.lepluslive.partner.service.PartnerService;
@@ -60,9 +61,14 @@ public class OrderShareService {
         offLineOrderShare.setType(2);
       }
       if (order instanceof UnionPosOrder) {
-        type = 2L;
+        type = 3L;
         offLineOrderShare.setUnionPosOrder((UnionPosOrder) order);
         offLineOrderShare.setType(3);
+      }
+      if (order instanceof ScanCodeOrder) {
+        type = 4L;
+        offLineOrderShare.setScanCodeOrder((ScanCodeOrder) order);
+        offLineOrderShare.setType(4);
       }
       offLineOrderShare.setShareMoney(shareMoney.longValue());
       offLineOrderShare.setTradeMerchant(order.getMerchant());

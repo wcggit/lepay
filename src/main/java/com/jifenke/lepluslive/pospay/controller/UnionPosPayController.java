@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -47,7 +48,7 @@ public class UnionPosPayController {
   private LeJiaUserService userService;
 
   /**
-   * POS机全积分支付 老版本，待修改 16/10/14
+   * POS机全积分支付 16/10/14
    */
   @ApiOperation(value = "POS机全积分支付")
   @RequestMapping(value = "/pospay/u_pay/pure", method = RequestMethod.POST)
@@ -66,46 +67,19 @@ public class UnionPosPayController {
     return LejiaResult.ok(result.get("data"));
   }
 
-  /**
-   * POS机混合支付掉支付插件前创建订单 老版本，待删除 16/10/19
-   */
-  @ApiOperation(value = "POS机混合支付掉支付插件前创建订单")
-  @RequestMapping(value = "/pospay/u_pay/create", method = RequestMethod.POST)
-  public
-  @ResponseBody
-  LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
-                          @RequestParam Long userId,
-                          @RequestParam Long totalPrice, @RequestParam Long truePrice,
-                          @RequestParam Long trueScore) {
-    Merchant m = merchantService.findMerchantById(merchantId);
-    LeJiaUser u = userService.findUserById(userId);
-
-    Map result = unionOrderService.createOrder(m, account, u, totalPrice, truePrice, trueScore);
-    if (!"200".equals("" + result.get("status"))) {
-      return LejiaResult
-          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
-    }
-    return LejiaResult.ok(result.get("data"));
-  }
 
   /**
-   * POS机混合支付成功后通知 老版本，待修改 16/10/19
+   * POS机混合支付成功后通知 16/10/19
    */
   @ApiOperation(value = "POS机混合支付成功后通知")
   @RequestMapping(value = "/pospay/u_pay/success", method = RequestMethod.POST)
   public
   @ResponseBody
-  LejiaResult paySuccess(@RequestParam Long orderId, @RequestParam Long merchantId,
-                         @RequestParam Long userId,
+  LejiaResult paySuccess(@RequestParam String orderSid, @RequestParam Long merchantId,
                          @RequestParam String account, @RequestParam String data) {
-    Merchant m = merchantService.findMerchantById(merchantId);
-    LeJiaUser u = null;
-    if (userId != null && userId != 0) {
-      u = userService.findUserById(userId);
-    }
     Map
         result =
-        unionOrderService.PaySuccess(orderId, account, m, u, data);
+        unionOrderService.PaySuccess(orderSid, account, merchantId, data);
     if (!"200".equals("" + result.get("status"))) {
       return LejiaResult
           .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
@@ -120,11 +94,15 @@ public class UnionPosPayController {
   public Map unionPosOrderSearch(HttpServletRequest request) {
     TreeMap parameters = getParametersFromRequest(request);
 
+    System.out.println("===============4.1查询银行卡绑定活动接口（002000）==================");
+    System.out.println("请求数据==================" + parameters.toString());
+
     String sign = String.valueOf(parameters.get("sign"));
 //    String enc_card_no = parameters.get("enc_card_no").toString();
 //    String decode = RSAUtil.decode(enc_card_no); //卡号
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
+    System.out.println("请求验签字符串===========" + requestStr);
     TreeMap<String, Object> returnMap = new TreeMap<>();
     returnMap.put("msg_type", "00");
     returnMap.put("msg_txn_code", "002000");
@@ -163,6 +141,7 @@ public class UnionPosPayController {
       returnMap.put("msg_rsp_desc", "验签失败");
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
+    System.out.println("4.1 返回数据====================" + returnMap.toString());
     return returnMap;
   }
 
@@ -172,9 +151,12 @@ public class UnionPosPayController {
   @RequestMapping(value = "/union_pay/afterPay", method = RequestMethod.POST)
   public Map afterPay(HttpServletRequest request) {
     TreeMap parameters = getParametersFromRequest(request);
+    System.out.println("===============4.2销账交易接口（002100）==================");
+    System.out.println("请求数据==================" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
+    System.out.println("请求验签字符串===========" + requestStr);
     TreeMap<String, Object> returnMap = new TreeMap<>();
     returnMap.put("msg_type", "00");
     returnMap.put("msg_txn_code", "002100");
@@ -209,14 +191,22 @@ public class UnionPosPayController {
       returnMap.put("pay_amt", truePay); //支付金额
       returnMap.put("serv_chg", commission); //服务费
       returnMap.put("commission", commission); //佣金
-      returnMap.put("pos_receipt",
-                    "使用" + order.getTrueScore().doubleValue() / 100 + "红包抵扣"); //POS优惠 打印在小票上
+//      returnMap.put("pos_receipt",
+//                    "使用" + order.getTrueScore().doubleValue() / 100 + "红包抵扣");
+      returnMap.put("ad",
+                    "使用" + order.getTrueScore().doubleValue() / 100 + "元红包"); //POS优惠 打印在小票上
       returnMap.put("event_no", Constants.EVENT_NO); //活动号
     } else {
       returnMap.put("msg_rsp_code", 9996);
       returnMap.put("msg_rsp_desc", "验签失败");
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
+    System.out.println("4.2 返回数据====================" + returnMap.toString());
+//    try {
+//      Thread.sleep(16000);
+//    } catch (InterruptedException e) {
+//      e.printStackTrace();
+//    }
     return returnMap;
   }
 
@@ -225,7 +215,9 @@ public class UnionPosPayController {
    */
   @RequestMapping(value = "/union_pay/reverse", method = RequestMethod.POST)
   public Map reverse(HttpServletRequest request) {
+    System.out.println("===============4.3销账冲正通知接口（002101）==================");
     TreeMap parameters = getParametersFromRequest(request);
+    System.out.println("请求数据==================" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
@@ -259,6 +251,7 @@ public class UnionPosPayController {
       returnMap.put("msg_rsp_desc", "验签失败");
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
+    System.out.println("4.3 返回数据====================" + returnMap.toString());
     return returnMap;
   }
 
@@ -267,6 +260,7 @@ public class UnionPosPayController {
    */
   @RequestMapping(value = "/union_pay/cancel", method = RequestMethod.POST)
   public Map cancel(HttpServletRequest request) {
+    System.out.println("===============4.4销账撤销通知接口（002102）（只支持撤销当天，未清算交易）==================");
     TreeMap parameters = getParametersFromRequest(request);
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
@@ -302,8 +296,63 @@ public class UnionPosPayController {
       returnMap.put("msg_rsp_desc", "验签失败");
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
+    System.out.println("4.4 返回数据====================" + returnMap.toString());
     return returnMap;
   }
+
+
+  private String getOriginStr(TreeMap parameters) {
+    StringBuilder sb = new StringBuilder();
+    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
+    Iterator it = es.iterator();
+    while (it.hasNext()) {
+      Map.Entry entry = (Map.Entry) it.next();
+      String k = (String) entry.getKey();
+      Object v = entry.getValue();
+//      if (null != v && !"".equals(v)
+//          && !"sign".equals(k) && !"key".equals(k)) {
+      sb.append(k).append("=").append(v).append("&");
+//      }
+    }
+    if (sb.length() > 1) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    return sb.toString();
+  }
+
+  public TreeMap getParametersFromRequest(HttpServletRequest request) {
+    Map<String, String[]> params = request.getParameterMap();
+    TreeMap returnMap = new TreeMap();
+    for (String key : params.keySet()) {
+      String[] values = params.get(key);
+      for (int i = 0; i < values.length; i++) {
+        returnMap.put(key, values[i]);
+      }
+    }
+    return returnMap;
+  }
+
+  //  /**
+//   * POS机混合支付掉支付插件前创建订单 老版本，待删除 16/10/19
+//   */
+//  @ApiOperation(value = "POS机混合支付掉支付插件前创建订单")
+//  @RequestMapping(value = "/pospay/u_pay/create", method = RequestMethod.POST)
+//  public
+//  @ResponseBody
+//  LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
+//                          @RequestParam Long userId,
+//                          @RequestParam Long totalPrice, @RequestParam Long truePrice,
+//                          @RequestParam Long trueScore) {
+//    Merchant m = merchantService.findMerchantById(merchantId);
+//    LeJiaUser u = userService.findUserById(userId);
+//
+//    Map result = unionOrderService.createOrder(m, account, u, totalPrice, truePrice, trueScore);
+//    if (!"200".equals("" + result.get("status"))) {
+//      return LejiaResult
+//          .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
+//    }
+//    return LejiaResult.ok(result.get("data"));
+//  }
 //
 //  @RequestMapping(value = "/pospay/union_pay/write_off", method = RequestMethod.POST)
 //  public Map unionPosOrderWriteOff(HttpServletRequest request) {
@@ -394,36 +443,4 @@ public class UnionPosPayController {
 //    }
 //    return null;
 //  }
-
-  public String getOriginStr(TreeMap parameters) {
-    StringBuffer sb = new StringBuffer();
-    Set es = parameters.entrySet();//所有参与传参的参数按照accsii排序（升序）
-    Iterator it = es.iterator();
-    while (it.hasNext()) {
-      Map.Entry entry = (Map.Entry) it.next();
-      String k = (String) entry.getKey();
-      Object v = entry.getValue();
-      if (null != v && !"".equals(v)
-          && !"sign".equals(k) && !"key".equals(k)) {
-        sb.append(k + "=" + v + "&");
-      }
-    }
-    if (sb.length() > 1) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-    return sb.toString();
-  }
-
-  public TreeMap getParametersFromRequest(HttpServletRequest request) {
-    Map<String, String[]> params = request.getParameterMap();
-    TreeMap returnMap = new TreeMap();
-    for (String key : params.keySet()) {
-      String[] values = params.get(key);
-      for (int i = 0; i < values.length; i++) {
-        returnMap.put(key, values[i]);
-      }
-    }
-    return returnMap;
-  }
-
 }

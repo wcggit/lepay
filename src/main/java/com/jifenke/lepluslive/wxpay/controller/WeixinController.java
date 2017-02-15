@@ -7,6 +7,7 @@ import com.jifenke.lepluslive.global.util.WeixinPayUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.service.MerchantScanPayWayService;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
@@ -78,6 +79,9 @@ public class WeixinController {
   @Inject
   private OffLineOrderService offLineOrderService;
 
+  @Inject
+  private MerchantScanPayWayService scanPayWayService;
+
 // String openid = "oVmqjxLVGMaHMX7dRsAzZg7BlpgE";
 
   @RequestMapping("/wxpay/{id}")
@@ -99,7 +103,8 @@ public class WeixinController {
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     Optional<Merchant> optional = merchantService.findMerchantBySId(merchantSid);
     if (optional.isPresent()) {
-      model.addAttribute("merchant", optional.get());
+      Merchant merchant = optional.get();
+      model.addAttribute("merchant", merchant);
       if (weiXinUser == null || weiXinUser.getState() == 0) {
         new Thread(() -> {
           //未关注公众号的人消费默认注册一个lejiauser
@@ -124,12 +129,20 @@ public class WeixinController {
       }
 
       model.addAttribute("wxConfig", getWeiXinPayConfig(request));
-      new Thread(() -> {
-        WeixinPayUtil
-            .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
-                                "test");
-      }).start();
-      return MvUtil.go("/weixin/wxPay");
+      //0=富友结算|1=乐加结算|2=暂不开通
+      int way = scanPayWayService.findByMerchantId(merchant.getId());
+      if (way == 1) {
+        new Thread(() -> {
+          WeixinPayUtil
+              .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
+                                  "test");
+        }).start();
+        return MvUtil.go("/weixin/wxPay");
+      } else if (way == 0) {
+        return MvUtil.go("/fuyou/wxPay");
+      } else {
+        return MvUtil.go("/weixin/wxPay");
+      }
     } else {
       return null;
     }
