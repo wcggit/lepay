@@ -119,7 +119,7 @@ public class PosOrderService {
           thirdCommission =
               new BigDecimal(dictionaryService.findDictionaryById(46L).getValue())
                   .multiply(paid);
-        } else if (request.indexOf("借") != -1) {
+        } else {
           posOrder.setCardType(0);
           ljCommission =
               merchantPos.getDebitCardCommission().multiply(paid);
@@ -134,8 +134,6 @@ public class PosOrderService {
           if (thirdCommission.longValue() > thirdCommissionLimit.longValue()) { //封顶第三方手续费
             thirdCommission = thirdCommissionLimit;
           }
-        } else {
-          posOrder.setCardType(2);
         }
       } else if (tradeFlag == 4) { //微信
         ljCommission =
@@ -152,8 +150,10 @@ public class PosOrderService {
       posOrder
           .setWxCommission(thirdCommission == null ? 0 : Math
               .round(thirdCommission.divide(new BigDecimal(100)).doubleValue()));
-      posOrder.setTransferMoney(paid.subtract(ljCommission).longValue());
-      posOrder.setTransferByBank(paid.subtract(ljCommission).longValue());
+      posOrder.setTransferMoney(Math.round(
+          paid.subtract(ljCommission).doubleValue()));
+      posOrder.setTransferByBank(Math.round(
+          paid.subtract(ljCommission).doubleValue()));
     } catch (ParseException e) {
       e.printStackTrace();
     }
