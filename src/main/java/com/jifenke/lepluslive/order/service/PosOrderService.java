@@ -152,8 +152,10 @@ public class PosOrderService {
       posOrder
           .setWxCommission(thirdCommission == null ? 0 : Math
               .round(thirdCommission.divide(new BigDecimal(100)).doubleValue()));
-      posOrder.setTransferMoney(paid.subtract(ljCommission).longValue());
-      posOrder.setTransferByBank(paid.subtract(ljCommission).longValue());
+      posOrder.setTransferMoney(Math.round(
+          paid.subtract(ljCommission).doubleValue()));
+      posOrder.setTransferByBank(Math.round(
+          paid.subtract(ljCommission).doubleValue()));
     } catch (ParseException e) {
       e.printStackTrace();
     }
