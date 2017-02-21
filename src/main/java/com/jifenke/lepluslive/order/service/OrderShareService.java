@@ -53,7 +53,7 @@ public class OrderShareService {
       type = 1L;
       OffLineOrder offLineOrder = (OffLineOrder) order;
       offLineOrderShare.setOffLineOrder(offLineOrder);
-      shareMoney = shareMoney.subtract(new BigDecimal(offLineOrder.getLjProfit()));
+      shareMoney = new BigDecimal(offLineOrder.getShareMoney());
       offLineOrderShare.setType(1);
     }
     if (order instanceof PosOrder) {

@@ -5,6 +5,7 @@ import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -75,6 +76,66 @@ public class OffLineOrder implements Order {
   private String lepayCode = MvUtil.getLePayCode();
 
   private Long ljProfit = 0L;//每笔订单的额外收入
+
+  private Long scoreC = 0L; //发放金币
+
+  private Long shareMoney; //每笔订单分润金额
+
+  private BigDecimal commissionScale; // 订单费率
+
+  private String policy; //佣金策略_红包策略 如 0_0 代表固定佣金策略 和普通红包策略
+
+  private Integer criticalOrder = 0; //是否暴击订单 0 非暴击 1 暴击
+
+  private Long nonCriticalRebate = 0L; //非暴击返鼓励金
+
+  public Long getShareMoney() {
+    return shareMoney;
+  }
+
+  public void setShareMoney(Long shareMoney) {
+    this.shareMoney = shareMoney;
+  }
+
+  public Long getScoreC() {
+    return scoreC;
+  }
+
+  public void setScoreC(Long scoreC) {
+    this.scoreC = scoreC;
+  }
+
+  public BigDecimal getCommissionScale() {
+    return commissionScale;
+  }
+
+  public void setCommissionScale(BigDecimal commissionScale) {
+    this.commissionScale = commissionScale;
+  }
+
+  public String getPolicy() {
+    return policy;
+  }
+
+  public void setPolicy(String policy) {
+    this.policy = policy;
+  }
+
+  public Integer getCriticalOrder() {
+    return criticalOrder;
+  }
+
+  public void setCriticalOrder(Integer criticalOrder) {
+    this.criticalOrder = criticalOrder;
+  }
+
+  public Long getNonCriticalRebate() {
+    return nonCriticalRebate;
+  }
+
+  public void setNonCriticalRebate(Long nonCriticalRebate) {
+    this.nonCriticalRebate = nonCriticalRebate;
+  }
 
   public Long getLjProfit() {
     return ljProfit;
