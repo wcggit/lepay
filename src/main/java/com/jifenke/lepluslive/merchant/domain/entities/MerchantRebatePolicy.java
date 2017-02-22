@@ -1,11 +1,15 @@
 package com.jifenke.lepluslive.merchant.domain.entities;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -19,28 +23,41 @@ public class MerchantRebatePolicy {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
+  private Integer commissionPolicy; //佣金策略 0 固定策略 1 阶段性策略
+
+  private Integer rebatePolicy; //红包策略 0 普通策略 1 开启鼓励金
+
   private Long merchantId;
 
-  private Integer rebateFlag; //是否开启会员订单 0未开启 1开启 2 会员订单走普通订单返积分百分比
+  private Integer rebateFlag; //是否开启会员订单scoreBRebate     0-不开启（按比例）  1-开启（全部） 2-不开启
 
-  private BigDecimal importScoreBScale;//导流订单发放积分策略
+  private BigDecimal importScoreBScale;//导流订单发放积分策略    【导流订单积分】
 
-  private BigDecimal userScoreBScale;//会员订单按比例发放积分策略返积分比
+  private BigDecimal importScoreCScale; //导流订单发放金币策略    【导流订单金币】
 
-  private BigDecimal userScoreBScaleB;//会员订单全额发放积分策略返积分比
+  private BigDecimal userScoreBScale;//会员订单按比例发放积分策略返积分比  【会员订单-比例-积分】
 
+  private BigDecimal userScoreCScale;//会员订单按比例发放积分策略返积分比  【会员订单-比例-积分】
 
-  private BigDecimal userScoreAScale;//会员订单按比例发放积分策略返红包比
+  private BigDecimal userScoreBScaleB;//会员订单全额发放积分策略返积分比   【会员订单-全额-积分】
 
-  private Integer stageOne;//区间一的概率
+  private BigDecimal userScoreCScaleB;//会员订单全额发放积分策略返积分比   【会员订单-全额-积分】
 
-  private Integer stageTwo;//区间二的概率
+  private BigDecimal userScoreAScale;//会员订单按比例发放积分策略返红包比  【会员订单-比例-红包】
 
-  private Integer stageThree;//区间三的概率
+  private BigDecimal importShareScale; //导流订单分润百分比
 
-  private Integer stageFour;//区间四的概率
+  private BigDecimal memberShareScale; //导流订单分润百分比
 
-  private  Integer regionOne; //区间一 0%～regionOne%
+  private Integer stageOne;//0%~20%
+
+  private Integer stageTwo;//20%~40%
+
+  private Integer stageThree;//40%·60%
+
+  private Integer stageFour;//60%~80%
+
+  private Integer regionOne; //区间一 0%～regionOne%
 
   private Integer regionTwo; //区间二 regionOne%～regionTwo%
 
@@ -48,6 +65,69 @@ public class MerchantRebatePolicy {
 
   private Integer regionFour;//区间4 regionThree%～regionFour%
 
+  @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "merchantRebatePolicy")
+  private List<CommissionStage> commissionStages;
+
+
+  @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "merchantRebatePolicy")
+  private List<RebateStage> rebateStages;
+
+
+  public Integer getCommissionPolicy() {
+    return commissionPolicy;
+  }
+
+  public void setCommissionPolicy(Integer commissionPolicy) {
+    this.commissionPolicy = commissionPolicy;
+  }
+
+  public Integer getRebatePolicy() {
+    return rebatePolicy;
+  }
+
+  public void setRebatePolicy(Integer rebatePolicy) {
+    this.rebatePolicy = rebatePolicy;
+  }
+
+  public BigDecimal getImportScoreCScale() {
+    return importScoreCScale;
+  }
+
+  public void setImportScoreCScale(BigDecimal importScoreCScale) {
+    this.importScoreCScale = importScoreCScale;
+  }
+
+  public BigDecimal getUserScoreCScale() {
+    return userScoreCScale;
+  }
+
+  public void setUserScoreCScale(BigDecimal userScoreCScale) {
+    this.userScoreCScale = userScoreCScale;
+  }
+
+  public BigDecimal getUserScoreCScaleB() {
+    return userScoreCScaleB;
+  }
+
+  public void setUserScoreCScaleB(BigDecimal userScoreCScaleB) {
+    this.userScoreCScaleB = userScoreCScaleB;
+  }
+
+  public BigDecimal getImportShareScale() {
+    return importShareScale;
+  }
+
+  public void setImportShareScale(BigDecimal importShareScale) {
+    this.importShareScale = importShareScale;
+  }
+
+  public BigDecimal getMemberShareScale() {
+    return memberShareScale;
+  }
+
+  public void setMemberShareScale(BigDecimal memberShareScale) {
+    this.memberShareScale = memberShareScale;
+  }
 
   public Integer getRegionOne() {
     return regionOne;
@@ -79,6 +159,22 @@ public class MerchantRebatePolicy {
 
   public void setRegionFour(Integer regionFour) {
     this.regionFour = regionFour;
+  }
+
+  public List<CommissionStage> getCommissionStages() {
+    return commissionStages;
+  }
+
+  public void setCommissionStages(List<CommissionStage> commissionStages) {
+    this.commissionStages = commissionStages;
+  }
+
+  public List<RebateStage> getRebateStages() {
+    return rebateStages;
+  }
+
+  public void setRebateStages(List<RebateStage> rebateStages) {
+    this.rebateStages = rebateStages;
   }
 
   public Long getId() {

@@ -5,6 +5,8 @@ import com.jifenke.lepluslive.lejiauser.domain.entities.RegisterOrigin;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.domain.entities.ScoreB;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.score.domain.entities.ScoreC;
+import com.jifenke.lepluslive.score.repository.ScoreCRepository;
 import com.jifenke.lepluslive.wxpay.domain.entities.Dictionary;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.score.repository.ScoreARepository;
@@ -39,6 +41,9 @@ public class WeiXinUserService {
 
   @Inject
   private ScoreBRepository scoreBRepository;
+
+  @Inject
+  private ScoreCRepository scoreCRepository;
 
   @Inject
   private LeJiaUserRepository leJiaUserRepository;
@@ -85,6 +90,10 @@ public class WeiXinUserService {
       scoreB.setScore(0L);
       scoreB.setLeJiaUser(leJiaUser);
       scoreBRepository.save(scoreB);
+      ScoreC scoreC = new ScoreC();
+      scoreC.setScore(0L);
+      scoreC.setLeJiaUser(leJiaUser);
+      scoreCRepository.save(scoreC);
       weiXinUser.setState(0);
       weiXinUserRepository.save(weiXinUser);
     }

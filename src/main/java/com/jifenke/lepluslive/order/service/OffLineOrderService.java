@@ -4,8 +4,10 @@ import com.jifenke.lepluslive.activity.service.InitialOrderRebateActivityService
 import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
+import com.jifenke.lepluslive.merchant.domain.entities.CommissionStage;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantRebatePolicy;
+import com.jifenke.lepluslive.merchant.domain.entities.RebateStage;
 import com.jifenke.lepluslive.merchant.repository.MerchantRebatePolicyRepository;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
@@ -14,6 +16,7 @@ import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
 import com.jifenke.lepluslive.printer.service.PrinterService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
+import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.MathRandom;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
@@ -30,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedMap;
@@ -65,6 +69,9 @@ public class OffLineOrderService {
 
   @Inject
   private ScoreBService scoreBService;
+
+  @Inject
+  private ScoreCService scoreCService;
 
   @Inject
   private WxTemMsgService wxTemMsgService;
@@ -203,13 +210,13 @@ public class OffLineOrderService {
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 2,
                                    total,
-                                   ljCommission, offLineOrder.getWxCommission());
+                                   ljCommission, offLineOrder.getWxCommission(), offLineOrder);
         } else { //导流订单
           offLineOrder.setRebateWay(1);
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 1,
                                    total,
-                                   ljCommission, offLineOrder.getWxCommission());
+                                   ljCommission, offLineOrder.getWxCommission(), offLineOrder);
         }
       }
     }
@@ -220,9 +227,15 @@ public class OffLineOrderService {
             new BigDecimal(truePay).longValue() - offLineOrder.getTruePayCommission());
     if (rebates != null) {
       offLineOrder.setScoreB(rebates[1]);
+      offLineOrder.setScoreC(rebates[3]);
       offLineOrder.setRebate(rebates[0]);
-      offLineOrder.setLjProfit(rebates[2]);
+      offLineOrder.setNonCriticalRebate(rebates[0]);
+      offLineOrder.setLjProfit(
+          offLineOrder.getLjCommission() - offLineOrder.getRebate() - offLineOrder.getWxCommission()
+          - offLineOrder.getShareMoney());
     }
+    offLineOrder.setPolicy(
+        merchantRebatePolicy.getCommissionPolicy() + "_" + merchantRebatePolicy.getRebatePolicy());
     repository.save(offLineOrder);
     return offLineOrder;
   }
@@ -242,6 +255,34 @@ public class OffLineOrderService {
       } else {
         //对于乐加会员在签约商家消费,消费成功后a,b积分均改变,
         try {
+          if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) { //检查是否为暴击订单
+            Calendar now = Calendar.getInstance();
+            Date end = now.getTime();
+            now.set(Calendar.MILLISECOND, 0);
+            now.set(Calendar.SECOND, 0);
+            now.set(Calendar.MINUTE, 0);
+            now.set(Calendar.HOUR, 0);
+            Date start = now.getTime();
+            if (now.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY && !repository
+                .findByLeJiaUserAndCriticalAndCompleteDateBetween(offLineOrder.getLeJiaUser(), 1,
+                                                                  start, end).isPresent()) {
+              offLineOrder.setCriticalOrder(1); //该笔是暴击订单
+              now.add(Calendar.HOUR_OF_DAY, -3);
+              Date dateStart = now.getTime();
+              now.add(Calendar.HOUR_OF_DAY, 3);
+              now.add(Calendar.SECOND, -1);
+              Date dateEnd = now.getTime();
+              Long
+                  rebateScoreA =
+                  repository.calculateRebateScoreA(offLineOrder.getLeJiaUser().getId(), dateStart,
+                                                   dateEnd);
+              offLineOrder.setRebate(offLineOrder.getRebate() * 2 + rebateScoreA); //暴击返鼓励金
+            }
+            scoreCService.paySuccess(offLineOrder);
+            new Thread(() -> {
+              orderShareService.offLIneOrderShare(offLineOrder);
+            }).start();
+          }
           scoreAService.paySuccessForMember(offLineOrder);
         } catch (Exception e) {
           log.error("该笔订单出现问题===========" + orderSid);
@@ -252,11 +293,7 @@ public class OffLineOrderService {
             .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
 
         //对于返庸订单分润
-        if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
-          new Thread(() -> {
-            orderShareService.offLIneOrderShare(offLineOrder);
-          }).start();
-        }
+
       }
       //首单返红包活动
       new Thread(() -> {
@@ -326,34 +363,40 @@ public class OffLineOrderService {
           offLineOrder.setLjCommission(ljCommission);
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 2,
-                                   scoreA, ljCommission, offLineOrder.getWxCommission());
+                                   scoreA, ljCommission, offLineOrder.getWxCommission(),
+                                   offLineOrder);
         } else { //导流订单
           offLineOrder.setRebateWay(1);
 
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 1,
-                                   scoreA, ljCommission, offLineOrder.getWxCommission());
-//          new Thread(() -> {
-//            orderShareService.offLIneOrderShare(offLineOrder);
-//          }).start();
+                                   scoreA, ljCommission, offLineOrder.getWxCommission(),
+                                   offLineOrder);
         }
       } else {
         rebates =
             merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 0,
                                  scoreA,
-                                 ljCommission, offLineOrder.getWxCommission());
+                                 ljCommission, offLineOrder.getWxCommission(), offLineOrder);
         offLineOrder.setRebateWay(2); //会员普通订单
       }
     }
     if (rebates != null) {
       offLineOrder.setScoreB(rebates[1]);
       offLineOrder.setRebate(rebates[0]);
-      offLineOrder.setLjProfit(rebates[2]);
+      offLineOrder.setLjProfit(
+          offLineOrder.getLjCommission() - offLineOrder.getRebate() - offLineOrder.getWxCommission()
+          - offLineOrder.getShareMoney());
+      offLineOrder.setScoreC(rebates[3]);
+      offLineOrder.setNonCriticalRebate(rebates[0]);
     }
+    offLineOrder.setPolicy(
+        merchantRebatePolicy.getCommissionPolicy() + "_" + merchantRebatePolicy.getRebatePolicy());
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setTransferMoneyFromTruePay(0L);
     scoreAService.paySuccessForMember(offLineOrder);
     scoreBService.paySuccess(offLineOrder);
+    scoreCService.paySuccess(offLineOrder);
     offLineOrder.setCompleteDate(new Date());
 //    merchantService.paySuccess(offLineOrder);
     Long count = countMerchantMonthlyOrder(offLineOrder);
@@ -455,6 +498,154 @@ public class OffLineOrderService {
 
   public synchronized void lockPaySuccess(String orderSid) {
     paySuccess(orderSid);
+  }
+
+
+  public Long[] merchantRebatePolicy(Long scoreA, Long scoreB,
+                                     MerchantRebatePolicy merchantRebatePolicy, Merchant merchant,
+                                     Integer orderType, Long totalPrice, Long ljCommission,
+                                     Long wxCommission, OffLineOrder offLineOrder) {
+    long ljProfit = 0L;
+    long scoreC = 0L;
+    if (orderType == 0) {//0代表普通订单 1导流订单 2 会员订单
+      //普通订单，scoreA=0
+      scoreA = 0L;
+      scoreB = Math.round(totalPrice * merchant.getScoreBRebate().doubleValue() / 10000.0);
+    } else if (orderType == 1) {
+      if (merchantRebatePolicy.getCommissionPolicy() == 0) { //固定策略
+        Long
+            maxScoreA =
+            Math.round(ljCommission * merchant.getScoreARebate().doubleValue() / 100.0);
+        //为最大可获得红包 落桶观察到底是那一部分分账
+        if (merchantRebatePolicy.getRebatePolicy() == 0) { //普通策略发红包
+          scoreA = returnScoreA(MathRandom.PercentageRandom(merchantRebatePolicy.getStageOne(),
+                                                            merchantRebatePolicy.getStageTwo(),
+                                                            merchantRebatePolicy.getStageThree(),
+                                                            merchantRebatePolicy.getStageFour()),
+                                maxScoreA.intValue(), merchantRebatePolicy);
+        } else { //鼓励金策略发红包
+          scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
+        }
+        scoreB = Math.round(
+            totalPrice * merchantRebatePolicy.getImportScoreBScale().doubleValue() / 10000.0);
+        ljProfit = maxScoreA - scoreA;
+        scoreC = Math.round(
+            totalPrice * merchantRebatePolicy.getImportScoreCScale().doubleValue() / 100.0);
+      } else { //阶段策略
+        CommissionStage
+            commissionStage =
+            stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
+        if (commissionStage != null) {
+          offLineOrder.setLjCommission(
+              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+          offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
+          scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
+          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+        }
+        offLineOrder.setShareMoney(Math.round(
+            offLineOrder.getLjCommission() * merchantRebatePolicy.getImportShareScale()
+                .doubleValue()));
+      }
+    } else {//如果是会员订单
+      if (merchantRebatePolicy.getCommissionPolicy() == 0) { //固定策略
+        if (merchantRebatePolicy.getRebateFlag() == 0) {//按比例发放积分和红包
+          Long maxScoreA =
+              Math.round(
+                  ljCommission * merchantRebatePolicy.getUserScoreAScale().doubleValue() / 100.0);
+          if (merchantRebatePolicy.getRebatePolicy() == 0) {
+
+            //为最大可获得红包 落桶观察到底是那一部分分账
+            scoreA = returnScoreA(MathRandom.PercentageRandom(merchantRebatePolicy.getStageOne(),
+                                                              merchantRebatePolicy.getStageTwo(),
+                                                              merchantRebatePolicy.getStageThree(),
+                                                              merchantRebatePolicy.getStageFour()),
+                                  maxScoreA.intValue(), merchantRebatePolicy);
+          } else {
+            scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
+          }
+          scoreB = Math.round(
+              totalPrice * merchantRebatePolicy.getUserScoreBScale().doubleValue() / 10000.0);
+          ljProfit = maxScoreA - scoreA;
+          scoreC = Math.round(
+              totalPrice * merchantRebatePolicy.getUserScoreCScale().doubleValue() / 100.0);
+          offLineOrder.setShareMoney(Math.round(
+              offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
+                  .doubleValue()));
+        } else if (merchantRebatePolicy.getRebateFlag() == 1) {//全额发放红包
+          if (merchantRebatePolicy.getRebatePolicy() == 0) {
+
+            if (ljCommission - wxCommission > 0) { //如果会员佣金大于微信手续费则发红包
+              scoreA = ljCommission - wxCommission;
+            }
+          } else {
+            scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
+          }
+          scoreB =
+              Math.round(
+                  totalPrice * merchantRebatePolicy.getUserScoreBScaleB().doubleValue() / 10000.0);
+          scoreC = Math.round(
+              totalPrice * merchantRebatePolicy.getUserScoreCScaleB().doubleValue() / 100.0);
+          offLineOrder.setShareMoney(Math.round(
+              offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
+                  .doubleValue()));
+        } else {
+          scoreA = 0L;
+          scoreB = Math.round(totalPrice * merchant.getScoreBRebate().doubleValue() / 10000.0);
+        }
+      } else { //阶段策略
+        if (merchantRebatePolicy.getRebateFlag() == 0
+            || merchantRebatePolicy.getRebateFlag() == 1) {
+          CommissionStage
+              commissionStage =
+              stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
+          if (commissionStage != null) {
+            offLineOrder.setLjCommission(
+                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+            offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
+            scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
+            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+            offLineOrder.setShareMoney(Math.round(
+                offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
+                    .doubleValue()));
+          }
+
+        }
+      }
+    }
+    Long[] result = new Long[4];
+    result[0] = scoreA;
+    result[1] = scoreB;
+    result[2] = ljProfit;
+    result[3] = scoreC;
+    return result;
+  }
+
+
+  private CommissionStage stagePolicyCommission(Long totalPrice,
+                                                List<CommissionStage> commissionStages) {
+    CommissionStage stage = null;
+    for (CommissionStage commissionStage : commissionStages) {
+      if (commissionStage.getStart() >= totalPrice && totalPrice <= commissionStage.getEnd()) {
+        stage = commissionStage;
+        break;
+      }
+    }
+    return stage;
+  }
+
+
+  private Long stagePolicyRebate(Long totalPrice, List<RebateStage> rebateStages) {
+    Long scoreA = 0L;
+    for (RebateStage rebateStage : rebateStages) {
+      if (rebateStage.getStart() >= totalPrice && totalPrice <= rebateStage.getEnd()) {
+        scoreA =
+            new Random().nextInt((rebateStage.getRebateEnd().intValue()
+                                  - rebateStage.getRebateStart().intValue() + 1))
+            + rebateStage.getRebateStart();
+        break;
+      }
+    }
+    return scoreA;
   }
 
   public Long[] merchantRebatePolicy(Long scoreA, Long scoreB,
