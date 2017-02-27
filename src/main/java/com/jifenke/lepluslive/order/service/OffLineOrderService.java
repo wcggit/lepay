@@ -31,11 +31,18 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -261,15 +268,16 @@ public class OffLineOrderService {
             now.set(Calendar.MILLISECOND, 0);
             now.set(Calendar.SECOND, 0);
             now.set(Calendar.MINUTE, 0);
-            now.set(Calendar.HOUR, 0);
+            now.set(Calendar.HOUR_OF_DAY, 0);
             Date start = now.getTime();
             if (now.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY && !repository
-                .findByLeJiaUserAndCriticalAndCompleteDateBetween(offLineOrder.getLeJiaUser(), 1,
-                                                                  start, end).isPresent()) {
+                .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(offLineOrder.getLeJiaUser(),
+                                                                       1,
+                                                                       start, end).isPresent()) {
               offLineOrder.setCriticalOrder(1); //该笔是暴击订单
-              now.add(Calendar.HOUR_OF_DAY, -3);
+              now.add(Calendar.DAY_OF_WEEK, -3);
               Date dateStart = now.getTime();
-              now.add(Calendar.HOUR_OF_DAY, 3);
+              now.add(Calendar.DAY_OF_WEEK, 3);
               now.add(Calendar.SECOND, -1);
               Date dateEnd = now.getTime();
               Long
@@ -733,5 +741,95 @@ public class OffLineOrderService {
             + commission * merchantRebatePolicy.getRegionFour() / 100;
     }
     return (long) rebate;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public List<Map> statisticRebateGroupByCompleteDate(LeJiaUser leJiaUser, Date start,
+                                                      Date end, int day) {
+    Boolean gtThurs = day >= 5 || day == 1;
+    String thursday = null;
+    OffLineOrder offLineOrder = null; //暴击订单
+
+    List<Object[]>
+        longs =
+        repository.statisticRebateGroupByCompleteDate(leJiaUser.getId(), start, end);
+
+    Set<String> dates = new HashSet<>();
+    Calendar calendar = new GregorianCalendar();
+    calendar.setTime(start);
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    while (calendar.getTime().before(end)) {
+      Date result = calendar.getTime();
+      dates.add(sdf.format(result));
+      if (gtThurs && calendar.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY) { //今天星期4 查看是否暴击
+        thursday = sdf.format(result);
+        Optional<OffLineOrder>
+            optional =
+            repository
+                .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(leJiaUser, 1, result, end);
+        if (optional.isPresent()) {
+          offLineOrder = optional.get();
+        }
+      }
+      calendar.add(Calendar.DATE, 1);
+    }
+    List<Map> results = new ArrayList<>();
+    boolean flag = true;
+    for (String s : dates) {
+      Map result = new HashMap();
+      result.put("data", s);
+      for (Object[] objects : longs) {
+        if (s.equals((String) objects[1])) {
+          long value = ((BigDecimal) objects[0]).longValue();
+          if (gtThurs) {//今天大于等于星期四
+            if (offLineOrder == null) {//如果没有暴击订单说明无翻倍
+              result.put("value", value / 100.0);
+            } else {//当存在暴击当情况
+              if (thursday.equals(s)) {//今天星期4
+                flag = false;
+                if (value > offLineOrder.getRebate()) {//如果暴击订单返鼓励金不是当前统计值，说明暴击当天消费了2比以上
+                  result.put("value",
+                             offLineOrder.getNonCriticalRebate() / 100.0 + " X 2" + " + " + (value
+                                                                                             - offLineOrder
+                                 .getRebate()));
+                } else {
+                  result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " X 2");
+                }
+              } else {
+                if (flag) {//flag为星期4之前,翻倍显示
+                  result.put("value", value / 100.0 + " X 2");
+                } else {
+                  result.put("value", value / 100.0);
+                }
+              }
+            }
+          } else {
+            result.put("value", value / 100.0);
+          }
+        }
+      }
+      if (!result.containsKey("value")) {
+        result.put("value", 0);
+      }
+      results.add(result);
+    }
+
+    return results;
+  }
+
+  public static void main(String[] args) {
+    Calendar calendar = Calendar.getInstance();
+    int day = 1;//今天星期几
+    List<String> weekends = new ArrayList<>();
+    int toMonday = day == 1 ? 6 : day - 2;
+    Calendar weekStart = Calendar.getInstance();
+    weekStart.add(Calendar.DAY_OF_WEEK, -toMonday);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M.dd");
+    weekends.add(simpleDateFormat.format(weekStart.getTime()));
+    for (int i = 0; i < 6; i++) {
+      weekStart.add(Calendar.DAY_OF_WEEK, 1);
+      weekends.add(simpleDateFormat.format(weekStart.getTime()));
+    }
+    System.out.println(weekends);
   }
 }
