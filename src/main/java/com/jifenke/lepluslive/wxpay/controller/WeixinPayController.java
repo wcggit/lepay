@@ -105,81 +105,72 @@ public class WeixinPayController {
     response.getWriter().write(s);
   }
 
-//  @RequestMapping(value = "/paySuccess")
-//  public ModelAndView goPaySuccessPageForMember(@RequestParam String orderSid, Model model) {
-//    offLineOrderService.checkOrderState(orderSid);
-//    OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
-//    model.addAttribute("offLineOrder", offLineOrder);
-//    model.addAttribute("scoreC", scoreCService.findScoreCByleJiaUser(offLineOrder.getLeJiaUser()));
-//    model.addAttribute("scoreA", scoreAService.findScoreAByLeJiaUser(offLineOrder.getLeJiaUser()));
-//    if (offLineOrder.getRebateWay() != 1 && offLineOrder.getRebateWay() != 3) {
-//      if (offLineOrder.getPolicy().endsWith("1")) {
-//        if (offLineOrder.getRebateWay() == 2 || offLineOrder.getRebateWay() == 6
-//            || offLineOrder.getRebateWay()
-//               == 5) { //鼓励金策略订单类型为【会员订单（普通费率）】或者【普通订单（会员消费）】或者是【会员扫纯支付码】
-//          return MvUtil.go("/weixin/newpolicy/paySuccessNonActivity");
-//        }
-//        if (offLineOrder.getRebateWay() == 0 || offLineOrder.getRebateWay() == 4) {//非会员订单 注册引导
-//          return MvUtil.go("/weixin/newpolicy/paySuccessReceiveMoney");
-//        }
-//      }
-//      return MvUtil.go("/weixin/paySuccessForNoNMember");
-//    } else {
-//      if (offLineOrder.getPolicy().endsWith("1")) { //鼓励金策略订单
-//        Calendar calendar = Calendar.getInstance();
-////        int day = calendar.get(Calendar.DAY_OF_WEEK);//今天星期几
-//        int day = 5;//今天星期几
-//        Date end = calendar.getTime();
-//        model.addAttribute("day", day);
-//        List<String> weekends = new ArrayList<>();
-//        int toMonday = day == 1 ? 6 : day - 2;
-//        Calendar weekStart = Calendar.getInstance();
-//        weekStart.add(Calendar.DAY_OF_WEEK, -toMonday);
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M.dd");
-//        weekends.add(simpleDateFormat.format(weekStart.getTime()));
-//        for (int i = 0; i < 6; i++) {
-//          weekStart.add(Calendar.DAY_OF_WEEK, 1);
-//          weekends.add(simpleDateFormat.format(weekStart.getTime()));
-//        }
-//        model.addAttribute("weekends",weekends);
-//        if (day != 1) {
-//          calendar.set(Calendar.MILLISECOND, 0);
-//          calendar.set(Calendar.SECOND, 0);
-//          calendar.set(Calendar.MINUTE, 0);
-//          calendar.set(Calendar.HOUR_OF_DAY, 0);
-//          calendar.add(Calendar.DAY_OF_WEEK, -(day - 2));
-//          Date start = calendar.getTime();
-//          model.addAttribute("dailyRebate", offLineOrderService
-//              .statisticRebateGroupByCompleteDate(offLineOrder.getLeJiaUser(), start, end, day));
-//        } else {
-//          calendar.set(Calendar.MILLISECOND, 0);
-//          calendar.set(Calendar.SECOND, 0);
-//          calendar.set(Calendar.MINUTE, 0);
-//          calendar.set(Calendar.HOUR, 0);
-//          calendar.add(Calendar.DAY_OF_WEEK, -6);
-//          Date start = calendar.getTime();
-//          model.addAttribute("dailyRebate", offLineOrderService
-//              .statisticRebateGroupByCompleteDate(offLineOrder.getLeJiaUser(), start, end, day));
-//        }
-//        if (day < Calendar.THURSDAY && day > Calendar.SUNDAY) { //星期1 至星期3
-//          return MvUtil.go("/weixin/newpolicy/paySuccessglj");
-//        } else if (day == Calendar.THURSDAY && offLineOrder.getCriticalOrder() == 1) { //暴击订单且星期4
-//          return MvUtil.go("/weixin/newpolicy/paySuccessbj");
-//        } else { //星期5,6,7且星期4非暴击订单
-//          return MvUtil.go("/weixin/newpolicy/paySuccessybj");
-//        }
-//      }
-//      return MvUtil.go("/weixin/paySuccessForMember");
-//    }
-//  }
-
   @RequestMapping(value = "/paySuccess")
-  public ModelAndView goPaySuccessPageForMember(Model model) {
-    OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid("17010416295834626");
+  public ModelAndView goPaySuccessPageForMember(@RequestParam String orderSid, Model model) {
+    offLineOrderService.checkOrderState(orderSid);
+    OffLineOrder offLineOrder = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
     model.addAttribute("offLineOrder", offLineOrder);
     model.addAttribute("scoreC", scoreCService.findScoreCByleJiaUser(offLineOrder.getLeJiaUser()));
     model.addAttribute("scoreA", scoreAService.findScoreAByLeJiaUser(offLineOrder.getLeJiaUser()));
-    return MvUtil.go("/weixin/newpolicy/paySuccessReceiveMoney");
+    if (offLineOrder.getRebateWay() != 1 && offLineOrder.getRebateWay() != 3) {
+      if (offLineOrder.getPolicy().endsWith("1")) {
+        if (offLineOrder.getRebateWay() == 2 || offLineOrder.getRebateWay() == 6
+            || offLineOrder.getRebateWay()
+               == 5) { //鼓励金策略订单类型为【会员订单（普通费率）】或者【普通订单（会员消费）】或者是【会员扫纯支付码】
+          return MvUtil.go("/weixin/newpolicy/paySuccessNonActivity");
+        }
+        if (offLineOrder.getRebateWay() == 0 || offLineOrder.getRebateWay() == 4) {//非会员订单 注册引导
+          return MvUtil.go("/weixin/newpolicy/paySuccessReceiveMoney");
+        }
+      }
+      return MvUtil.go("/weixin/paySuccessForNoNMember");
+    } else {
+      if (offLineOrder.getPolicy().endsWith("1")) { //鼓励金策略订单
+        Calendar calendar = Calendar.getInstance();
+//        int day = calendar.get(Calendar.DAY_OF_WEEK);//今天星期几
+        int day = 5;//今天星期几
+        Date end = calendar.getTime();
+        model.addAttribute("day", day);
+        List<String> weekends = new ArrayList<>();
+        int toMonday = day == 1 ? 6 : day - 2;
+        Calendar weekStart = Calendar.getInstance();
+        weekStart.add(Calendar.DAY_OF_WEEK, -toMonday);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M.dd");
+        weekends.add(simpleDateFormat.format(weekStart.getTime()));
+        for (int i = 0; i < 6; i++) {
+          weekStart.add(Calendar.DAY_OF_WEEK, 1);
+          weekends.add(simpleDateFormat.format(weekStart.getTime()));
+        }
+        model.addAttribute("weekends",weekends);
+        if (day != 1) {
+          calendar.set(Calendar.MILLISECOND, 0);
+          calendar.set(Calendar.SECOND, 0);
+          calendar.set(Calendar.MINUTE, 0);
+          calendar.set(Calendar.HOUR_OF_DAY, 0);
+          calendar.add(Calendar.DAY_OF_WEEK, -(day - 2));
+          Date start = calendar.getTime();
+          model.addAttribute("dailyRebate", offLineOrderService
+              .statisticRebateGroupByCompleteDate(offLineOrder.getLeJiaUser(), start, end, day));
+        } else {
+          calendar.set(Calendar.MILLISECOND, 0);
+          calendar.set(Calendar.SECOND, 0);
+          calendar.set(Calendar.MINUTE, 0);
+          calendar.set(Calendar.HOUR, 0);
+          calendar.add(Calendar.DAY_OF_WEEK, -6);
+          Date start = calendar.getTime();
+          model.addAttribute("dailyRebate", offLineOrderService
+              .statisticRebateGroupByCompleteDate(offLineOrder.getLeJiaUser(), start, end, day));
+        }
+        if (day < Calendar.THURSDAY && day > Calendar.SUNDAY) { //星期1 至星期3
+          return MvUtil.go("/weixin/newpolicy/paySuccessglj");
+        } else if (day == Calendar.THURSDAY && offLineOrder.getCriticalOrder() == 1) { //暴击订单且星期4
+          return MvUtil.go("/weixin/newpolicy/paySuccessbj");
+        } else { //星期5,6,7且星期4非暴击订单
+          return MvUtil.go("/weixin/newpolicy/paySuccessybj");
+        }
+      }
+      return MvUtil.go("/weixin/paySuccessForMember");
+    }
   }
 
 //  @RequestMapping(value = "/paySuccess")
