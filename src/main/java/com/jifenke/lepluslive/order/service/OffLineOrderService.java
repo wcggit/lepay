@@ -783,37 +783,36 @@ public class OffLineOrderService {
           long value = ((BigDecimal) objects[0]).longValue();
           if (gtThurs) {//今天大于等于星期四
             if (offLineOrder == null) {//如果没有暴击订单说明无翻倍
-              result.put("value", value / 100.0);
+              result.put("value", value / 100.0+"");
             } else {//当存在暴击当情况
               if (thursday.equals(s)) {//今天星期4
                 flag = false;
                 if (value > offLineOrder.getRebate()) {//如果暴击订单返鼓励金不是当前统计值，说明暴击当天消费了2比以上
                   result.put("value",
-                             offLineOrder.getNonCriticalRebate() / 100.0 + " X 2" + " + " + (value
+                             offLineOrder.getNonCriticalRebate() / 100.0 + " × 2" + " + " + (value
                                                                                              - offLineOrder
-                                 .getRebate()));
+                                 .getRebate())/100.0);
                 } else {
-                  result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " X 2");
+                  result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " × 2");
                 }
               } else {
                 if (flag) {//flag为星期4之前,翻倍显示
-                  result.put("value", value / 100.0 + " X 2");
+                  result.put("value", value / 100.0 + " × 2");
                 } else {
-                  result.put("value", value / 100.0);
+                  result.put("value", value / 100.0+"");
                 }
               }
             }
           } else {
-            result.put("value", value / 100.0);
+            result.put("value", value / 100.0+"");
           }
         }
       }
       if (!result.containsKey("value")) {
-        result.put("value", 0);
+        result.put("value", "0");
       }
       results.add(result);
     }
-
     return results;
   }
 

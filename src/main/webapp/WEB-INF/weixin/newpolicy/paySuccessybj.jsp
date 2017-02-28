@@ -27,25 +27,27 @@
 </div>
 <ul class="center">
     <li class="pay-num border-1px_bottom ordinry">
-        <p class="clearfix"><span class="left">消费金额：</span><span class="right">¥68.34</span></p>
+        <p class="clearfix"><span class="left">消费金额：</span><span
+                class="right">¥${offLineOrder.totalPrice/100.0}</span></p>
 
-        <p>(微信支付¥40.00，鼓励金支付¥28.34)</p>
+        <p>(微信支付¥${offLineOrder.truePay/100.0}，鼓励金支付¥${offLineOrder.trueScore/100.0})</p>
     </li>
     <li class="confirm-code ordinry">
-        <p class="clearfix"><span class="left">确认码：</span><span class="right">5423</span></p>
+        <p class="clearfix"><span class="left">确认码：</span><span
+                class="right">${offLineOrder.lepayCode}</span></p>
     </li>
     <li class="confirm-code ordinry">
         <p class="clearfix"><span class="left">鼓励金：<a class="rule">活动规则</a></span><span
-                class="right">+ ¥2.5</span></p>
+                class="right">+ ¥${offLineOrder.rebate/100.0}</span></p>
     </li>
 </ul>
 <div class="hr-style"></div>
 <div class="middle">
     <div class="icon"></div>
     <div class="desc">
-        <p>金币账户余:¥14.55</p>
+        <p>金币账户余:¥${scoreC.score}</p>
 
-        <p>你已获得10金币</p>
+        <p>你已获得${scoreC.totalScore}金币</p>
     </div>
     <div class="btn">兑换</div>
 </div>
@@ -90,76 +92,174 @@
             </div>
             <div class="week-center">
                 <ul class="week-list">
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                <a class="day">周一</a>
-                                <a class="date icon-yfb">2.20</a>
-                            </span>
-                        <span class="right money">¥ 0.58</span>
-                    </li>
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                <a class="day">周二</a>
-                                <a class="date icon-yfb">2.20</a>
-                            </span>
-                        <span class="right money">¥ 0.58</span>
-                    </li>
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                <a class="day">周三</a>
-                                <a class="date">2.20</a>
-                            </span>
-                        <span class="right no-money">未支付</span>
-                    </li>
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                <c:if test="${day==5}"> <a class="day">今日</a>
-                                </c:if>
-                                <c:if test="${day!=5}"> <a class="day">周四</a>
-                                </c:if>
-                                <a class="date icon-yfb">2.20</a>
-                            </span>
-                        <span class="right money">¥ 0.58</span>
-                    </li>
+                    <c:if test="${day==2}">
                     <li class="week-item clearfix today">
-                            <span class="left">
-                                <c:if test="${day==6}"> <a class="day">今日</a>
+                            <span class="left"><a class="day">今日</a>
                                 </c:if>
-                                <c:if test="${day!=6}"> <a class="day">周五</a>
+                                <c:if test="${day!=2}">     <li class="week-item clearfix">
+                            <span class="left"><a class="day">周一</a>
                                 </c:if>
-                                <a class="date">2.20</a>
-                            </span>
-                        <span class="right money">¥ 0.58</span>
+                                <c:if test="${dailyRebate[0]!=null}">
+                                <c:if
+                                        test="${dailyRebate[0]['value']=='0'}"><a
+                                        class="date">${weekends[0]}</a></span><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[0]['value'] !='0'}">
+                                    <c:if test="${dailyRebate[0]['value'].contains('×')}"><a
+                                            class="date icon-yfb"></c:if>
+                                        <c:if test="${!dailyRebate[0]['value'].contains('×')}"><a
+                                            class="date"></c:if>
+                                        ${weekends[0]}</a></span><span
+                                        class="right money">¥${dailyRebate[0]['value']}
+                                </c:if></span></c:if>
+                                    <c:if test="${dailyRebate[0]==null}"><a
+                                        class="date">${weekends[0]}</a></span><span
+                            class="right no-money">支付后领取</span></c:if>
                     </li>
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                <c:if test="${day==7}"> <a class="day">今日</a>
+                    <c:if test="${day==3}">
+                    <li class="week-item clearfix today">
+                            <span class="left"><a class="day">今日</a>
                                 </c:if>
-                                <c:if test="${day!=7}"> <a class="day">周六</a>
+                                <c:if test="${day!=3}">     <li class="week-item clearfix">
+                            <span class="left"><a class="day">周二</a>
                                 </c:if>
-                                <a class="date">2.20</a>
-                            </span>
-                        <span class="right no-money">支付后领取</span>
+                                <c:if test="${dailyRebate[1]!=null}">
+                                <c:if
+                                        test="${dailyRebate[1]['value']=='0'}"><a
+                                        class="date">${weekends[1]}</a></span><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[1]['value'] !='0'}">
+                                    <c:if test="${dailyRebate[1]['value'].contains('×')}"><a
+                                            class="date icon-yfb"></c:if>
+                                        <c:if test="${!dailyRebate[1]['value'].contains('×')}"><a
+                                            class="date"></c:if>
+                                        ${weekends[1]}</a></span><span
+                                        class="right money">¥${dailyRebate[1]['value']}
+                                </c:if></span></c:if>
+                                    <c:if test="${dailyRebate[1]==null}"><a
+                                        class="date">${weekends[1]}</a></span><span
+                            class="right no-money">支付后领取</span></c:if>
                     </li>
-                    <li class="week-item clearfix">
-                            <span class="left">
-                                 <c:if test="${day==1}"> <a class="day">今日</a>
+                    <c:if test="${day==4}">
+                    <li class="week-item clearfix today">
+                            <span class="left"><a class="day">今日</a>
+                                </c:if>
+                                <c:if test="${day!=4}">     <li class="week-item clearfix">
+                            <span class="left"><a class="day">周三</a>
+                                </c:if>
+                                    <c:if test="${dailyRebate[2]!=null}">
+                                <c:if
+                                        test="${dailyRebate[2]['value']=='0'}"><a
+                                        class="date">${weekends[2]}</a></span><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[2]['value'] !='0'}">
+                                    <c:if test="${dailyRebate[2]['value'].contains('×')}"><a
+                                            class="date icon-yfb"></c:if>
+                                        <c:if test="${!dailyRebate[2]['value'].contains('×')}"><a
+                                            class="date"></c:if>
+                                        ${weekends[2]}</a></span><span
+                                        class="right money">¥${dailyRebate[2]['value']}
+                                </c:if></span></c:if>
+                                    <c:if test="${dailyRebate[2]==null}"><a
+                                        class="date">${weekends[2]}</a></span><span
+                            class="right no-money">支付后领取</span></c:if>
+                    </li>
+
+                    <c:if test="${day==5}">
+                    <li class="week-item clearfix today">
+                            <span class="left"><a class="day">今日</a>
+                                </c:if>
+                                <c:if test="${day!=5}">     <li class="week-item clearfix">
+                            <span class="left"><a class="day">周四</a>
+                                </c:if>
+                                    <c:if test="${dailyRebate[3]!=null}">
+                                <c:if
+                                        test="${dailyRebate[3]['value']=='0'}"><a
+                                        class="date">${weekends[3]}</a></span><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[3]['value'] !='0'}">
+                                    <c:if test="${dailyRebate[3]['value'].contains('×')}"><a
+                                            class="date icon-yfb"></c:if>
+                                        <c:if test="${!dailyRebate[3]['value'].contains('×')}"><a
+                                            class="date"></c:if>
+                                        ${weekends[3]}</a></span><span
+                                        class="right money">¥${dailyRebate[3]['value']}
+                                </c:if></span></c:if>
+                                    <c:if test="${dailyRebate[3]==null}"><a
+                                        class="date">${weekends[3]}</a></span><span
+                            class="right no-money">支付后领取</span></c:if>
+                    </li>
+                    <c:if test="${day==6}">
+                    <li class="week-item clearfix today">
+                            <span class="left"> <a class="day">今日</a>
+                                </c:if>
+                                <c:if test="${day!=6}">
+                                <li class="week-item clearfix">
+                            <span class="left"> <a class="day">周五</a>
+                                </c:if>
+                                <a class="date">${weekends[4]}</a>
+                            </span>
+                                    <c:if test="${dailyRebate[4]!=null}">
+                                    <c:if
+                                            test="${dailyRebate[4]['value']=='0'}"><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[4]['value'] !='0'}"><span
+                                            class="right money">¥${dailyRebate[4]['value']}</c:if></span></c:if>
+                                    <c:if test="${dailyRebate[4]==null}"> <span
+                                            class="right no-money">支付后领取</span></c:if>
+                                </li>
+
+                                <c:if test="${day==7}">    <li class="week-item clearfix today">
+                            <span class="left"><a class="day">今日</a>
+                                </c:if>
+                                <c:if test="${day!=7}">   <li class="week-item clearfix">
+                            <span class="left"> <a class="day">周六</a>
+                                </c:if>
+                                <a class="date">${weekends[5]}</a>
+                            </span>
+                                    <c:if test="${dailyRebate[5]!=null}">
+                                    <c:if
+                                            test="${dailyRebate[5]['value']=='0'}"><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[5]['value'] !='0'}"><span
+                                            class="right money">¥${dailyRebate[5]['value']}</c:if></span></c:if>
+                                    <c:if test="${dailyRebate[5]==null}"> <span
+                                            class="right no-money">支付后领取</span></c:if>
+                                </li>
+                    <c:if test="${day==1}">
+                    <li class="week-item clearfix today">
+                            <span class="left"><a class="day">今日</a>
                                  </c:if>
-                                <c:if test="${day!=1}"> <a class="day">周日</a>
+                                <c:if test="${day!=1}"> <li class="week-item clearfix">
+                            <span class="left"><a class="day">周日</a>
                                 </c:if>
-                                <a class="date">2.20</a>
+                                <a class="date">${weekends[6]}</a>
                             </span>
-                        <span class="right no-money">支付后领取</span>
-                    </li>
+                                    <c:if test="${dailyRebate[6]!=null}">
+                                    <c:if
+                                            test="${dailyRebate[6]['value']=='0'}"><span
+                                        class="right no-money">未支付</c:if>
+                                    <c:if
+                                            test="${dailyRebate[6]['value'] !='0'}"><span
+                                            class="right money">¥${dailyRebate[6]['value']}</c:if></span></c:if>
+                                    <c:if test="${dailyRebate[6]==null}"> <span
+                                            class="right no-money">支付后领取</span></c:if>
+                                </li>
                 </ul>
                 <div class="sum clearfix">
                     <span class="left">我的鼓励金</span>
-                    <span class="right">¥1.64</span>
+                    <span class="right">¥${scoreA.score/100.0}</span>
                 </div>
-                <div class="today-money">获得<span>¥0.56</span>鼓励金</div>
+                <div class="today-money">获得<span>¥${offLineOrder.rebate/100.0}</span>鼓励金</div>
             </div>
             <div class="week-bottom">
-                <p class="getJB">获得<span>¥2.2</span>金币</p>
+                <p class="getJB">获得<span>¥${offLineOrder.scoreC/100.0}</span>金币</p>
 
                 <div class="btn-confirm">确认</div>
             </div>

@@ -127,8 +127,8 @@ public class WeixinPayController {
     } else {
       if (offLineOrder.getPolicy().endsWith("1")) { //鼓励金策略订单
         Calendar calendar = Calendar.getInstance();
-//        int day = calendar.get(Calendar.DAY_OF_WEEK);//今天星期几
-        int day = 5;//今天星期几
+        int day = calendar.get(Calendar.DAY_OF_WEEK);//今天星期几
+//        int day = 5;//今天星期几
         Date end = calendar.getTime();
         model.addAttribute("day", day);
         List<String> weekends = new ArrayList<>();
