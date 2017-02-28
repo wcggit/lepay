@@ -25,7 +25,10 @@
     <div class="paySuccess-img"></div>
     <p class="paySuccess-ttl">注册成功</p>
 
-    <p class="over">本次消费获得鼓励金：¥0.56</p>
+    <p class="over">本次消费获得鼓励金：¥<fmt:formatNumber type="number"
+                                                 value="${backA/100}"
+                                                 pattern="0.00"
+                                                 maxFractionDigits="2"/></p>
 
     <p class="paySuccess-desc">以后在乐+活动商家消费，每笔都能获得鼓励金</p>
 </div>

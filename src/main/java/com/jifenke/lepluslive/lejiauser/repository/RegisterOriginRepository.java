@@ -2,6 +2,7 @@ package com.jifenke.lepluslive.lejiauser.repository;
 
 
 import com.jifenke.lepluslive.lejiauser.domain.entities.RegisterOrigin;
+import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,4 +11,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface RegisterOriginRepository extends JpaRepository<RegisterOrigin,Long>{
 
+  RegisterOrigin findByMerchantAndOriginType(Merchant merchant, Integer originType);
 }

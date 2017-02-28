@@ -1,22 +1,25 @@
 package com.jifenke.lepluslive.lejiauser.service;
 
-
-import com.jifenke.lepluslive.global.util.MD5Util;
 import com.jifenke.lepluslive.lejiauser.domain.entities.BankCard;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
+import com.jifenke.lepluslive.lejiauser.domain.entities.RegisterOrigin;
 import com.jifenke.lepluslive.lejiauser.repository.BankCardRepository;
 import com.jifenke.lepluslive.lejiauser.repository.LeJiaUserRepository;
 
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
-import com.jifenke.lepluslive.merchant.service.MerchantService;
+import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.partner.domain.entities.Partner;
+import com.jifenke.lepluslive.score.domain.entities.ScoreA;
+import com.jifenke.lepluslive.score.service.ScoreAService;
+import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
+import com.jifenke.lepluslive.wxpay.service.DictionaryService;
+import com.jifenke.lepluslive.wxpay.service.WeiXinUserService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +44,18 @@ public class LeJiaUserService {
 
   @Inject
   private BankCardRepository bankCardRepository;
+
+  @Inject
+  private WeiXinUserService weiXinUserService;
+
+  @Inject
+  private RegisterOriginService registerOriginService;
+
+  @Inject
+  private DictionaryService dictionaryService;
+
+  @Inject
+  private ScoreAService scoreAService;
 
   /**
    * 根据用户ID获取用户信息  16/10/14
@@ -158,13 +173,69 @@ public class LeJiaUserService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void checkUserBindCard(LeJiaUser leJiaUser, String cardNo) {
     if (cardNo != null) {
-      Optional<BankCard> bankCard = bankCardRepository.findByNumberAndState(cardNo,1);
+      Optional<BankCard> bankCard = bankCardRepository.findByNumberAndState(cardNo, 1);
       if (!bankCard.isPresent()) {
         BankCard newCard = new BankCard();
         newCard.setLeJiaUser(leJiaUser);
         newCard.setNumber(cardNo);
         bankCardRepository.save(newCard);
       }
+    }
+  }
+
+  /**
+   * 保存用户信息 16/10/24
+   *
+   * @param leJiaUser 用户
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void saveUser(LeJiaUser leJiaUser) {
+    try {
+      leJiaUserRepository.save(leJiaUser);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * 商户支付页注册 17/2/27
+   *
+   * @param order       订单
+   * @param phoneNumber 填充的手机号码
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public Long registerByPay(OffLineOrder order, String phoneNumber)
+      throws Exception {
+    LeJiaUser leJiaUser = order.getLeJiaUser();
+    ScoreA scoreA = scoreAService.findScoreAByLeJiaUser(leJiaUser);
+    int flag = scoreAService.findByScoreAAndOriginAndOrderSid(scoreA, 9, order.getOrderSid());
+    if (flag == 1) {
+      return 0L;
+    }
+    Merchant merchant = order.getMerchant();
+    try {
+      //发放红包
+      String[] str = dictionaryService.findDictionaryById(53L).getValue().split("_");
+      int min = Integer.valueOf(str[0]);
+      int max = Integer.valueOf(str[1]);
+      long backA = (long) (Math.random() * (max - min)) + min;
+      scoreAService.saveScoreA(scoreA, 1, backA);
+      scoreAService.saveScoreCDetail(scoreA, 1, backA, 9, "手机注册送鼓励金", order.getOrderSid());
+      //保存注册来源
+      Date date = new Date();
+      leJiaUser.setPhoneNumber(phoneNumber);
+      leJiaUser.setPhoneBindDate(date);
+      RegisterOrigin origin = registerOriginService.findAndSaveByMerchantAndOriginType(merchant, 3);
+      leJiaUser.setRegisterOrigin(origin);
+      WeiXinUser weiXinUser = leJiaUser.getWeiXinUser();
+      weiXinUser.setState(1);
+      weiXinUser.setStateDate(date);
+      weiXinUserService.saveWeiXinUser(weiXinUser);
+      leJiaUserRepository.save(leJiaUser);
+      return backA;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException();
     }
   }
 }

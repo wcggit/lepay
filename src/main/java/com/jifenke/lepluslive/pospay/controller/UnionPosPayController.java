@@ -173,8 +173,7 @@ public class UnionPosPayController {
       //对订单进行处理
       String resultCode = "0000";
       try {
-        String orderCode = String.valueOf(parameters.get("req_serial_no"));
-        unionOrderService.paySuccess(order, orderCode);
+        unionOrderService.paySuccess(order, parameters);
       } catch (Exception e) {
         e.printStackTrace();
         resultCode = "9999";
