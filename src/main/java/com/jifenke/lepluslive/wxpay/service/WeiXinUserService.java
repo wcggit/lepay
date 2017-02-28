@@ -98,4 +98,18 @@ public class WeiXinUserService {
       weiXinUserRepository.save(weiXinUser);
     }
   }
+
+  /**
+   * 保存用户微信信息 17/2/27
+   *
+   * @param weiXinUser 用户
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void saveWeiXinUser(WeiXinUser weiXinUser) {
+    try {
+      weiXinUserRepository.save(weiXinUser);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 }

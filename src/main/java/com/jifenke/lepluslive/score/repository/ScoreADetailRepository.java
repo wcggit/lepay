@@ -10,10 +10,13 @@ import java.util.List;
 /**
  * Created by wcg on 16/3/18.
  */
-public interface ScoreADetailRepository extends JpaRepository<ScoreADetail,Long>{
+public interface ScoreADetailRepository extends JpaRepository<ScoreADetail, Long> {
 
   List<ScoreADetail> findAllByScoreA(ScoreA scoreA);
 
   ScoreADetail findOneByOrderSid(String orderSid);
+
+  List<ScoreADetail> findByScoreAAndOriginAndOrderSid(ScoreA scoreA, Integer origin,
+                                                      String orderSid);
 
 }
