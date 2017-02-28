@@ -50,6 +50,8 @@ public class WeiXinUser {
 
   private Integer state; //1 代表会员 0 代表非会员
 
+  private Date stateDate;     //成为会员的时间
+
   private Integer subState = 0;   //关注状态 0=从未关注过   1=关注   2=曾经关注现取消关注
 
   private Date subDate;       //关注时间
@@ -218,5 +220,13 @@ public class WeiXinUser {
 
   public void setState(Integer state) {
     this.state = state;
+  }
+
+  public Date getStateDate() {
+    return stateDate;
+  }
+
+  public void setStateDate(Date stateDate) {
+    this.stateDate = stateDate;
   }
 }

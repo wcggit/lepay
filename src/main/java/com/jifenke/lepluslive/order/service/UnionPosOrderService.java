@@ -186,17 +186,21 @@ public class UnionPosOrderService {
   /**
    * POS机销账通知 16/11/21
    *
-   * @param order 订单
+   * @param order      订单
+   * @param parameters 销账参数
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public void paySuccess(UnionPosOrder order, String orderCode) throws Exception {
+  public void paySuccess(UnionPosOrder order, Map parameters) throws Exception {
 //    Map<Object, Object> result = new HashMap<>();
+    String orderCode = String.valueOf(parameters.get("req_serial_no"));
+    String settleDate = String.valueOf(parameters.get("sett_date"));
     if (order != null) {
       if (order.getState() == 0) {
         order.setState(1);
         order.setOrderCode(orderCode);
         order.setCompleteDate(new Date());
         order.setOrderState(1);
+        order.setSettleDate(settleDate);
 //        scoreAService.paySuccessForMember(order);
 //        scoreBService.paySuccess(order);
         //等待分润及绑定
@@ -208,7 +212,7 @@ public class UnionPosOrderService {
   }
 
   /**
-   * POS机销账冲正通知 16/11/23
+   * POS机销账撤销和冲正通知 16/11/23
    *
    * @param order 订单
    */

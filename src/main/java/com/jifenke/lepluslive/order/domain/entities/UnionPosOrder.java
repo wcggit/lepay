@@ -28,6 +28,8 @@ public class UnionPosOrder implements Order {
 
   private String orderCode; //银联商务销账流水号，用于对账及撤销
 
+  private String settleDate;  //清算日期  YYYYMMDD
+
   private Date createdDate;
 
   private Date completeDate;
@@ -285,4 +287,11 @@ public class UnionPosOrder implements Order {
     this.rebateWay = rebateWay;
   }
 
+  public String getSettleDate() {
+    return settleDate;
+  }
+
+  public void setSettleDate(String settleDate) {
+    this.settleDate = settleDate;
+  }
 }

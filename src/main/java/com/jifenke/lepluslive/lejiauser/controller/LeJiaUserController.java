@@ -1,8 +1,10 @@
 package com.jifenke.lepluslive.lejiauser.controller;
 
 import com.jifenke.lepluslive.global.util.LejiaResult;
+import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
+import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
 import com.jifenke.lepluslive.order.service.UnionPosOrderService;
 import com.jifenke.lepluslive.pospay.domain.UserResult;
@@ -10,11 +12,13 @@ import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -113,6 +117,39 @@ public class LeJiaUserController {
                                         @RequestParam Integer currPage) {
     List<Map> list = userService.findUserByMerchantAndPage(merchantId, currPage);
     return LejiaResult.ok(list);
+  }
+
+  /**
+   * 线下支付成功页面 输入手机号,点击领取红包 17/02/27
+   *
+   * @param phoneNumber 手机号
+   * @param orderSid    订单号
+   * @param token       LeJiaUser.userSid
+   */
+  @RequestMapping(value = "/encourage", method = RequestMethod.GET)
+  public ModelAndView subPageOpen(@RequestParam String phoneNumber, @RequestParam String orderSid,
+                                  @RequestParam String token, Model model) {
+    OffLineOrder order = offLineOrderService.findOffLineOrderByOrderSid(orderSid);
+    LeJiaUser user = userService.findUserByUserSid(token);
+    Long backA = 0L;
+    if (order != null && user != null) {
+      if (user.getId().equals(order.getLeJiaUser().getId())) {
+        //是否已被占用
+        LeJiaUser leJiaUser = userService.findUserByPhoneNumber(phoneNumber);
+        if (leJiaUser != null && !user.getId().equals(leJiaUser.getId())) {
+          leJiaUser.setPhoneNumber("");
+          userService.saveUser(leJiaUser);
+        }
+        //派发红包，填充手机号码成为会员
+        try {
+          backA = userService.registerByPay(order, phoneNumber);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    model.addAttribute("backA", backA);
+    return MvUtil.go("/weixin/newpolicy/registerSuccess");
   }
 
 
