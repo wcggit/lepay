@@ -754,7 +754,7 @@ public class OffLineOrderService {
         longs =
         repository.statisticRebateGroupByCompleteDate(leJiaUser.getId(), start, end);
 
-    Set<String> dates = new HashSet<>();
+    List<String> dates = new ArrayList<>();
     Calendar calendar = new GregorianCalendar();
     calendar.setTime(start);
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");

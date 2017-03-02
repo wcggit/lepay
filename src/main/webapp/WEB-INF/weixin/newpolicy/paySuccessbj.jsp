@@ -148,7 +148,7 @@
                     </li>
                     <li class="week-item clearfix ">
                             <span class="left">
-                                <a class="day">周5</a>
+                                <a class="day">周五</a>
                                 <a class="date">${weekends[4]}</a>
                             </span>
                         <span class="right no-money">支付后领取</span>
