@@ -548,11 +548,11 @@ public class OffLineOrderService {
               Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
           offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
           scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
         }
         offLineOrder.setShareMoney(Math.round(
             offLineOrder.getLjCommission() * merchantRebatePolicy.getImportShareScale()
-                .doubleValue()/100.0));
+                .doubleValue() / 100.0));
       }
     } else {//如果是会员订单
       if (merchantRebatePolicy.getCommissionPolicy() == 0) { //固定策略
@@ -578,7 +578,7 @@ public class OffLineOrderService {
               totalPrice * merchantRebatePolicy.getUserScoreCScale().doubleValue() / 100.0);
           offLineOrder.setShareMoney(Math.round(
               offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                  .doubleValue()/100.0));
+                  .doubleValue() / 100.0));
         } else if (merchantRebatePolicy.getRebateFlag() == 1) {//全额发放红包
           if (merchantRebatePolicy.getRebatePolicy() == 0) {
 
@@ -595,7 +595,7 @@ public class OffLineOrderService {
               totalPrice * merchantRebatePolicy.getUserScoreCScaleB().doubleValue() / 100.0);
           offLineOrder.setShareMoney(Math.round(
               offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                  .doubleValue()/100.0));
+                  .doubleValue() / 100.0));
         } else {
           scoreA = 0L;
           scoreB = Math.round(totalPrice * merchant.getScoreBRebate().doubleValue() / 10000.0);
@@ -611,10 +611,10 @@ public class OffLineOrderService {
                 Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
             offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
             scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
             offLineOrder.setShareMoney(Math.round(
                 offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                    .doubleValue()/100.0));
+                    .doubleValue() / 100.0));
           }
 
         }
@@ -783,7 +783,7 @@ public class OffLineOrderService {
           long value = ((BigDecimal) objects[0]).longValue();
           if (gtThurs) {//今天大于等于星期四
             if (offLineOrder == null) {//如果没有暴击订单说明无翻倍
-              result.put("value", value / 100.0+"");
+              result.put("value", value / 100.0 + "");
             } else {//当存在暴击当情况
               if (thursday.equals(s)) {//今天星期4
                 flag = false;
@@ -791,7 +791,7 @@ public class OffLineOrderService {
                   result.put("value",
                              offLineOrder.getNonCriticalRebate() / 100.0 + " × 2" + " + " + (value
                                                                                              - offLineOrder
-                                 .getRebate())/100.0);
+                                 .getRebate()) / 100.0);
                 } else {
                   result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " × 2");
                 }
@@ -799,12 +799,12 @@ public class OffLineOrderService {
                 if (flag) {//flag为星期4之前,翻倍显示
                   result.put("value", value / 100.0 + " × 2");
                 } else {
-                  result.put("value", value / 100.0+"");
+                  result.put("value", value / 100.0 + "");
                 }
               }
             }
           } else {
-            result.put("value", value / 100.0+"");
+            result.put("value", value / 100.0 + "");
           }
         }
       }
@@ -817,18 +817,7 @@ public class OffLineOrderService {
   }
 
   public static void main(String[] args) {
-    Calendar calendar = Calendar.getInstance();
-    int day = 1;//今天星期几
-    List<String> weekends = new ArrayList<>();
-    int toMonday = day == 1 ? 6 : day - 2;
-    Calendar weekStart = Calendar.getInstance();
-    weekStart.add(Calendar.DAY_OF_WEEK, -toMonday);
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M.dd");
-    weekends.add(simpleDateFormat.format(weekStart.getTime()));
-    for (int i = 0; i < 6; i++) {
-      weekStart.add(Calendar.DAY_OF_WEEK, 1);
-      weekends.add(simpleDateFormat.format(weekStart.getTime()));
-    }
-    System.out.println(weekends);
+    System.out.println(0x7fffffff);
+    System.out.println(0b10000000000000000000000000000001);
   }
 }
