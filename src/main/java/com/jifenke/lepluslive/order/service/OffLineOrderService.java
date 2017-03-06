@@ -545,7 +545,7 @@ public class OffLineOrderService {
             stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
         if (commissionStage != null) {
           offLineOrder.setLjCommission(
-              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
           offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
           scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
           scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
@@ -608,7 +608,7 @@ public class OffLineOrderService {
               stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
           if (commissionStage != null) {
             offLineOrder.setLjCommission(
-                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
             offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
             scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
             scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
