@@ -633,7 +633,7 @@ public class OffLineOrderService {
                                                 List<CommissionStage> commissionStages) {
     CommissionStage stage = null;
     for (CommissionStage commissionStage : commissionStages) {
-      if (commissionStage.getStart() >= totalPrice && totalPrice <= commissionStage.getEnd()) {
+      if (commissionStage.getStart() <= totalPrice && totalPrice <= commissionStage.getEnd()) {
         stage = commissionStage;
         break;
       }
@@ -645,7 +645,7 @@ public class OffLineOrderService {
   private Long stagePolicyRebate(Long totalPrice, List<RebateStage> rebateStages) {
     Long scoreA = 0L;
     for (RebateStage rebateStage : rebateStages) {
-      if (rebateStage.getStart() >= totalPrice && totalPrice <= rebateStage.getEnd()) {
+      if (rebateStage.getStart() <= totalPrice && totalPrice <= rebateStage.getEnd()) {
         scoreA =
             new Random().nextInt((rebateStage.getRebateEnd().intValue()
                                   - rebateStage.getRebateStart().intValue() + 1))
