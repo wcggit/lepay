@@ -39,7 +39,7 @@
 <div class="hr-style"></div>
 <div class="bottom">
   <div class="ad">
-    <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt="">
+    <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt="" onclick="window.location.href='http://www.lepluslife.com/front/order/weixin/recharge'">
   </div>
 </div>
 

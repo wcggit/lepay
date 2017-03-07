@@ -49,12 +49,12 @@
 
         <p>你已获得${scoreC.totalScore}金币</p>
     </div>
-    <div class="btn">兑换</div>
+    <div class="btn" onclick="window.location.href='http://www.lepluslife.com/front/gold/weixin'">兑换</div>
 </div>
 <div class="hr-style"></div>
 <div class="bottom">
     <div class="ad">
-        <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt="">
+        <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt="" onclick="window.location.href='http://www.lepluslife.com/front/order/weixin/recharge'">
     </div>
 </div>
 <div class="modle">
