@@ -33,12 +33,12 @@
         <p class="form-name">￥<font>${totalPrice/100.0}</font>
         </p>
         <label for="monetary">
-            使用红包（元）<input type="text" id="monetary" placeholder="不使用红包" readonly><span
+            使用鼓励金（元）<input type="text" id="monetary" placeholder="不使用鼓励金" readonly><span
                 class="close"></span><span class="guangBiao"></span>
         </label>
 
         <p class="back-hongbao"><span
-                class="icon-hongbao"></span>您有<span>￥<font>${scoreA.score/100.0}</font></span>红包余额
+                class="icon-hongbao"></span>您有<span>￥<font>${scoreA.score/100.0}</font></span>鼓励金余额
         </p>
 
         <div class="need-pay"><span>还需支付</span><span>￥<font></font></span></div>
