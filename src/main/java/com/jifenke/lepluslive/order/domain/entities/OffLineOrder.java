@@ -79,11 +79,11 @@ public class OffLineOrder implements Order {
 
   private Long scoreC = 0L; //发放金币
 
-  private Long shareMoney; //每笔订单分润金额
+  private Long shareMoney=0L; //每笔订单分润金额
 
   private BigDecimal commissionScale; // 订单费率
 
-  private String policy = ""; //佣金策略_红包策略 如 0_0 代表固定佣金策略 和普通红包策略
+  private String policy = "0_0"; //佣金策略_红包策略 如 0_0 代表固定佣金策略 和普通红包策略
 
   private Integer criticalOrder = 0; //是否暴击订单 0 非暴击 1 暴击
 

@@ -134,11 +134,13 @@ public class OffLineOrderService {
         offLineOrder.setLjCommission(
             Math.round(truePirce * merchant.getLjCommission().doubleValue() / 100.0));
         offLineOrder.setTruePayCommission(offLineOrder.getLjCommission());
+        offLineOrder.setCommissionScale(merchant.getLjCommission());
       }
     } else {
       if (merchant.getLjBrokerage().doubleValue() != 0) {
         offLineOrder.setLjCommission(
             Math.round(truePirce * merchant.getLjBrokerage().doubleValue() / 100.0));
+        offLineOrder.setCommissionScale(merchant.getLjBrokerage());
       }
       offLineOrder.setTruePayCommission(offLineOrder.getLjCommission());
     }
