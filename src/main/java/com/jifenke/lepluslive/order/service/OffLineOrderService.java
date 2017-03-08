@@ -31,11 +31,18 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -261,15 +268,16 @@ public class OffLineOrderService {
             now.set(Calendar.MILLISECOND, 0);
             now.set(Calendar.SECOND, 0);
             now.set(Calendar.MINUTE, 0);
-            now.set(Calendar.HOUR, 0);
+            now.set(Calendar.HOUR_OF_DAY, 0);
             Date start = now.getTime();
             if (now.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY && !repository
-                .findByLeJiaUserAndCriticalAndCompleteDateBetween(offLineOrder.getLeJiaUser(), 1,
-                                                                  start, end).isPresent()) {
+                .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(offLineOrder.getLeJiaUser(),
+                                                                       1,
+                                                                       start, end).isPresent()) {
               offLineOrder.setCriticalOrder(1); //该笔是暴击订单
-              now.add(Calendar.HOUR_OF_DAY, -3);
+              now.add(Calendar.DAY_OF_WEEK, -3);
               Date dateStart = now.getTime();
-              now.add(Calendar.HOUR_OF_DAY, 3);
+              now.add(Calendar.DAY_OF_WEEK, 3);
               now.add(Calendar.SECOND, -1);
               Date dateEnd = now.getTime();
               Long
@@ -537,14 +545,14 @@ public class OffLineOrderService {
             stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
         if (commissionStage != null) {
           offLineOrder.setLjCommission(
-              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
           offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
           scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
         }
         offLineOrder.setShareMoney(Math.round(
             offLineOrder.getLjCommission() * merchantRebatePolicy.getImportShareScale()
-                .doubleValue()));
+                .doubleValue() / 100.0));
       }
     } else {//如果是会员订单
       if (merchantRebatePolicy.getCommissionPolicy() == 0) { //固定策略
@@ -570,7 +578,7 @@ public class OffLineOrderService {
               totalPrice * merchantRebatePolicy.getUserScoreCScale().doubleValue() / 100.0);
           offLineOrder.setShareMoney(Math.round(
               offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                  .doubleValue()));
+                  .doubleValue() / 100.0));
         } else if (merchantRebatePolicy.getRebateFlag() == 1) {//全额发放红包
           if (merchantRebatePolicy.getRebatePolicy() == 0) {
 
@@ -587,7 +595,7 @@ public class OffLineOrderService {
               totalPrice * merchantRebatePolicy.getUserScoreCScaleB().doubleValue() / 100.0);
           offLineOrder.setShareMoney(Math.round(
               offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                  .doubleValue()));
+                  .doubleValue() / 100.0));
         } else {
           scoreA = 0L;
           scoreB = Math.round(totalPrice * merchant.getScoreBRebate().doubleValue() / 10000.0);
@@ -600,13 +608,13 @@ public class OffLineOrderService {
               stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
           if (commissionStage != null) {
             offLineOrder.setLjCommission(
-                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()));
+                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
             offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
             scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue());
+            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
             offLineOrder.setShareMoney(Math.round(
                 offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
-                    .doubleValue()));
+                    .doubleValue() / 100.0));
           }
 
         }
@@ -625,7 +633,7 @@ public class OffLineOrderService {
                                                 List<CommissionStage> commissionStages) {
     CommissionStage stage = null;
     for (CommissionStage commissionStage : commissionStages) {
-      if (commissionStage.getStart() >= totalPrice && totalPrice <= commissionStage.getEnd()) {
+      if (commissionStage.getStart() <= totalPrice && totalPrice <= commissionStage.getEnd()) {
         stage = commissionStage;
         break;
       }
@@ -637,7 +645,7 @@ public class OffLineOrderService {
   private Long stagePolicyRebate(Long totalPrice, List<RebateStage> rebateStages) {
     Long scoreA = 0L;
     for (RebateStage rebateStage : rebateStages) {
-      if (rebateStage.getStart() >= totalPrice && totalPrice <= rebateStage.getEnd()) {
+      if (rebateStage.getStart() <= totalPrice && totalPrice <= rebateStage.getEnd()) {
         scoreA =
             new Random().nextInt((rebateStage.getRebateEnd().intValue()
                                   - rebateStage.getRebateStart().intValue() + 1))
@@ -733,5 +741,83 @@ public class OffLineOrderService {
             + commission * merchantRebatePolicy.getRegionFour() / 100;
     }
     return (long) rebate;
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public List<Map> statisticRebateGroupByCompleteDate(LeJiaUser leJiaUser, Date start,
+                                                      Date end, int day) {
+    Boolean gtThurs = day >= 5 || day == 1;
+    String thursday = null;
+    OffLineOrder offLineOrder = null; //暴击订单
+
+    List<Object[]>
+        longs =
+        repository.statisticRebateGroupByCompleteDate(leJiaUser.getId(), start, end);
+
+    List<String> dates = new ArrayList<>();
+    Calendar calendar = new GregorianCalendar();
+    calendar.setTime(start);
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    while (calendar.getTime().before(end)) {
+      Date result = calendar.getTime();
+      dates.add(sdf.format(result));
+      if (gtThurs && calendar.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY) { //今天星期4 查看是否暴击
+        thursday = sdf.format(result);
+        Optional<OffLineOrder>
+            optional =
+            repository
+                .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(leJiaUser, 1, result, end);
+        if (optional.isPresent()) {
+          offLineOrder = optional.get();
+        }
+      }
+      calendar.add(Calendar.DATE, 1);
+    }
+    List<Map> results = new ArrayList<>();
+    boolean flag = true;
+    for (String s : dates) {
+      Map result = new HashMap();
+      result.put("data", s);
+      for (Object[] objects : longs) {
+        if (s.equals((String) objects[1])) {
+          long value = ((BigDecimal) objects[0]).longValue();
+          if (gtThurs) {//今天大于等于星期四
+            if (offLineOrder == null) {//如果没有暴击订单说明无翻倍
+              result.put("value", value / 100.0 + "");
+            } else {//当存在暴击当情况
+              if (thursday.equals(s)) {//今天星期4
+                flag = false;
+                if (value > offLineOrder.getRebate()) {//如果暴击订单返鼓励金不是当前统计值，说明暴击当天消费了2比以上
+                  result.put("value",
+                             offLineOrder.getNonCriticalRebate() / 100.0 + " × 2" + " + " + (value
+                                                                                             - offLineOrder
+                                 .getRebate()) / 100.0);
+                } else {
+                  result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " × 2");
+                }
+              } else {
+                if (flag) {//flag为星期4之前,翻倍显示
+                  result.put("value", value / 100.0 + " × 2");
+                } else {
+                  result.put("value", value / 100.0 + "");
+                }
+              }
+            }
+          } else {
+            result.put("value", value / 100.0 + "");
+          }
+        }
+      }
+      if (!result.containsKey("value")) {
+        result.put("value", "0");
+      }
+      results.add(result);
+    }
+    return results;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(0x7fffffff);
+    System.out.println(0b10000000000000000000000000000001);
   }
 }

@@ -27,9 +27,13 @@ public interface OffLineOrderRepository extends JpaRepository<OffLineOrder, Long
   @Query(value = "select count(*),SUM(total_price) from off_line_order where le_jia_user_id = ?1 and merchant_id = ?2 and state = 1", nativeQuery = true)
   List<Object[]> countByLeJiaUserAndMerchantAndState(Long leJiaUserId, Long merchantId);
 
-  Optional<OffLineOrder> findByLeJiaUserAndCriticalAndCompleteDateBetween(LeJiaUser leJiaUser, int i, Date start,
+  Optional<OffLineOrder> findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(LeJiaUser leJiaUser, int i, Date start,
                                                         Date end);
 
   @Query(value = "select sum(rebate) from off_line_order where le_jia_user_id = ?1 and state = 1 and (rebate_way = 1 or rebate_way = 3) and complete_date between ?2 and ?3", nativeQuery = true)
   Long calculateRebateScoreA(Long leJiaUserId, Date dateStart, Date dateEnd);
+
+  @Query(value = "select sum(rebate),DATE_FORMAT(complete_date,'%Y%m%d') from off_line_order where le_jia_user_id = ?1 and state = 1 and (rebate_way = 1 or rebate_way = 3) and complete_date between ?2 and ?3  group by DATE_FORMAT(complete_date,'%Y%m%d')", nativeQuery = true)
+  List<Object[]> statisticRebateGroupByCompleteDate(Long id, Date start, Date end);
+
 }
