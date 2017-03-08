@@ -248,43 +248,41 @@ public class OffLineOrderService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public void paySuccess(String orderSid) {
-    OffLineOrder offLineOrder = repository.findByOrderSid(orderSid);
+  public void paySuccess(OffLineOrder offLineOrder) {
     if (offLineOrder.getState() == 0) {
       offLineOrder.setCompleteDate(new Date());
       if (offLineOrder.getRebateWay() == 0) {
         //对于非会员 消费后只增加b积分
         scoreBService.paySuccess(offLineOrder);
-        //如果是会员在非签约商家消费,同样要处理红包
-//        if (offLineOrder.getTrueScore() != 0) {
-//          scoreAService.paySuccessForMember(offLineOrder);
-//        }
       } else {
         //对于乐加会员在签约商家消费,消费成功后a,b积分均改变,
         try {
-          if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) { //检查是否为暴击订单
-            Calendar now = Calendar.getInstance();
-            Date end = now.getTime();
-            now.set(Calendar.MILLISECOND, 0);
-            now.set(Calendar.SECOND, 0);
-            now.set(Calendar.MINUTE, 0);
-            now.set(Calendar.HOUR_OF_DAY, 0);
-            Date start = now.getTime();
-            if (now.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY && !repository
-                .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(offLineOrder.getLeJiaUser(),
-                                                                       1,
-                                                                       start, end).isPresent()) {
-              offLineOrder.setCriticalOrder(1); //该笔是暴击订单
-              now.add(Calendar.DAY_OF_WEEK, -3);
-              Date dateStart = now.getTime();
-              now.add(Calendar.DAY_OF_WEEK, 3);
-              now.add(Calendar.SECOND, -1);
-              Date dateEnd = now.getTime();
-              Long
-                  rebateScoreA =
-                  repository.calculateRebateScoreA(offLineOrder.getLeJiaUser().getId(), dateStart,
-                                                   dateEnd);
-              offLineOrder.setRebate(offLineOrder.getRebate() * 2 + rebateScoreA); //暴击返鼓励金
+          if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
+            if (offLineOrder.getPolicy().endsWith("1")) {//如果是鼓励金策略检查是否为暴击订单
+              Calendar now = Calendar.getInstance();
+              Date end = now.getTime();
+              now.set(Calendar.MILLISECOND, 0);
+              now.set(Calendar.SECOND, 0);
+              now.set(Calendar.MINUTE, 0);
+              now.set(Calendar.HOUR_OF_DAY, 0);
+              Date start = now.getTime();
+              if (now.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY && !repository
+                  .findByLeJiaUserAndCriticalOrderAndCompleteDateBetween(
+                      offLineOrder.getLeJiaUser(),
+                      1,
+                      start, end).isPresent()) {
+                offLineOrder.setCriticalOrder(1); //该笔是暴击订单
+                now.add(Calendar.DAY_OF_WEEK, -3);
+                Date dateStart = now.getTime();
+                now.add(Calendar.DAY_OF_WEEK, 3);
+                now.add(Calendar.SECOND, -1);
+                Date dateEnd = now.getTime();
+                Long
+                    rebateScoreA =
+                    repository.calculateRebateScoreA(offLineOrder.getLeJiaUser().getId(), dateStart,
+                                                     dateEnd);
+                offLineOrder.setRebate(offLineOrder.getRebate() * 2 + rebateScoreA); //暴击返鼓励金
+              }
             }
             scoreCService.paySuccess(offLineOrder);
             new Thread(() -> {
@@ -293,7 +291,7 @@ public class OffLineOrderService {
           }
           scoreAService.paySuccessForMember(offLineOrder);
         } catch (Exception e) {
-          log.error("该笔订单出现问题===========" + orderSid);
+          log.error("该笔订单出现问题===========" + offLineOrder.getOrderSid());
         }
         scoreBService.paySuccess(offLineOrder);
         //对于会员,判断是否需要绑定商户和合伙人
@@ -304,15 +302,15 @@ public class OffLineOrderService {
 
       }
       //首单返红包活动
-      new Thread(() -> {
-        initialOrderRebateActivityService.checkActivity(offLineOrder);
-      }).start();
+//      new Thread(() -> {
+//        initialOrderRebateActivityService.checkActivity(offLineOrder);
+//      }).start();
       offLineOrder.setState(1);
       repository.save(offLineOrder);
       //调易连云打印机接口
       try {
         new Thread(() -> {
-          printerService.addReceipt(orderSid);
+          printerService.addReceipt(offLineOrder.getOrderSid());
         }).start();
       } catch (Exception e) {
       }
@@ -342,7 +340,6 @@ public class OffLineOrderService {
         merchantRebatePolicy =
         merchantRebatePolicyRepository.findByMerchantId(Long.parseLong(merchantId));
     offLineOrder.setMerchant(merchant);
-    offLineOrder.setState(1);
     offLineOrder.setPayWay(new PayWay(payWay));
     Long rebateScoreA = 0L;
     Long rebateScoreB = 0L;
@@ -402,33 +399,13 @@ public class OffLineOrderService {
         merchantRebatePolicy.getCommissionPolicy() + "_" + merchantRebatePolicy.getRebatePolicy());
     offLineOrder.setTransferMoney(offLineOrder.getTotalPrice() - offLineOrder.getLjCommission());
     offLineOrder.setTransferMoneyFromTruePay(0L);
-    scoreAService.paySuccessForMember(offLineOrder);
-    scoreBService.paySuccess(offLineOrder);
-    scoreCService.paySuccess(offLineOrder);
-    offLineOrder.setCompleteDate(new Date());
-//    merchantService.paySuccess(offLineOrder);
+    paySuccess(offLineOrder);
     Long count = countMerchantMonthlyOrder(offLineOrder);
     offLineOrder.setMonthlyOrderCount(++count);
     wxTemMsgService.sendToClient(offLineOrder);
     wxTemMsgService.sendToMerchant(offLineOrder);
     offLineOrder.setMessageState(1);
-    //对于返庸订单分润
-    if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
-      new Thread(() -> {
-        orderShareService.offLIneOrderShare(offLineOrder);
-      }).start();
-    }
     repository.save(offLineOrder);
-    //判断是否需要绑定商户
-    leJiaUserService
-        .checkUserBindMerchant(offLineOrder.getLeJiaUser(), offLineOrder.getMerchant());
-    //调易连云打印机接口
-    try {
-      new Thread(() -> {
-        printerService.addReceipt(offLineOrder.getOrderSid());
-      }).start();
-    } catch (Exception e) {
-    }
     return offLineOrder;
   }
 
@@ -448,7 +425,7 @@ public class OffLineOrderService {
           //对订单进行处理
           weixinPayLogService.savePayLog(orderSId, returnCode, resultCode, tradeState);
           checkMessageState(orderSId);
-          paySuccess(orderSId);
+          paySuccess(offLineOrder);
         }
       }
     }
@@ -505,7 +482,7 @@ public class OffLineOrderService {
   }
 
   public synchronized void lockPaySuccess(String orderSid) {
-    paySuccess(orderSid);
+    paySuccess(repository.findByOrderSid(orderSid));
   }
 
 
@@ -545,10 +522,10 @@ public class OffLineOrderService {
             stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
         if (commissionStage != null) {
           offLineOrder.setLjCommission(
-              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
+              Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue() / 100.0));
           offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
           scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
+          scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue() / 100.0);
         }
         offLineOrder.setShareMoney(Math.round(
             offLineOrder.getLjCommission() * merchantRebatePolicy.getImportShareScale()
@@ -608,10 +585,12 @@ public class OffLineOrderService {
               stagePolicyCommission(totalPrice, merchantRebatePolicy.getCommissionStages());
           if (commissionStage != null) {
             offLineOrder.setLjCommission(
-                Math.round(totalPrice * commissionStage.getCommissionScale().doubleValue()/100.0));
+                Math.round(
+                    totalPrice * commissionStage.getCommissionScale().doubleValue() / 100.0));
             offLineOrder.setCommissionScale(commissionStage.getCommissionScale());
             scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
-            scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue()/100.0);
+            scoreC =
+                Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue() / 100.0);
             offLineOrder.setShareMoney(Math.round(
                 offLineOrder.getLjCommission() * merchantRebatePolicy.getMemberShareScale()
                     .doubleValue() / 100.0));
