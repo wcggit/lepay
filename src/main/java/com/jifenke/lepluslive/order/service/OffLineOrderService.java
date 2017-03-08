@@ -816,8 +816,8 @@ public class OffLineOrderService {
     return results;
   }
 
-  public static void main(String[] args) {
-    System.out.println(0x7fffffff);
-    System.out.println(0b10000000000000000000000000000001);
-  }
+//  public static void main(String[] args) {
+//    System.out.println(0x7fffffff);
+//    System.out.println(0b10000000000000000000000000000001);
+//  }
 }
