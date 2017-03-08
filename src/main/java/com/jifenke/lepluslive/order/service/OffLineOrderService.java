@@ -191,6 +191,7 @@ public class OffLineOrderService {
                   .divide(new BigDecimal(100))
                   .doubleValue());
       offLineOrder.setLjCommission(ljCommission);
+      offLineOrder.setCommissionScale(merchant.getLjCommission());
       offLineOrder.setTruePayCommission(truePayCommission);
       //代表联盟商户
       if (merchant.getPartnership() != 0) {
@@ -213,6 +214,7 @@ public class OffLineOrderService {
                       .divide(new BigDecimal(100))
                       .doubleValue());
           offLineOrder.setLjCommission(ljCommission);
+          offLineOrder.setCommissionScale(merchant.getMemberCommission());
           offLineOrder.setTruePayCommission(truePayCommission);
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 2,
@@ -350,7 +352,7 @@ public class OffLineOrderService {
           Math.round(new BigDecimal(scoreA).multiply(merchant.getLjCommission())
                          .divide(new BigDecimal(100)).doubleValue());
       offLineOrder.setLjCommission(ljCommission);
-
+      offLineOrder.setCommissionScale(merchant.getLjCommission());
       if (merchant.getPartnership() != 0) { //代表乐加会员在签约商家消费
         if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId() == merchant
             .getId()) {
@@ -366,6 +368,7 @@ public class OffLineOrderService {
                       .divide(new BigDecimal(100))
                       .doubleValue());
           offLineOrder.setLjCommission(ljCommission);
+          offLineOrder.setCommissionScale(merchant.getMemberCommission());
           rebates =
               merchantRebatePolicy(rebateScoreA, rebateScoreB, merchantRebatePolicy, merchant, 2,
                                    scoreA, ljCommission, offLineOrder.getWxCommission(),
