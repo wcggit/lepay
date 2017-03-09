@@ -45,16 +45,19 @@
 <div class="middle">
     <div class="icon"></div>
     <div class="desc">
-        <p>金币账户余:¥${scoreC.score}</p>
+        <p>金币账户余额:¥${scoreC.score/100.0}</p>
 
-        <p>你已获得${scoreC.totalScore}金币</p>
+        <p>你已获得${offLineOrder.scoreC/100.0}金币</p>
     </div>
-    <div class="btn" onclick="window.location.href='http://www.lepluslife.com/front/gold/weixin'">兑换</div>
+    <div class="btn" onclick="window.location.href='http://www.lepluslife.com/front/gold/weixin'">
+        兑换
+    </div>
 </div>
 <div class="hr-style"></div>
 <div class="bottom">
     <div class="ad">
-        <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt="" onclick="window.location.href='http://www.lepluslife.com/front/order/weixin/recharge'">
+        <img src="${policyResourceUrl}/images/paySuccess_noActivity/rechage_card_banner.png" alt=""
+             onclick="window.location.href='http://www.lepluslife.com/front/order/weixin/recharge'">
     </div>
 </div>
 <div class="modle">
@@ -84,7 +87,7 @@
     </div>
     <div class="modle-close"></div>
 </div>
-<div class="modle-week">
+<div class="modle-week" style="display: none">
     <div class="week-wrapper clearfix">
         <div class="week-main">
             <div class="week-top">
@@ -109,10 +112,10 @@
                                     <c:if test="${dailyRebate[0]['value'].contains('×')}"><a
                                             class="date icon-yfb"></c:if>
                                         <c:if test="${!dailyRebate[0]['value'].contains('×')}"><a
-                                            class="date"></c:if>
-                                        ${weekends[0]}</a></span><span
+                                                class="date"></c:if>
+                                                ${weekends[0]}</a></span><span
                                         class="right money">¥${dailyRebate[0]['value']}
-                                </c:if></span></c:if>
+                                    </c:if></span></c:if>
                                     <c:if test="${dailyRebate[0]==null}"><a
                                         class="date">${weekends[0]}</a></span><span
                             class="right no-money">支付后领取</span></c:if>
@@ -134,10 +137,10 @@
                                     <c:if test="${dailyRebate[1]['value'].contains('×')}"><a
                                             class="date icon-yfb"></c:if>
                                         <c:if test="${!dailyRebate[1]['value'].contains('×')}"><a
-                                            class="date"></c:if>
-                                        ${weekends[1]}</a></span><span
+                                                class="date"></c:if>
+                                                ${weekends[1]}</a></span><span
                                         class="right money">¥${dailyRebate[1]['value']}
-                                </c:if></span></c:if>
+                                    </c:if></span></c:if>
                                     <c:if test="${dailyRebate[1]==null}"><a
                                         class="date">${weekends[1]}</a></span><span
                             class="right no-money">支付后领取</span></c:if>
@@ -159,10 +162,10 @@
                                     <c:if test="${dailyRebate[2]['value'].contains('×')}"><a
                                             class="date icon-yfb"></c:if>
                                         <c:if test="${!dailyRebate[2]['value'].contains('×')}"><a
-                                            class="date"></c:if>
-                                        ${weekends[2]}</a></span><span
+                                                class="date"></c:if>
+                                                ${weekends[2]}</a></span><span
                                         class="right money">¥${dailyRebate[2]['value']}
-                                </c:if></span></c:if>
+                                    </c:if></span></c:if>
                                     <c:if test="${dailyRebate[2]==null}"><a
                                         class="date">${weekends[2]}</a></span><span
                             class="right no-money">支付后领取</span></c:if>
@@ -185,10 +188,10 @@
                                     <c:if test="${dailyRebate[3]['value'].contains('×')}"><a
                                             class="date icon-yfb"></c:if>
                                         <c:if test="${!dailyRebate[3]['value'].contains('×')}"><a
-                                            class="date"></c:if>
-                                        ${weekends[3]}</a></span><span
+                                                class="date"></c:if>
+                                                ${weekends[3]}</a></span><span
                                         class="right money">¥${dailyRebate[3]['value']}
-                                </c:if></span></c:if>
+                                    </c:if></span></c:if>
                                     <c:if test="${dailyRebate[3]==null}"><a
                                         class="date">${weekends[3]}</a></span><span
                             class="right no-money">支付后领取</span></c:if>
@@ -267,6 +270,12 @@
     </div>
 </div>
 <script type="text/javascript">
+    document.title = "${offLineOrder.merchant.name}";
+    $(document).ready(function () {
+        if (${offLineOrder.rebate!=0}) {
+            $(".modle-week").show();
+        }
+    });
     $('.rule').on('touchstart', function () {
         $('.modle').css({'display': 'block'});
     })

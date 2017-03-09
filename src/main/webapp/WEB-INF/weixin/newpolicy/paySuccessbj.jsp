@@ -45,9 +45,9 @@
 <div class="middle">
     <div class="icon"></div>
     <div class="desc">
-        <p>金币账户余:¥${scoreC.score}</p>
+        <p>金币账户余额:¥${scoreC.score/100.0}</p>
 
-        <p>你已获得${scoreC.totalScore}金币</p>
+        <p>你已获得${offLineOrder.scoreC/100.0}金币</p>
     </div>
     <div class="btn" onclick="window.location.href='http://www.lepluslife.com/front/gold/weixin'">兑换</div>
 </div>
@@ -84,7 +84,7 @@
     </div>
     <div class="modle-close"></div>
 </div>
-<div class="modle-week">
+<div class="modle-week" style="display: none">
     <div class="week-wrapper clearfix">
         <div class="week-main">
             <div class="week-top">
@@ -183,6 +183,12 @@
     </div>
 </div>
 <script type="text/javascript">
+    document.title = "${offLineOrder.merchant.name}";
+    $(document).ready(function () {
+        if (${offLineOrder.rebate!=0}) {
+            $(".modle-week").show();
+        }
+    });
     $('.rule').on('touchstart', function () {
         $('.modle').css({'display': 'block'});
     })

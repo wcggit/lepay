@@ -37,9 +37,10 @@ public class ScoreCService {
   public void paySuccess(OffLineOrder offLineOrder) {
     if (offLineOrder.getScoreC() > 0) {
       ScoreC scoreC = findScoreCByleJiaUser(offLineOrder.getLeJiaUser());
+      scoreC.setScore(scoreC.getScore() + offLineOrder.getScoreC());
       scoreC.setTotalScore(scoreC.getTotalScore() + offLineOrder.getScoreC());
       ScoreCDetail scoreCDetail = new ScoreCDetail();
-      scoreCDetail.setOperate(offLineOrder.getMerchant().getName() + "消费返积分");
+      scoreCDetail.setOperate(offLineOrder.getMerchant().getName() + "消费返金币");
       scoreCDetail.setOrigin(4);
       scoreCDetail.setOrderSid(offLineOrder.getOrderSid());
       scoreCDetail.setScoreC(scoreC);
