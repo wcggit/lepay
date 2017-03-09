@@ -67,7 +67,8 @@ public class ttt {
 
   @Test
   public void tttt() {
-    orderShareService.offLIneOrderShare(posOrderRepository.findOne(515L));
+    offLineOrderService.paySuccess(offLineOrderService.findOffLineOrderByOrderSid("16052619101942339"));
+//    orderShareService.offLIneOrderShare(posOrderRepository.findOne(515L));
   }
 
 //  public static void main(String[] args) {
