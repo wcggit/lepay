@@ -74,6 +74,7 @@
     <div class="modle-close"></div>
 </div>
 <script type="text/javascript">
+    document.title = "${offLineOrder.merchant.name}";
     $('.btn').on('touchstart', function () {
         $('.modle').css({'display': 'block'});
     })
