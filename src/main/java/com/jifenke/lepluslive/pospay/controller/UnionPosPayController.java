@@ -11,6 +11,7 @@ import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.order.service.UnionPosOrderLogService;
 import com.jifenke.lepluslive.order.service.UnionPosOrderService;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -81,6 +82,11 @@ public class UnionPosPayController {
           .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
     }
     return LejiaResult.ok();
+  }
+
+  @RequestMapping(value = "/union_pay/{event}", method = RequestMethod.GET)
+  public String unSupport(HttpServletRequest request, @PathVariable String event) {
+    return "Request method 'GET' not supported";
   }
 
   /**
@@ -309,8 +315,10 @@ public class UnionPosPayController {
     returnMap.put("msg_crrltn_id", map.get("msg_crrltn_id"));
     returnMap.put("msg_flg", "1");
     returnMap.put("msg_sender", Constants.MSG_SENDER);//分配的渠道号
-    returnMap.put("msg_time", map.get("msg_time"));
-    returnMap.put("msg_sys_sn", map.get("msg_sys_sn"));
+    returnMap.put("msg_time", map.get("msg_time") != null ? map.get("msg_time")
+                                                          : new SimpleDateFormat("YYYYMMddHHmmss")
+                                  .format(new Date()));
+    returnMap.put("msg_sys_sn", map.get("msg_sys_sn") != null ? map.get("msg_sys_sn") : "");
     returnMap.put("msg_ver", "0.1");
     if (map.get("msg_crrltn_id") == null) {
       returnMap.put("msg_crrltn_id", UUID.randomUUID().toString().replace("-", ""));
@@ -345,7 +353,6 @@ public class UnionPosPayController {
       return returnMap;
     }
     if (map.get("msg_time") == null) {
-      returnMap.put("msg_time", new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()));
       returnMap.put("msg_rsp_code", 9996);
       returnMap.put("msg_rsp_desc", "'msg_time'字段缺失");
     }
