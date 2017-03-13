@@ -532,10 +532,10 @@ public class OffLineOrderService {
           scoreA = stagePolicyRebate(totalPrice, merchantRebatePolicy.getRebateStages());
           scoreC = Math.round(totalPrice * commissionStage.getScoreCScale().doubleValue() / 100.0);
         }
+      }
         offLineOrder.setShareMoney(Math.round(
             offLineOrder.getLjCommission() * merchantRebatePolicy.getImportShareScale()
                 .doubleValue() / 100.0));
-      }
     } else {//如果是会员订单
       if (merchantRebatePolicy.getCommissionPolicy() == 0) { //固定策略
         if (merchantRebatePolicy.getRebateFlag() == 0) {//按比例发放积分和红包
