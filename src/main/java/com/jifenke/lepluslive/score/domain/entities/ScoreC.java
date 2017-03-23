@@ -24,14 +24,14 @@ public class ScoreC {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  private Long score;
+  private Long score=0L;
 
   @OneToOne
   private LeJiaUser leJiaUser;
 
   private Date createdDate = new Date();
 
-  private Long totalScore;
+  private Long totalScore=0L;
 
   private Date lastUpdateDate;
 
