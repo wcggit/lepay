@@ -6,8 +6,10 @@ import com.jifenke.lepluslive.global.util.WeixinPayUtil;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantWeiXinUser;
+import com.jifenke.lepluslive.merchant.domain.entities.TemporaryMerchantUserShop;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.merchant.service.MerchantWeiXinUserService;
+import com.jifenke.lepluslive.merchant.service.TemporaryMerchantUserShopService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.wxpay.domain.entities.WxTemMsg;
 import com.jifenke.lepluslive.wxpay.repository.WxTemMsgRepository;
@@ -58,6 +60,9 @@ public class WxTemMsgService {
 
   @Inject
   private DictionaryService dictionaryService;
+
+  @Inject
+  private TemporaryMerchantUserShopService temporaryMerchantUserShopService;
 
   private static final Logger log = LoggerFactory.getLogger(WxTemMsgService.class);
 
@@ -234,14 +239,18 @@ public class WxTemMsgService {
       mapRemark.put("color", "#173177");
       HashMap<String, Object> map2 = new HashMap<>();
       map2.put("remark", mapRemark);
-      List<MerchantUser>
-          merchantUsers =
-          merchantService.findMerchantUserByMerchant(offLineOrder
-                                                         .getMerchant());
-      for (MerchantUser merchantUser : merchantUsers) {
+//      List<MerchantUser>
+//          merchantUsers =
+//          merchantService.findMerchantUserByMerchant(offLineOrder
+//                                                         .getMerchant());
+//      for (MerchantUser merchantUser : merchantUsers) {
+      List<TemporaryMerchantUserShop>
+          list =
+          temporaryMerchantUserShopService.findAllByMerchant(offLineOrder.getMerchant());
+      for (TemporaryMerchantUserShop s : list) {
         List<MerchantWeiXinUser>
             merchantWeiXinUsers =
-            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser);
+            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(s.getMerchantUser());
         for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
           sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
                          offLineOrder.getOrderSid(), 9L, map2);
@@ -368,15 +377,18 @@ public class WxTemMsgService {
       mapRemark.put("color", "#173177");
       HashMap<String, Object> map2 = new HashMap<>();
       map2.put("remark", mapRemark);
-      List<MerchantUser>
-          merchantUsers =
-          merchantService.findMerchantUserByMerchant(merchant);
-      for (MerchantUser merchantUser : merchantUsers) {
+//      List<MerchantUser>
+//          merchantUsers =
+//          merchantService.findMerchantUserByMerchant(merchant);
+      List<TemporaryMerchantUserShop>
+          list =
+          temporaryMerchantUserShopService.findAllByMerchant(merchant);
+      for (TemporaryMerchantUserShop s : list) {
         List<MerchantWeiXinUser>
             merchantWeiXinUsers =
-            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser);
+            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(s.getMerchantUser());
         for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
-          sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
+          sendTemMessage(merchantWeiXinUser.getOpenId(), 8L, keys,
                          orderSid, 9L, map2);
         }
       }
