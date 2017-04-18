@@ -181,4 +181,24 @@ public class MerchantService {
         merchantWallet.getTotalTransferMoney() + transferMoney);
     merchantWalletRepository.save(merchantWallet);
   }
+
+  /**
+   * 查询某一商户下所有门店  2017/01/24
+   *
+   * @param merchantUser 商户
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public List<Merchant> countByMerchantUser(MerchantUser merchantUser) {
+    return merchantRepository.findByMerchantUser(merchantUser);
+  }
+
+  /**
+   * 查询某一账号下所有可管理的门店  2017/04/10
+   *
+   * @param merchantUserId 账户ID
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public List<Merchant> countByMerchantUser(Long merchantUserId) {
+    return merchantRepository.findByMerchantUser(merchantUserId);
+  }
 }

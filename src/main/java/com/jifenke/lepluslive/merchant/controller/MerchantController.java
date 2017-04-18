@@ -8,15 +8,17 @@ import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.pospay.domain.MerchantResult;
 
-import io.swagger.annotations.ApiOperation;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
+
+import io.swagger.annotations.ApiOperation;
 
 /**
  * 商户相关 Created by zhangwen on 16/10/10.
@@ -36,29 +38,41 @@ public class MerchantController {
    */
   @ApiOperation(value = "pos机商户登录")
   @RequestMapping(value = "/login", method = RequestMethod.POST)
-  public
-  @ResponseBody
-  LejiaResult login(@RequestParam String name, @RequestParam String pwd) {
+  public LejiaResult login(@RequestParam String name, @RequestParam String pwd) {
 
     MerchantUser merchantUser = merchantService.findMerchantUserByName(name);
     if (merchantUser != null) {
       String origin = MD5Util.MD5Encode(pwd, "utf-8");
       if (merchantUser.getPassword().equals(origin)) {
-        MerchantResult result = new MerchantResult();
-        Merchant merchant = merchantUser.getMerchant();
-        result.setId(merchant.getId());
-        result.setPartnership(merchant.getPartnership());
-        result.setAccountId(merchantUser.getId());
-        result.setAccount(name);
-        MerchantInfo info = merchant.getMerchantInfo();
-        String qrCode = "";
-        if (info != null) {
-          if (info.getTicket() != null) {
-            qrCode = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + info.getTicket();
+        String merchantName = "";
+        List<Merchant> list;
+        if (merchantUser.getType() == 8) {
+          list = merchantService.countByMerchantUser(merchantUser);
+        } else {
+          list = merchantService.countByMerchantUser(merchantUser.getId());
+        }
+        List<MerchantResult> result = new ArrayList<>();
+        if (list != null) {
+          merchantName = list.get(0).getMerchantUser().getMerchantName();
+          for (Merchant merchant : list) {
+            MerchantResult merchantResult = new MerchantResult();
+            merchantResult.setId(merchant.getId());
+            merchantResult.setPartnership(merchant.getPartnership());
+            merchantResult.setAccountId(merchantUser.getId());
+            merchantResult.setAccount(name);
+            merchantResult.setMerchantName(merchant.getName());
+            MerchantInfo info = merchant.getMerchantInfo();
+            String qrCode = "";
+            if (info != null) {
+              if (info.getTicket() != null) {
+                qrCode = "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + info.getTicket();
+              }
+            }
+            merchantResult.setQrCode(qrCode);
+            result.add(merchantResult);
           }
         }
-        result.setQrCode(qrCode);
-        return LejiaResult.ok(result);
+        return LejiaResult.build(200, merchantName, result);
       }
     }
     return LejiaResult.build(8001, "用户名或密码错误");
@@ -73,9 +87,7 @@ public class MerchantController {
    */
   @ApiOperation(value = "pos机商户登录密码修改")
   @RequestMapping(value = "/editPwd", method = RequestMethod.POST)
-  public
-  @ResponseBody
-  LejiaResult editPwd(@RequestParam Long accountId, @RequestParam String newPwd,
+  public LejiaResult editPwd(@RequestParam Long accountId, @RequestParam String newPwd,
                       @RequestParam String pwd) {
 
     MerchantUser merchantUser = merchantService.findMerchantUserById(accountId);

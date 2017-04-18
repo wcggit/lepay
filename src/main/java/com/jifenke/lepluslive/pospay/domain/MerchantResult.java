@@ -11,6 +11,8 @@ public class MerchantResult {
 
   private String account;  //账户名称
 
+  private String merchantName;  //门店名称
+
   private Long accountId; //账户信息(MerchantUserId)
 
   private String qrCode; //商户永久二维码
@@ -53,5 +55,13 @@ public class MerchantResult {
 
   public void setAccountId(Long accountId) {
     this.accountId = accountId;
+  }
+
+  public String getMerchantName() {
+    return merchantName;
+  }
+
+  public void setMerchantName(String merchantName) {
+    this.merchantName = merchantName;
   }
 }
