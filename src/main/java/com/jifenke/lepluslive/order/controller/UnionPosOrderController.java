@@ -39,15 +39,14 @@ public class UnionPosOrderController {
    */
   @ApiOperation(value = "POS机吊起支付插件前创建订单")
   @RequestMapping(value = "/create", method = RequestMethod.POST)
-  public
-  @ResponseBody
-  LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
+  public LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
                           @RequestParam Long userId,
                           @RequestParam Long totalPrice, @RequestParam Long truePrice,
-                          @RequestParam Long trueScore) {
+                          @RequestParam Long trueScore, @RequestParam Integer channel) {
     Map
         result =
-        orderService.createOrder(merchantId, account, userId, totalPrice, truePrice, trueScore);
+        orderService
+            .createOrder(merchantId, account, userId, totalPrice, truePrice, trueScore, channel);
     if (!"200".equals("" + result.get("status"))) {
       return LejiaResult
           .build(Integer.valueOf("" + result.get("status")), "" + result.get("msg"));
@@ -62,9 +61,7 @@ public class UnionPosOrderController {
    */
   @ApiOperation(value = "银联POS机查看订单详情")
   @RequestMapping(value = "/find", method = RequestMethod.POST)
-  public
-  @ResponseBody
-  LejiaResult find(@RequestParam Long orderId) {
+  public LejiaResult find(@RequestParam Long orderId) {
 
     UnionPosOrder order = orderService.findUOrderById(orderId);
     if (order != null) {

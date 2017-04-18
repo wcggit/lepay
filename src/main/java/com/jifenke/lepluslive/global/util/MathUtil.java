@@ -18,12 +18,4 @@ public class MathUtil {
     return Math.round(val1.multiply(val2).divide(d100, 4, BigDecimal.ROUND_HALF_UP).doubleValue());
   }
 
-  /**
-   * 银联商务计算专业返B积分 val1*val2/10000四舍五入取整
-   */
-  public static long resultB(BigDecimal val1, BigDecimal val2) {
-    return Math
-        .round(val1.multiply(val2).divide(d10000, 4, BigDecimal.ROUND_HALF_UP).doubleValue());
-  }
-
 }
