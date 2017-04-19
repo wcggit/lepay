@@ -29,13 +29,13 @@ public class MerchantUnionPos {
 
   private BigDecimal scoreARebate;//导流订单返红包比
 
-  private BigDecimal scoreBRebate; //导流订单返积分比
+  private BigDecimal scoreBRebate; //导流订单返金币比
 
   private BigDecimal userScoreARebate; //会员订单返红包比
 
-  private BigDecimal userScoreBRebate; //会员订单返积分比
+  private BigDecimal userScoreBRebate; //会员订单返金币比
 
-  private BigDecimal userGeneralBRebate; //会员普通订单积分发放比|会员普通订单不发红包
+  private BigDecimal userGeneralBRebate; //会员普通订单积分发放比|会员普通订单不发红包 //暂时废弃，默认0
 
   private BigDecimal userGeneralACommission; //红包标准手续费率|当会员订单【普通费率】使用了红包时，红包扣除该费率后结算给商户
 

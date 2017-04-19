@@ -43,7 +43,9 @@ public class UnionPosOrder implements Order {
   private Merchant merchant;
 
   //记录的是实际的会员与商户关系
-  private Integer rebateWay; //返利方式,如果为0 代表非会员普通订单 则只返b积分 如果为1 导流订单 2 会员普通订单 3会员订单
+  private Integer rebateWay = 0; //返利方式,如果为0 代表非会员普通订单 则只返c金币 如果为1 导流订单 2 会员普通订单 3会员订单
+
+  private Integer profit = 1;  //是否注册  1=是  否的话，不会分润,如果是导流，反鼓励金、红包、红包手续费会根据实付鼓励金重新计算
 
   private Long commission = 0L; //总佣金
   //有些订单是会员订单但是按照导流订单费率结算，由于银联只有两种rebateWay：1和3
@@ -57,7 +59,7 @@ public class UnionPosOrder implements Order {
 
   private Long rebate = 0L; //返利红包
 
-  private Long scoreB = 0L; //发放积分
+  private Long scoreB = 0L; //发放金币
 
   private Integer state = 0; //支付状态 1=已支付
 
@@ -75,7 +77,9 @@ public class UnionPosOrder implements Order {
 
   private Long trueScore = 0L; //实际使用红包
 
-  private Integer paidType;  //1纯刷卡   2纯红包  3银行卡+红包
+  private Integer paidType;  //1纯通道（刷卡|纯微信|纯支付宝）   2纯鼓励金 3通道+红包
+
+  private Integer channel = 0;  //0=刷卡|1=微信|2=支付宝|3=纯鼓励金
 
   private String account;  //操作账户名
 
@@ -191,8 +195,9 @@ public class UnionPosOrder implements Order {
     this.leJiaUser = leJiaUser;
   }
 
+  // todo:注意：return 的是 commission
   public Long getLjCommission() {
-    return ljCommission;
+    return commission;
   }
 
   public void setLjCommission(Long ljCommission) {
@@ -293,5 +298,21 @@ public class UnionPosOrder implements Order {
 
   public void setSettleDate(String settleDate) {
     this.settleDate = settleDate;
+  }
+
+  public Integer getChannel() {
+    return channel;
+  }
+
+  public void setChannel(Integer channel) {
+    this.channel = channel;
+  }
+
+  public Integer getProfit() {
+    return profit;
+  }
+
+  public void setProfit(Integer profit) {
+    this.profit = profit;
   }
 }

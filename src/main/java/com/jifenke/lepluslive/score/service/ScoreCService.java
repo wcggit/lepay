@@ -2,6 +2,7 @@ package com.jifenke.lepluslive.score.service;
 
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
+import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.score.domain.entities.ScoreC;
 import com.jifenke.lepluslive.score.domain.entities.ScoreCDetail;
 import com.jifenke.lepluslive.score.repository.ScoreCDetailRepository;
@@ -49,6 +50,28 @@ public class ScoreCService {
       scoreCRepository.save(scoreC);
     }
 
+  }
+
+  /**
+   * 银联商务销账金币发放  2017/4/12
+   *
+   * @param order 银联订单
+   */
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void paySuccess(UnionPosOrder order) {
+    if (order.getScoreB() > 0 && order.getLeJiaUser() != null) {
+      ScoreC scoreC = findScoreCByleJiaUser(order.getLeJiaUser());
+      scoreC.setScore(scoreC.getScore() + order.getScoreB());
+      scoreC.setTotalScore(scoreC.getTotalScore() + order.getScoreB());
+      ScoreCDetail scoreCDetail = new ScoreCDetail();
+      scoreCDetail.setOperate(order.getMerchant().getName() + "消费返金币");
+      scoreCDetail.setOrigin(4);
+      scoreCDetail.setOrderSid(order.getOrderSid());
+      scoreCDetail.setScoreC(scoreC);
+      scoreCDetail.setNumber(order.getScoreB());
+      scoreCDetailRepository.save(scoreCDetail);
+      scoreCRepository.save(scoreC);
+    }
   }
 
 }
