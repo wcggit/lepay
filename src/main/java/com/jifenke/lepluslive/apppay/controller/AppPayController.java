@@ -118,7 +118,7 @@ public class AppPayController {
         if (weiXinUser == null) {
           return LejiaResult.build(402, "未找到微信信息");
         }
-        offLineOrder = offLineOrderService.createOffLineOrderForNoNMember(price,
+        offLineOrder = offLineOrderService.createOffLineOrderForNoNMember(price,price,
                                                                           merchantId,
                                                                           weiXinUser,
                                                                           true, 3L);
@@ -137,7 +137,7 @@ public class AppPayController {
         if (scoreA.getScore() == 0) {//如果用户红包为0,直接生成订单吊起支付
           offLineOrder =
               offLineOrderService
-                  .createOffLineOrderForMember(price, merchantId, "0", price, leJiaUser, 3L);
+                  .createOffLineOrderForMember(price, merchantId, "0", price,price, leJiaUser, 3L);
           SortedMap sortedMap = buildAppOrder(request, offLineOrder);
           if (sortedMap != null) {
             return LejiaResult.build(200, "ok", sortedMap);
@@ -203,7 +203,7 @@ public class AppPayController {
           return LejiaResult.build(401, "红包不等于总金额");
         }
         try {
-          offLineOrder = offLineOrderService.payByScoreA(token, merchantId, totalPrice, 4L);
+          offLineOrder = offLineOrderService.payByScoreA(token, merchantId, totalPrice,totalPrice, 4L);
           Map map = paySuccessData(offLineOrder); //封装返回数据
           return LejiaResult.ok(map);
         } catch (Exception e) {
@@ -213,7 +213,7 @@ public class AppPayController {
         offLineOrder =
             offLineOrderService
                 .createOffLineOrderForMember(truePrice, Long.parseLong(merchantId), trueScore,
-                                             totalPrice, leJiaUser, 3L);
+                                             totalPrice,totalPrice, leJiaUser, 3L);
         SortedMap sortedMap = buildAppOrder(request, offLineOrder);
         if (sortedMap != null) {
           return LejiaResult.build(200, "ok", sortedMap);

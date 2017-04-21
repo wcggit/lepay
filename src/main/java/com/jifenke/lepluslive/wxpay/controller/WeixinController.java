@@ -7,10 +7,13 @@ import com.jifenke.lepluslive.global.util.WeixinPayUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantStoredActivity;
 import com.jifenke.lepluslive.merchant.service.MerchantScanPayWayService;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.service.OffLineOrderService;
+import com.jifenke.lepluslive.score.domain.entities.ScoreD;
+import com.jifenke.lepluslive.score.service.ScoreDService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
@@ -21,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -38,7 +40,6 @@ import java.util.Optional;
 import java.util.SortedMap;
 
 import javax.inject.Inject;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -81,6 +82,9 @@ public class WeixinController {
 
   @Inject
   private MerchantScanPayWayService scanPayWayService;
+
+  @Inject
+  private ScoreDService scoreDService;
 
 // String openid = "oVmqjxLVGMaHMX7dRsAzZg7BlpgE";
 
@@ -125,6 +129,22 @@ public class WeixinController {
               .addAttribute("scoreA",
                             scoreAService.findScoreAByLeJiaUser(weiXinUser.getLeJiaUser()));
           model.addAttribute("ljopenid", openid);
+        }
+      }
+      //增加储值业务
+      MerchantStoredActivity
+          merchantStoreActivity =
+          merchantService.findMerchantStoreActivity(merchant.getMerchantUser());
+      if (merchantStoreActivity != null) { //商户开启了储值，查看会员储值是否不为为0
+        ScoreD
+            scoreD =
+            scoreDService.findScoreDByleJiaUserAndMerchantUser(weiXinUser.getLeJiaUser(),
+                                                               merchantStoreActivity
+                                                                   .getMerchantUser());
+        if (scoreD != null && scoreD.getScore() != 0) {
+          model.addAttribute("scoreD", scoreD);
+          model.addAttribute("merchantStoreActivity", merchantStoreActivity);
+          return MvUtil.go("/stored/storedPay");
         }
       }
 
@@ -194,7 +214,7 @@ public class WeixinController {
     OffLineOrder
         offLineOrder =
         offLineOrderService
-            .createOffLineOrderForNoNMember(truePrice, merchantId, weiXinUser, pure, 1L);
+            .createOffLineOrderForNoNMember(truePrice,truePrice, merchantId, weiXinUser, pure, 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -252,7 +272,7 @@ public class WeixinController {
     OffLineOrder
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
-                                                        strs[4], leJiaUserService
+                                                        strs[4],strs[4], leJiaUserService
                 .findUserByUserSid(strs[2]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
@@ -284,7 +304,7 @@ public class WeixinController {
     OffLineOrder
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[1], Long.parseLong(strs[2]), "0",
-                                                        strs[1], leJiaUserService
+                                                        strs[1], strs[1], leJiaUserService
                 .findUserByUserSid(strs[0]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
@@ -313,7 +333,7 @@ public class WeixinController {
     String result = Des.strDec(ext, "lepluslife", null, null);
     String[] strs = result.split(" ");
     try {
-      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2], 2L);
+      OffLineOrder offLineOrder = offLineOrderService.payByScoreA(strs[0], strs[1], strs[2],strs[2], 2L);
       return LejiaResult.build(200, "", offLineOrder);
     } catch (Exception e) {
       return LejiaResult.build(500, "出现未知错误,请联系管理员");

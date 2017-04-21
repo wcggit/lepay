@@ -30,7 +30,7 @@ public class OffLineOrder implements Order {
 
   private String orderSid = MvUtil.getOrderNumber();
 
-  private Date createdDate;
+  private Date createdDate = new Date();
 
   private Date completeDate;
 
@@ -43,7 +43,7 @@ public class OffLineOrder implements Order {
   @ManyToOne
   private PayWay payWay;
 
-  private Long totalPrice = 0L;
+  private Long totalPrice = 0L; //实际支付总金额 包括红包+微信
 
   private Long truePay = 0L;
 
@@ -88,6 +88,16 @@ public class OffLineOrder implements Order {
   private Integer criticalOrder = 0; //是否暴击订单 0 非暴击 1 暴击
 
   private Long nonCriticalRebate = 0L; //非暴击返鼓励金
+
+  private Long sumPrice = 0L; //订单总金额 是实际支付总金额+优惠总金额(暂时只有储值优惠)
+
+  public Long getSumPrice() {
+    return sumPrice;
+  }
+
+  public void setSumPrice(Long sumPrice) {
+    this.sumPrice = sumPrice;
+  }
 
   public Long getShareMoney() {
     return shareMoney;

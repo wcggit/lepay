@@ -108,14 +108,16 @@ public class OffLineOrderService {
 
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public OffLineOrder createOffLineOrderForNoNMember(String truePrice, Long merchantId,
+  public OffLineOrder createOffLineOrderForNoNMember(String truePrice,String sumPrice, Long merchantId,
                                                      WeiXinUser weiXinUser, boolean pure,
                                                      Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     Long truePirce = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
+    Long sum = new BigDecimal(sumPrice).multiply(new BigDecimal(100)).longValue();
     offLineOrder.setLeJiaUser(weiXinUser.getLeJiaUser());
     offLineOrder.setTotalPrice(truePirce);
     offLineOrder.setTruePay(truePirce);
+    offLineOrder.setSumPrice(sum);
     offLineOrder.setCreatedDate(new Date());
     offLineOrder.setRebateWay(0);
     //如果扫纯支付码
@@ -157,7 +159,7 @@ public class OffLineOrderService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public OffLineOrder createOffLineOrderForMember(String truePrice, Long merchantId,
                                                   String trueScore,
-                                                  String totalPrice,
+                                                  String totalPrice,String sumPrice,
                                                   LeJiaUser leJiaUser, Long payWay
   ) {
     MerchantRebatePolicy
@@ -166,10 +168,12 @@ public class OffLineOrderService {
     OffLineOrder offLineOrder = new OffLineOrder();
     long truePay = Long.parseLong(truePrice);
     long total = Long.parseLong(totalPrice);
+    long sum = Long.parseLong(sumPrice);
     long scoreA = Long.parseLong(trueScore);
     Long rebateScoreA = 0L;
     Long rebateScoreB = 0L;
     Long[] rebates = null;
+    offLineOrder.setSumPrice(sum);
     offLineOrder.setLeJiaUser(leJiaUser);
     offLineOrder.setTotalPrice(total);
     offLineOrder.setTrueScore(scoreA);
@@ -328,14 +332,16 @@ public class OffLineOrderService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice,
+  public OffLineOrder payByScoreA(String userSid, String merchantId, String totalPrice,String sumPrice,
                                   Long payWay) {
     OffLineOrder offLineOrder = new OffLineOrder();
     long scoreA = Long.parseLong(totalPrice);
+    long sum = Long.parseLong(sumPrice);
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
     offLineOrder.setLeJiaUser(leJiaUser);
     offLineOrder.setTotalPrice(scoreA);
     offLineOrder.setTrueScore(scoreA);
+    offLineOrder.setSumPrice(sum);
     offLineOrder.setTruePay(0L);
     offLineOrder.setCreatedDate(new Date());
     offLineOrder.setWxCommission(Math.round(scoreA * 6 / 1000.0));

@@ -161,14 +161,14 @@ public class WxTemMsgService {
     param.put("url", wxTemMsg.getUrl() + sid);
     param.put("data", map2);
 
-    sendTemplateMessage(param, wxId);
+    sendTemplateMessage(param, wxId, 3);
   }
 
 
   /**
    * 发送模板消息
    */
-  private void sendTemplateMessage(JSONObject param, Long wxId) {
+  private void sendTemplateMessage(JSONObject param, Long wxId, Integer times) {
     try {
       // 绑定到请求 Entry
 
@@ -199,22 +199,20 @@ public class WxTemMsgService {
 
       EntityUtils.consume(entity);
       //如果catch到异常,则跳出递归,并且纪录bug
-      boolean falg = true;
       if (!map.get("errmsg").equals("ok") && !String.valueOf(map.get("errcode")).equals("43004")) {
         log.error("出现异常" + map.get("errmsg").toString());
-        if (falg) {
+        if (times > 0) {
           try {
             Thread.sleep(10000);
-            sendTemplateMessage(param, wxId);
+            --times;
+            sendTemplateMessage(param, wxId,times);
           } catch (InterruptedException e) {
-            falg = false;
             //e.printStackTrace();
             log.error(param.get("data").toString() + e.getMessage());
           }
         }
       }
       response.close();
-      System.out.println(map.toString());
     } catch (IOException e) {
       e.printStackTrace();
     }
