@@ -25,6 +25,8 @@ public class MerchantUnionPos {
 
   private Boolean useCommission; //佣金费率or普通费率  true=佣金费率
 
+  private Integer isNonCardCommission = 0;  //微信、支付宝是否收取收取费   1=收取
+
   private BigDecimal thirdRate = new BigDecimal(0.6);  //银联第三方手续费率|纯粹为了计算分润|并非银商真实手续费
 
   private BigDecimal scoreARebate;//导流订单返红包比
@@ -125,5 +127,13 @@ public class MerchantUnionPos {
 
   public void setUserGeneralACommission(BigDecimal userGeneralACommission) {
     this.userGeneralACommission = userGeneralACommission;
+  }
+
+  public Integer getIsNonCardCommission() {
+    return isNonCardCommission;
+  }
+
+  public void setIsNonCardCommission(Integer isNonCardCommission) {
+    this.isNonCardCommission = isNonCardCommission;
   }
 }
