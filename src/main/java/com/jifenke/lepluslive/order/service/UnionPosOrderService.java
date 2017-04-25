@@ -15,6 +15,8 @@ import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 
+import net.sf.json.JSONObject;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,7 +104,7 @@ public class UnionPosOrderService {
     Long transferByScore = 0L; //红包部分转给商户的金额
     Long rebate = 0L; //返利红包
     Long scoreB = 0L; //发放金币
-    Integer profit = 0;
+    Integer profit = 0;  //是否真的收佣金
 
     if (userId == 0) {//未验证会员身份，产生普通订单
       order.setPaidType(1);
@@ -110,6 +112,14 @@ public class UnionPosOrderService {
       order.setTruePay(totalPrice);
       order.setTrueScore(0L);
       order.setRebateWay(0);
+      if (channel != 0 && pos.getIsNonCardCommission() == 1) { //微信支付宝&收佣金
+        profit = 1;
+        commission = MathUtil.result(pos.getCommission(), totalPrice_decimal);
+        ysCommission = commission;
+        wxCommission = MathUtil.result(pos.getThirdRate(), truePrice_decimal);
+        transferMoney = totalPrice - commission;
+        transferByBank = transferMoney;
+      }
     } else { //产生其他三种订单
       LeJiaUser u = userService.findUserById(userId);
       ScoreA scoreA = scoreAService.findScoreAByLeJiaUser(u);
@@ -166,7 +176,20 @@ public class UnionPosOrderService {
         scoreB = MathUtil.result(totalPrice_decimal, pos.getScoreBRebate());
         rebate = MathUtil.result(new BigDecimal(commission), pos.getScoreARebate());
       }
+
+      if (channel != 0) {
+        if (pos.getIsNonCardCommission() == 0) { //微信支付宝不收佣金
+          profit = 0;
+          scoreB = 0L;
+          rebate = 0L;
+        } else if (order.getRebateWay() == 2) { //微信支付宝收佣金&订单为会员订单(普通费率) 则不返红包和金币
+          profit = 1;
+          scoreB = 0L;
+          rebate = 0L;
+        }
+      }
     }
+
     order.setCommission(commission);
     order.setYsCommission(ysCommission);
     order.setLjCommission(ljCommission);
@@ -350,11 +373,15 @@ public class UnionPosOrderService {
     result.put("status", 200);
     Date date = new Date();
 //    System.out.println(orderSid + "=====" + account + "=====" + mId + "======" + data);
-//    JSONObject object = JSONObject.fromObject(data);
-//    Map<String, Object> info = (Map<String, Object>) object.get("transData");
+    JSONObject object = JSONObject.fromObject(data);
+    Map<String, Object> info = (Map<String, Object>) object.get("transData");
 //      Long
 //          totalPrice =
 //          new BigDecimal("" + info.get("amt")).multiply(new BigDecimal(100)).longValue();
+    String
+        payDate =
+        info.get("date") != null ? ("" + info.get("date")).replaceAll("/", "")
+                                 : new SimpleDateFormat("yyyyMMdd").format(date);
     UnionPosOrder order = orderRepository.findByOrderSid(orderSid);
     if (order != null) {
       if (order.getState() == 0) {
@@ -364,6 +391,7 @@ public class UnionPosOrderService {
           order.setState(1);
           order.setOrderState(1);
           order.setCompleteDate(date);
+          order.setSettleDate(payDate);
           //不发金币、红包.不分润
           order.setRebate(0L);
           order.setScoreB(0L);
