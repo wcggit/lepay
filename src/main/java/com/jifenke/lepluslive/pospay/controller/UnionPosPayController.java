@@ -95,7 +95,8 @@ public class UnionPosPayController {
   @RequestMapping(value = "/union_pay/search", method = RequestMethod.POST)
   public Map unionPosOrderSearch(HttpServletRequest request) {
     TreeMap parameters = getParametersFromRequest(request);
-
+    //保存查询日志
+    unionPosOrderLogService.saveLogBySearch(parameters, 1);
     System.out.println("===============4.1查询银行卡绑定活动接口（002000）==================");
 //    System.out.println("请求数据==================" + parameters.toString());
 
@@ -107,6 +108,7 @@ public class UnionPosPayController {
     System.out.println("请求验签字符串===========" + requestStr);
     //参数校验
     TreeMap<String, Object> returnMap = checkParameter(parameters, "002000");
+
     if (returnMap.get("msg_rsp_code") == null) {
       //验签
       if (RSAUtil.testSign(requestStr, sign)) {
@@ -124,8 +126,6 @@ public class UnionPosPayController {
           resultCode = "9999";
           resultDesc = "order not exist";
         }
-        //保存查询日志
-        unionPosOrderLogService.saveLogBySearch(parameters, 1);
         // Long truePay = order.getTruePay();
         returnMap.put("msg_rsp_code", resultCode);
         returnMap.put("msg_rsp_desc", resultDesc);
@@ -149,6 +149,8 @@ public class UnionPosPayController {
   @RequestMapping(value = "/union_pay/afterPay", method = RequestMethod.POST)
   public Map afterPay(HttpServletRequest request) {
     TreeMap parameters = getParametersFromRequest(request);
+    //保存销账日志
+    unionPosOrderLogService.saveLogAfterPay(parameters, 2);
     System.out.println("===============4.2销账交易接口（002100）==================");
 //    System.out.println("请求数据==================" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
@@ -171,8 +173,7 @@ public class UnionPosPayController {
           e.printStackTrace();
           resultCode = "9999";
         }
-        //保存销账日志
-        unionPosOrderLogService.saveLogAfterPay(parameters, 2);
+
         Long truePay = order.getTruePay();
         Long commission = order.getYsCommission();
 
@@ -205,6 +206,8 @@ public class UnionPosPayController {
   public Map reverse(HttpServletRequest request) {
     System.out.println("===============4.3销账冲正通知接口（002101）==================");
     TreeMap parameters = getParametersFromRequest(request);
+    //保存销账冲正日志
+    unionPosOrderLogService.saveLogReverse(parameters, 3);
     System.out.println("请求数据==================" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
@@ -223,8 +226,7 @@ public class UnionPosPayController {
           e.printStackTrace();
           resultCode = "9999";
         }
-        //保存销账冲正日志
-        unionPosOrderLogService.saveLogReverse(parameters, 3);
+
         returnMap.put("msg_rsp_code", resultCode);
         returnMap.put("msg_rsp_desc", "SUCCESS");
       } else {
@@ -244,6 +246,9 @@ public class UnionPosPayController {
   public Map cancel(HttpServletRequest request) {
     System.out.println("===============4.4销账撤销通知接口（002102）（只支持撤销当天，未清算交易）==================");
     TreeMap parameters = getParametersFromRequest(request);
+    //保存销账冲正日志
+    unionPosOrderLogService.saveLogReverse(parameters, 4);
+
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
@@ -261,8 +266,6 @@ public class UnionPosPayController {
           e.printStackTrace();
           resultCode = "9999";
         }
-        //保存销账冲正日志
-        unionPosOrderLogService.saveLogReverse(parameters, 4);
 
         returnMap.put("msg_rsp_code", resultCode);
         returnMap.put("msg_rsp_desc", "SUCCESS");

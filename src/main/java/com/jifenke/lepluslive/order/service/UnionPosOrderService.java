@@ -470,6 +470,7 @@ public class UnionPosOrderService {
     map.put("totalPrice", order.getTotalPrice());
     map.put("orderSid", order.getOrderSid());
     map.put("paidType", order.getPaidType());
+    map.put("channel", order.getChannel());
     map.put("trueScore", order.getTrueScore());
     map.put("truePay", order.getTruePay());
     map.put("completeDate", sdf.format(order.getCompleteDate()));
@@ -496,6 +497,7 @@ public class UnionPosOrderService {
     map.put("totalPrice", order.getTotalPrice());
     map.put("orderSid", order.getOrderSid());
     map.put("paidType", order.getPaidType());
+    map.put("channel", order.getChannel());
     map.put("trueScore", order.getTrueScore());
     map.put("truePay", order.getTruePay());
     map.put("completeDate", sdf.format(order.getCompleteDate()));
