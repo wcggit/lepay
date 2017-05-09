@@ -4,11 +4,13 @@ import com.jifenke.lepluslive.global.util.MD5Util;
 import com.jifenke.lepluslive.merchant.controller.dto.MerchantDto;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantDetail;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantStoredActivity;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantUser;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantWallet;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantWalletLog;
 import com.jifenke.lepluslive.merchant.repository.MerchantDetailRepository;
 import com.jifenke.lepluslive.merchant.repository.MerchantRepository;
+import com.jifenke.lepluslive.merchant.repository.MerchantStoredActivityRepository;
 import com.jifenke.lepluslive.merchant.repository.MerchantUserRepository;
 import com.jifenke.lepluslive.merchant.repository.MerchantWalletLogRepository;
 import com.jifenke.lepluslive.merchant.repository.MerchantWalletRepository;
@@ -53,6 +55,9 @@ public class MerchantService {
 
   @Inject
   private MerchantWalletLogRepository merchantWalletLogRepository;
+
+  @Inject
+  private MerchantStoredActivityRepository merchantStoredActivityRepository;
 
   /**
    * 根据商户账号名获取商户信息   2016/10/10
@@ -200,5 +205,11 @@ public class MerchantService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public List<Merchant> countByMerchantUser(Long merchantUserId) {
     return merchantRepository.findByMerchantUser(merchantUserId);
+  }
+
+
+
+  public MerchantStoredActivity findMerchantStoreActivity(MerchantUser merchantUser) {
+    return merchantStoredActivityRepository.findByMerchantUser(merchantUser);
   }
 }

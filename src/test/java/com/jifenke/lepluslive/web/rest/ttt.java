@@ -67,7 +67,7 @@ public class ttt {
 
   @Test
   public void tttt() {
-    offLineOrderService.payByScoreA("1824401535882","1112","1400",2L);
+    offLineOrderService.paySuccess(offLineOrderService.findOffLineOrderByOrderSid("17033116255795121"));
 //    orderShareService.offLIneOrderShare(posOrderRepository.findOne(515L));
   }
 

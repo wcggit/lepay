@@ -40,9 +40,9 @@ public class UnionPosOrderController {
   @ApiOperation(value = "POS机吊起支付插件前创建订单")
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   public LejiaResult createOrder(@RequestParam Long merchantId, @RequestParam String account,
-                          @RequestParam Long userId,
-                          @RequestParam Long totalPrice, @RequestParam Long truePrice,
-                          @RequestParam Long trueScore, @RequestParam Integer channel) {
+                                 @RequestParam Long userId, @RequestParam Long totalPrice,
+                                 @RequestParam Long truePrice, @RequestParam Long trueScore,
+                                 @RequestParam Integer channel) {
     Map
         result =
         orderService

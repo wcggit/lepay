@@ -45,7 +45,7 @@ public class UnionPosOrder implements Order {
   //记录的是实际的会员与商户关系
   private Integer rebateWay = 0; //返利方式,如果为0 代表非会员普通订单 则只返c金币 如果为1 导流订单 2 会员普通订单 3会员订单
 
-  private Integer profit = 1;  //是否注册  1=是  否的话，不会分润,如果是导流，反鼓励金、红包、红包手续费会根据实付鼓励金重新计算
+  private Integer profit = 1;  //是否注册(即是否真的收佣金)  1=是  否的话，不会分润,如果是导流，反鼓励金、红包、红包手续费会根据实付鼓励金重新计算
 
   private Long commission = 0L; //总佣金
   //有些订单是会员订单但是按照导流订单费率结算，由于银联只有两种rebateWay：1和3
