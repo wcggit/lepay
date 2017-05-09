@@ -2,14 +2,18 @@ package com.jifenke.lepluslive.order.domain.entities;
 
 import java.math.BigDecimal;
 
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Created by wcg on 2017/4/27.
  * 记录scanCodeOrder 额外信息
  */
+@Entity
+@Table(name = "SCAN_CODE_ORDER_EXT")
 public class ScanCodeOrderExt {
 
   @Id
