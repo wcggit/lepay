@@ -44,7 +44,7 @@ public class FuYouPayService {
     params.put("goods_tag", "");//商品标记
     params.put("ins_cd", Constants.FUYOU_INS_CD);//机构号
     params.put("limit_pay", ""); //限制支付,no_credit:不能使用信用卡
-    params.put("mchnt_cd", order.getMerchantNum());//商户号
+    params.put("mchnt_cd", order.getScanCodeOrderExt().getMerchantNum());//商户号
     params.put("mchnt_order_no", order.getOrderSid());
     params.put("notify_url", Constants.WEI_XIN_ROOT_URL + "/pay/wxpay/afterPay");
     params.put("openid", "");//用户标识
@@ -92,11 +92,11 @@ public class FuYouPayService {
     SortedMap<String, Object> params = new TreeMap<>();
     params.put("version", "1.0");
     params.put("ins_cd", Constants.FUYOU_INS_CD);//机构号
-    params.put("mchnt_cd", order.getMerchantNum());//商户号
+    params.put("mchnt_cd", order.getScanCodeOrderExt().getMerchantNum());//商户号
     params.put("term_id", MvUtil.getRandomNumber(8));//终端号, 随机八位
-    if (order.getChannel() == 0) {//订单类型:1=ALIPAY|0=WECHAT
+    if (order.getScanCodeOrderExt().getUseWeixin() == 1) {//订单类型:1=ALIPAY|0=WECHAT
       params.put("order_type", "WECHAT");
-    } else {
+    } else if (order.getScanCodeOrderExt().getUseAliPay() == 1)  {
       params.put("order_type", "ALIPAY");
     }
     params.put("mchnt_order_no", order.getOrderSid());
