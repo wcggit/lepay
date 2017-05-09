@@ -232,6 +232,11 @@ public class WxTemMsgService {
       sb.append(",本月第");
       sb.append(offLineOrder.getMonthlyOrderCount());
       sb.append("笔订单");
+      if(offLineOrder.getRebateWay()==1||offLineOrder.getRebateWay()==3){
+        sb.append("(乐加订单)");
+      }else {
+        sb.append("(普通订单)");
+      }
       sb.append(",点击查看详情");
       mapRemark.put("value", sb.toString());
       mapRemark.put("color", "#173177");

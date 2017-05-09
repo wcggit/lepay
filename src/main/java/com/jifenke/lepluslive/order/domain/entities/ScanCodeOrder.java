@@ -15,6 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -48,23 +49,23 @@ public class ScanCodeOrder implements Order {
   @ManyToOne
   private Merchant merchant;
 
-  @NotNull
-  private Long merchantUserId;  //门店对应的商户ID
+//  @NotNull
+//  private Long merchantUserId;  //门店对应的商户ID
 
-  @NotNull
-  private Integer channel = 0;  //支付渠道  0=微信|1=支付宝
+//  @NotNull
+//  private Integer channel = 0;  //支付渠道  0=微信|1=支付宝
+//
+//  private Integer source = 0;   //支付来源  0=WAP|1=APP
 
-  private Integer source = 0;   //支付来源  0=WAP|1=APP
-
-  @NotNull
-  private Integer payment = 0;  //付款方式  0=纯现金|1=纯红包|2=混合
+//  @NotNull
+//  private Integer payment = 0;  //付款方式  0=纯现金|1=纯红包|2=混合
 
   @NotNull
   private Integer state = 0; //支付状态  0=未支付|1=已支付|2=已退款
 
-  private String merchantNum;  //该订单使用的富友商户号
+//  private String merchantNum;  //该订单使用的富友商户号
 
-  private String merchantRate;  //商户号当时的佣金费率
+//  private String merchantRate;  //商户号当时的佣金费率
 
   @NotNull
   @ManyToOne
@@ -108,6 +109,9 @@ public class ScanCodeOrder implements Order {
 
   private Long ljProfit = 0L;//每笔订单的额外收入=最多发放红包-实际发放红包
 
+  @OneToOne
+  private ScanCodeOrderExt scanCodeOrderExt;
+
   public Long getLjProfit() {
     return ljProfit;
   }
@@ -132,21 +136,6 @@ public class ScanCodeOrder implements Order {
     this.orderCode = orderCode;
   }
 
-  public String getMerchantNum() {
-    return merchantNum;
-  }
-
-  public void setMerchantNum(String merchantNum) {
-    this.merchantNum = merchantNum;
-  }
-
-  public String getMerchantRate() {
-    return merchantRate;
-  }
-
-  public void setMerchantRate(String merchantRate) {
-    this.merchantRate = merchantRate;
-  }
 
   public Long getShare() {
     return share;
@@ -164,13 +153,7 @@ public class ScanCodeOrder implements Order {
     this.messageState = messageState;
   }
 
-  public Integer getSource() {
-    return source;
-  }
 
-  public void setSource(Integer source) {
-    this.source = source;
-  }
 
   public Category getOrderType() {
     return orderType;
@@ -247,30 +230,6 @@ public class ScanCodeOrder implements Order {
 
   public void setRefundDate(Date refundDate) {
     this.refundDate = refundDate;
-  }
-
-  public Long getMerchantUserId() {
-    return merchantUserId;
-  }
-
-  public void setMerchantUserId(Long merchantUserId) {
-    this.merchantUserId = merchantUserId;
-  }
-
-  public Integer getChannel() {
-    return channel;
-  }
-
-  public void setChannel(Integer channel) {
-    this.channel = channel;
-  }
-
-  public Integer getPayment() {
-    return payment;
-  }
-
-  public void setPayment(Integer payment) {
-    this.payment = payment;
   }
 
   public Long getWxTrueCommission() {
@@ -383,5 +342,13 @@ public class ScanCodeOrder implements Order {
 
   public void setSettleDate(String settleDate) {
     this.settleDate = settleDate;
+  }
+
+  public ScanCodeOrderExt getScanCodeOrderExt() {
+    return scanCodeOrderExt;
+  }
+
+  public void setScanCodeOrderExt(ScanCodeOrderExt scanCodeOrderExt) {
+    this.scanCodeOrderExt = scanCodeOrderExt;
   }
 }

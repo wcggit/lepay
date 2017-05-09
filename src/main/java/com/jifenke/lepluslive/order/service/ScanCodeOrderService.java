@@ -12,6 +12,8 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.merchant.service.MerchantSettlementService;
 import com.jifenke.lepluslive.merchant.service.MerchantSettlementStoreService;
 import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
+import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrderExt;
+import com.jifenke.lepluslive.order.repository.ScanCodeOrderExtRepository;
 import com.jifenke.lepluslive.order.repository.ScanCodeOrderRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
@@ -45,6 +47,9 @@ public class ScanCodeOrderService {
 
   @Inject
   private ScanCodeOrderRepository orderRepository;
+
+  @Inject
+  private ScanCodeOrderExtRepository scanCodeOrderExtRepository;
 
   @Inject
   private MerchantService merchantService;
@@ -96,6 +101,9 @@ public class ScanCodeOrderService {
   public ScanCodeOrder createOrderForNoNMember(String truePrice, Long merchantId,
                                                WeiXinUser weiXinUser, int source) {
     ScanCodeOrder order = new ScanCodeOrder();
+    ScanCodeOrderExt ext = new ScanCodeOrderExt();
+    ext.setUseWeixin(1);
+    order.setScanCodeOrderExt(ext);
     Date date = new Date();
     order.setLeJiaUser(weiXinUser.getLeJiaUser());
     Long price = new BigDecimal(truePrice).multiply(new BigDecimal(100)).longValue();
@@ -104,8 +112,8 @@ public class ScanCodeOrderService {
     order.setCreatedDate(date);
     Merchant merchant = merchantService.findMerchantById(merchantId);
     order.setMerchant(merchant);
-    order.setMerchantUserId(merchant.getMerchantUser().getId());
-    order.setSource(source);
+    ext.setMerchantUserId(merchant.getMerchantUser().getId());
+    ext.setSource(source);
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
     if (merchant.getPartnership() == 0) {
       order.setOrderType(new Category(12001L));
@@ -115,8 +123,8 @@ public class ScanCodeOrderService {
     MerchantSettlement
         settlement =
         merchantSettlementService.findById(store.getCommonSettlementId());
-    order.setMerchantNum(settlement.getMerchantNum());
-    order.setMerchantRate(String.valueOf(settlement.getCommission()));
+    ext.setMerchantNum(settlement.getMerchantNum());
+    ext.setMerchantRate(settlement.getCommission());
     Long commission = Math.round(price * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(commission);
@@ -128,7 +136,7 @@ public class ScanCodeOrderService {
     Long transfer = price - commission;
     order.setTransferMoney(transfer);
     order.setTransferMoneyFromTruePay(transfer);
-
+    scanCodeOrderExtRepository.save(ext);
     orderRepository.save(order);
     return order;
   }
@@ -150,6 +158,8 @@ public class ScanCodeOrderService {
                                             LeJiaUser leJiaUser, int source
   ) {
     ScanCodeOrder order = new ScanCodeOrder();
+    ScanCodeOrderExt ext = new ScanCodeOrderExt();
+    order.setScanCodeOrderExt(ext);
     Date date = new Date();
     order.setLeJiaUser(leJiaUser);
     long truePay = Long.parseLong(truePrice);
@@ -161,17 +171,18 @@ public class ScanCodeOrderService {
     order.setCreatedDate(date);
     Merchant merchant = merchantService.findMerchantById(merchantId);
     order.setMerchant(merchant);
-    order.setMerchantUserId(merchant.getMerchantUser().getId());
+    ext.setMerchantUserId(merchant.getMerchantUser().getId());
 
     //付款方式  0=纯现金|1=纯红包|2=混合
     if (scoreA == 0) {
-      order.setPayment(0);
+      ext.setUseWeixin(1);
     } else if (truePay == 0) {
-      order.setPayment(1);
+      ext.setUseScoreA(1);
     } else {
-      order.setPayment(2);
+      ext.setUseWeixin(1);
+      ext.setUseScoreA(1);
     }
-    order.setSource(source);//支付来源  0=WAP|1=APP
+    ext.setSource(source);//支付来源  0=WAP|1=APP
 
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
     //判断订单类型和使用的商户号
@@ -196,8 +207,8 @@ public class ScanCodeOrderService {
       }
     }
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
-    order.setMerchantNum(settlement.getMerchantNum());
-    order.setMerchantRate(String.valueOf(settlement.getCommission()));
+    ext.setMerchantNum(settlement.getMerchantNum());
+    ext.setMerchantRate(settlement.getCommission());
     Long commission = Math.round(total * settlement.getCommission().doubleValue() / 100.0);
     Long truePayCommission = Math.round(truePay * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
@@ -230,7 +241,7 @@ public class ScanCodeOrderService {
     order.setTransferMoney(total - commission);
     order.setTransferMoneyFromTruePay(truePay - truePayCommission);
     order.setTransferMoneyFromScore(scoreA - order.getScoreCommission());
-
+    scanCodeOrderExtRepository.save(ext);
     orderRepository.save(order);
     return order;
   }
@@ -247,6 +258,9 @@ public class ScanCodeOrderService {
   public ScanCodeOrder payByScoreA(String userSid, Long merchantId, String totalPrice,
                                    int source) throws Exception {
     ScanCodeOrder order = new ScanCodeOrder();
+    ScanCodeOrderExt ext = new ScanCodeOrderExt();
+    order.setScanCodeOrderExt(ext);
+    ext.setUseScoreA(1);
     Date date = new Date();
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
     order.setLeJiaUser(leJiaUser);
@@ -257,11 +271,10 @@ public class ScanCodeOrderService {
     order.setCreatedDate(date);
     Merchant merchant = merchantService.findMerchantById(merchantId);
     order.setMerchant(merchant);
-    order.setMerchantUserId(merchant.getMerchantUser().getId());
+    ext.setMerchantUserId(merchant.getMerchantUser().getId());
 
     //付款方式  0=纯现金|1=纯红包|2=混合
-    order.setPayment(1);
-    order.setSource(source);//支付来源  0=WAP|1=APP
+    ext.setSource(source);//支付来源  0=WAP|1=APP
 
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
     //判断订单类型和使用的商户号
@@ -286,8 +299,8 @@ public class ScanCodeOrderService {
       }
     }
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
-    order.setMerchantNum(settlement.getMerchantNum());
-    order.setMerchantRate(String.valueOf(settlement.getCommission()));
+    ext.setMerchantNum(settlement.getMerchantNum());
+    ext.setMerchantRate(settlement.getCommission());
     Long commission = Math.round(scoreA * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(0L);
