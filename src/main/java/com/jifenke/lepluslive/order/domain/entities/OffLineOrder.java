@@ -299,7 +299,7 @@ public class OffLineOrder implements Order {
     this.trueScore = trueScore;
   }
 
-  public Long getWxCommission() {
+  public Long wgetWxCommission() {
     return wxCommission;
   }
 

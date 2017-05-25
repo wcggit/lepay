@@ -27,7 +27,7 @@ public class PartnerWalletLog {
 
   private Long afterChangeMoney; //改变后的金额
 
-  private Long type; //如果为1代表线下支付订单
+  private Long type; //去category表中查询信息 如15001
 
   private Date createDate = new Date();
 

@@ -33,4 +33,15 @@ public class MerchantScanPayWayService {
     }
   }
 
+  /**
+   * 门店扫码支付方式  16/12/6
+   *
+   * @param merchantId 门店ID
+   * @return 扫码支付方式  0=富友结算|1=乐加结算|2=暂不开通
+   */
+  public MerchantScanPayWay findMerchantScanPayWayByMerchantId(Long merchantId) {
+    MerchantScanPayWay scanPayWay = repository.findByMerchantId(merchantId);
+    return scanPayWay;
+  }
+
 }

@@ -3,6 +3,8 @@ package com.jifenke.lepluslive.order.service;
 import com.jifenke.lepluslive.global.abstraction.Order;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
+import com.jifenke.lepluslive.merchant.domain.entities.MerchantScanPayWay;
+import com.jifenke.lepluslive.merchant.service.MerchantScanPayWayService;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrderShare;
@@ -38,6 +40,9 @@ public class OrderShareService {
 
   @Inject
   private OffLineOrderShareRepository offLineOrderShareRepository;
+
+  @Inject
+  private MerchantScanPayWayService merchantScanPayWayService;
 
   //分润
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
@@ -87,7 +92,7 @@ public class OrderShareService {
               new BigDecimal(dictionaryService.findDictionaryById(11L).getValue())).doubleValue()
                             / 100.0);
       partnerService.shareToPartner(toTradePartner, order.getMerchant().getPartner(),
-                                    order.getOrderSid(), type);
+                                    order.getOrderSid(), 15002L);
       offLineOrderShare.setTradePartner(order.getMerchant().getPartner());
       //分润给交易合伙人管理员
       long
@@ -115,9 +120,16 @@ public class OrderShareService {
         if (bindMerchant.getPartnership() == 2) {//如果是虚拟商户分润方式改变
           offLineOrderShare.setToLockMerchant(0L);
         } else {
-          offLineOrderShare.setToLockMerchant(toLockMerchant);
-          merchantService.shareToMerchant(toLockMerchant, bindMerchant,
-                                          order.getOrderSid(), type);
+          MerchantScanPayWay
+              scanPayWay =
+              merchantScanPayWayService
+                  .findMerchantScanPayWayByMerchantId(leJiaUser.getBindMerchant().getId());
+
+          if (scanPayWay.getOpenOffLineShare() == 1) {
+            merchantService.shareToMerchant(toLockMerchant, bindMerchant,
+                                            order.getOrderSid(), type);
+            offLineOrderShare.setToLockMerchant(toLockMerchant);
+          }
           offLineOrderShare.setLockMerchant(leJiaUser.getBindMerchant());
         }
         if (leJiaUser.getBindPartner() != null) {
@@ -126,14 +138,12 @@ public class OrderShareService {
                   new BigDecimal(dictionaryService.findDictionaryById(14L).getValue()))
                                     .doubleValue() / 100.0);
           offLineOrderShare
-              .setToLockPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
-                                                                   : toLockPartner);
+              .setToLockPartner(toLockPartner);
           //分润给绑定合伙人
           partnerService
-              .shareToPartner(bindMerchant.getPartnership() == 2 ? toLockMerchant + toLockPartner
-                                                                 : toLockPartner,
+              .shareToPartner(toLockPartner,
                               leJiaUser.getBindPartner(), order.getOrderSid(),
-                              type);
+                              15001L);
           toLockPartnerManager =
               (long) Math.floor(shareMoney.multiply(
                   new BigDecimal(dictionaryService.findDictionaryById(15L).getValue()))
@@ -152,6 +162,11 @@ public class OrderShareService {
           .setToLePlusLife(
               shareMoney.longValue() - toTradePartner - toTradePartnerManager - toLockMerchant
               - toLockPartner - toLockPartnerManager);
+      if (offLineOrderShare.getToLockMerchant() == 0) {
+        offLineOrderShare
+            .setToLePlusLife(
+                offLineOrderShare.getToLePlusLife() + toLockMerchant);
+      }
       partnerService.shareToPartnerManager(offLineOrderShare.getToLePlusLife(),
                                            partnerService.findPartnerManagerById(1L),
                                            order.getOrderSid(), type);
