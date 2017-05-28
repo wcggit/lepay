@@ -17,6 +17,7 @@ import com.jifenke.lepluslive.order.repository.ScanCodeOrderExtRepository;
 import com.jifenke.lepluslive.order.repository.ScanCodeOrderRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreBService;
+import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.Category;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.WxTemMsgService;
@@ -84,6 +85,9 @@ public class ScanCodeOrderService {
   @Inject
   private FuYouPayService fuYouPayService;
 
+  @Inject
+  private ScoreCService scoreCService;
+
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder findOrderByOrderSid(String orderSid) {
     return orderRepository.findByOrderSid(orderSid);
@@ -128,11 +132,8 @@ public class ScanCodeOrderService {
     Long commission = Math.round(price * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(commission);
-//    order.setScoreCommission(0L);
-    order.setWxCommission(Math.round(price * 6 / 1000.0));
+    order.setWxCommission(commission);
     order.setWxTrueCommission(Math.round(price * 35 / 10000.0));
-    long scoreB = Math.round(price * merchant.getScoreBRebate().doubleValue() / 10000.0);
-    order.setScoreB(scoreB);
     Long transfer = price - commission;
     order.setTransferMoney(transfer);
     order.setTransferMoneyFromTruePay(transfer);
@@ -185,59 +186,50 @@ public class ScanCodeOrderService {
     ext.setSource(source);//支付来源  0=WAP|1=APP
 
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
+
+    MerchantRebatePolicy
+        merchantRebatePolicy =
+        merchantRebatePolicyRepository.findByMerchantId(merchantId);
     //判断订单类型和使用的商户号
     long settlementId = store.getCommonSettlementId();
+    long rebate = 0l;
+    long scoreC = 0l;
+    long share = 0l;
+
     Integer orderType = 2;//0代表普通订单(12002) 1导流订单(12004) 2 会员订单(12005and12006)
     if (merchant.getPartnership() == 0) { //普通商户  会员普通订单（普通商户）
       order.setOrderType(new Category(12002L));
-      orderType = 0;
     } else { //联盟商户
+      settlementId = store.getAllianceSettlementId();
       if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId()
           .equals(merchant.getId())) { //绑定商户，会员订单
-        if (merchant.getMemberCommission().equals(merchant.getLjCommission())) { //佣金费率
-          order.setOrderType(new Category(12005L));
-          settlementId = store.getAllianceSettlementId();
-        } else { //普通费率
-          order.setOrderType(new Category(12006L));
-        }
+        order.setOrderType(new Category(12005L));
       } else { //导流订单
         order.setOrderType(new Category(12004L));
-        settlementId = store.getAllianceSettlementId();
-        orderType = 1;
       }
+      rebate = offLineOrderService.stagePolicyRebate(total, merchantRebatePolicy.getRebateStages());
+      scoreC =
+          Math.round(total * merchantRebatePolicy.getImportScoreCScale().doubleValue() / 100.0);
     }
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
+    Long commission = Math.round(total * settlement.getCommission().doubleValue() / 100.0);
+    if (settlement.getAccountType() == 1) {
+      share =
+          Math.round(commission * merchantRebatePolicy.getImportShareScale().doubleValue() / 100.0);
+      order.setWxCommission(Math.round(total * 6 / 1000.0));
+    } else {
+      order.setWxCommission(commission);
+    }
+    order.setShare(share);
+    order.setRebate(rebate);
+    order.setScoreC(scoreC);
     ext.setMerchantNum(settlement.getMerchantNum());
     ext.setMerchantRate(settlement.getCommission());
-    Long commission = Math.round(total * settlement.getCommission().doubleValue() / 100.0);
     Long truePayCommission = Math.round(truePay * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(truePayCommission);
     order.setScoreCommission(commission - truePayCommission);
-    order.setWxCommission(Math.round(total * 6 / 1000.0));
     order.setWxTrueCommission(Math.round(truePay * 35 / 10000.0));
-    //返利红包和发放积分
-    Long rebateScoreA = 0L;
-    Long rebateScoreB = 0L;
-    Long[] rebates = null;
-    MerchantRebatePolicy
-        merchantRebatePolicy =
-        merchantRebatePolicyRepository.findByMerchantId(merchantId);
-    rebates = offLineOrderService.merchantRebatePolicy(rebateScoreA, rebateScoreB,
-                                                       merchantRebatePolicy, merchant, orderType,
-                                                       total,
-                                                       commission,
-                                                       order.getWxCommission());
-    if (rebates != null) {
-      order.setScoreB(rebates[1]);
-      order.setRebate(rebates[0]);
-      order.setLjProfit(rebates[2]);
-    }
-    long share = commission - order.getRebate() - order.getWxCommission();   //待分润金额
-    if (share < 0) {
-      share = 0;
-    }
-    order.setShare(share);
     order.setTransferMoney(total - commission);
     order.setTransferMoneyFromTruePay(truePay - truePayCommission);
     order.setTransferMoneyFromScore(scoreA - order.getScoreCommission());
@@ -279,56 +271,47 @@ public class ScanCodeOrderService {
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
     //判断订单类型和使用的商户号
     long settlementId = store.getCommonSettlementId();
+    long rebate = 0l;
+    long scoreC = 0l;
+    long share = 0l;
+
+    MerchantRebatePolicy
+        merchantRebatePolicy =
+        merchantRebatePolicyRepository.findByMerchantId(merchantId);
+
     Integer orderType = 2;//0代表普通订单(12002) 1导流订单(12004) 2 会员订单(12005and12006)
     if (merchant.getPartnership() == 0) { //普通商户  会员普通订单（普通商户）
       order.setOrderType(new Category(12002L));
-      orderType = 0;
     } else { //联盟商户
+      settlementId = store.getAllianceSettlementId();
       if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId()
           .equals(merchant.getId())) { //绑定商户，会员订单
         if (merchant.getMemberCommission().equals(merchant.getLjCommission())) { //佣金费率
           order.setOrderType(new Category(12005L));
-          settlementId = store.getAllianceSettlementId();
-        } else { //普通费率
-          order.setOrderType(new Category(12006L));
         }
       } else { //导流订单
         order.setOrderType(new Category(12004L));
-        settlementId = store.getAllianceSettlementId();
-        orderType = 1;
       }
+      rebate =
+          offLineOrderService.stagePolicyRebate(scoreA, merchantRebatePolicy.getRebateStages());
+      scoreC =
+          Math.round(scoreA * merchantRebatePolicy.getImportScoreCScale().doubleValue() / 100.0);
     }
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
+
+    Long commission = Math.round(scoreA * settlement.getCommission().doubleValue() / 100.0);
+    if (settlement.getAccountType() == 1) {
+      share =
+          Math.round(commission * merchantRebatePolicy.getImportShareScale().doubleValue() / 100.0);
+    }
+    order.setShare(share);
+    order.setRebate(rebate);
+    order.setScoreC(scoreC);
     ext.setMerchantNum(settlement.getMerchantNum());
     ext.setMerchantRate(settlement.getCommission());
-    Long commission = Math.round(scoreA * settlement.getCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(0L);
     order.setScoreCommission(commission);
-    order.setWxCommission(Math.round(scoreA * 6 / 1000.0));
-    order.setWxTrueCommission(0L);
-    //返利红包和发放积分
-    Long rebateScoreA = 0L;
-    Long rebateScoreB = 0L;
-    Long[] rebates = null;
-    MerchantRebatePolicy
-        merchantRebatePolicy =
-        merchantRebatePolicyRepository.findByMerchantId(merchantId);
-    rebates = offLineOrderService.merchantRebatePolicy(rebateScoreA, rebateScoreB,
-                                                       merchantRebatePolicy, merchant, orderType,
-                                                       scoreA,
-                                                       commission,
-                                                       order.getWxCommission());
-    if (rebates != null) {
-      order.setScoreB(rebates[1]);
-      order.setRebate(rebates[0]);
-      order.setLjProfit(rebates[2]);
-    }
-    long share = commission - order.getRebate() - order.getWxCommission();   //待分润金额
-    if (share < 0) {
-      share = 0;
-    }
-    order.setShare(share);
     order.setTransferMoney(scoreA - commission);
     order.setTransferMoneyFromTruePay(0L);
     order.setTransferMoneyFromScore(scoreA - commission);
@@ -337,7 +320,8 @@ public class ScanCodeOrderService {
     order.setCompleteDate(date);
     order.setSettleDate(new SimpleDateFormat("yyyyMMddHHmmss").format(date));
     scoreAService.paySuccessForMember(order);
-    scoreBService.paySuccess(order);
+    scoreCService.paySuccess(order);
+
     merchantService.paySuccess(merchant, order.getTransferMoney());
     order.setMessageState(1);
     wxTemMsgService
@@ -346,12 +330,8 @@ public class ScanCodeOrderService {
     wxTemMsgService.sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant);
     //判断是否需要绑定商户
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
-
     orderRepository.save(order);
-
-    new Thread(() -> {
-      orderShareService.offLIneOrderShare(order);
-    }).start();
+    orderShareService.offLIneOrderShare(order);
     return order;
   }
 
@@ -375,22 +355,19 @@ public class ScanCodeOrderService {
       long rebateWay = order.getOrderType().getId();
       if (rebateWay == 12001 || rebateWay == 12003) {
         //对于非会员 消费后只增加b积分
-        scoreBService.paySuccess(order);
       } else {
         //对于乐加会员在签约商家消费,消费成功后a,b积分均改变,
         try {
           scoreAService.paySuccessForMember(order);
+          scoreCService.paySuccess(order);
         } catch (Exception e) {
           log.error("富友订单出现问题===========" + order.getOrderSid());
         }
-        scoreBService.paySuccess(order);
         //对于会员,判断是否需要绑定商户和合伙人
         leJiaUserService.checkUserBindMerchant(order.getLeJiaUser(), order.getMerchant());
         //分润
         if (order.getShare() > 0) {
-          new Thread(() -> {
-            orderShareService.offLIneOrderShare(order);
-          }).start();
+          orderShareService.offLIneOrderShare(order);
         }
       }
       order.setState(1);

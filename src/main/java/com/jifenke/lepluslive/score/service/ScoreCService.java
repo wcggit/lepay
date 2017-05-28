@@ -2,6 +2,7 @@ package com.jifenke.lepluslive.score.service;
 
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.order.domain.entities.OffLineOrder;
+import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.score.domain.entities.ScoreC;
 import com.jifenke.lepluslive.score.domain.entities.ScoreCDetail;
@@ -36,6 +37,24 @@ public class ScoreCService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void paySuccess(OffLineOrder offLineOrder) {
+    if (offLineOrder.getScoreC() > 0) {
+      ScoreC scoreC = findScoreCByleJiaUser(offLineOrder.getLeJiaUser());
+      scoreC.setScore(scoreC.getScore() + offLineOrder.getScoreC());
+      scoreC.setTotalScore(scoreC.getTotalScore() + offLineOrder.getScoreC());
+      ScoreCDetail scoreCDetail = new ScoreCDetail();
+      scoreCDetail.setOperate(offLineOrder.getMerchant().getName() + "消费返金币");
+      scoreCDetail.setOrigin(4);
+      scoreCDetail.setOrderSid(offLineOrder.getOrderSid());
+      scoreCDetail.setScoreC(scoreC);
+      scoreCDetail.setNumber(offLineOrder.getScoreC());
+      scoreCDetailRepository.save(scoreCDetail);
+      scoreCRepository.save(scoreC);
+    }
+
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void paySuccess(ScanCodeOrder offLineOrder) {
     if (offLineOrder.getScoreC() > 0) {
       ScoreC scoreC = findScoreCByleJiaUser(offLineOrder.getLeJiaUser());
       scoreC.setScore(scoreC.getScore() + offLineOrder.getScoreC());

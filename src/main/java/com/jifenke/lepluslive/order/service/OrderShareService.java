@@ -77,6 +77,7 @@ public class OrderShareService {
       type = 4L;
       offLineOrderShare.setScanCodeOrder((ScanCodeOrder) order);
       offLineOrderShare.setType(4);
+      shareMoney = new BigDecimal(((ScanCodeOrder) order).getShare());
     }
     if (shareMoney.doubleValue() > 0) {
 

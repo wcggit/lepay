@@ -34,6 +34,25 @@ public class ScanCodeOrderExt {
 
   private BigDecimal merchantRate;  //商户号当时的佣金费率
 
+  private Long thirdCommission = 0L; //三方手续费=totalPrice*commission
+
+  private Long thirdTrueCommission = 0L;  //三方实际手续费(对积分客)=truePay*0.35%
+
+  public Long getThirdCommission() {
+    return thirdCommission;
+  }
+
+  public void setThirdCommission(Long thirdCommission) {
+    this.thirdCommission = thirdCommission;
+  }
+
+  public Long getThirdTrueCommission() {
+    return thirdTrueCommission;
+  }
+
+  public void setThirdTrueCommission(Long thirdTrueCommission) {
+    this.thirdTrueCommission = thirdTrueCommission;
+  }
 
   public Long getId() {
     return id;
