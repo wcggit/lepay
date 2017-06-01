@@ -120,9 +120,9 @@ public class ScanCodeOrderService {
     ext.setSource(source);
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
     if (merchant.getPartnership() == 0) {
-      order.setOrderType(new Category(12001L));
+      order.setOrderType(12001L);
     } else {
-      order.setOrderType(new Category(12003L));
+      order.setOrderType(12003L);
     }
     MerchantSettlement
         settlement =
@@ -198,14 +198,14 @@ public class ScanCodeOrderService {
 
     Integer orderType = 2;//0代表普通订单(12002) 1导流订单(12004) 2 会员订单(12005and12006)
     if (merchant.getPartnership() == 0) { //普通商户  会员普通订单（普通商户）
-      order.setOrderType(new Category(12002L));
+      order.setOrderType(12002L);
     } else { //联盟商户
       settlementId = store.getAllianceSettlementId();
       if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId()
           .equals(merchant.getId())) { //绑定商户，会员订单
-        order.setOrderType(new Category(12005L));
+        order.setOrderType(12005L);
       } else { //导流订单
-        order.setOrderType(new Category(12004L));
+        order.setOrderType(12004L);
       }
       rebate = offLineOrderService.stagePolicyRebate(total, merchantRebatePolicy.getRebateStages());
       scoreC =
@@ -281,16 +281,16 @@ public class ScanCodeOrderService {
 
     Integer orderType = 2;//0代表普通订单(12002) 1导流订单(12004) 2 会员订单(12005and12006)
     if (merchant.getPartnership() == 0) { //普通商户  会员普通订单（普通商户）
-      order.setOrderType(new Category(12002L));
+      order.setOrderType(12002L);
     } else { //联盟商户
       settlementId = store.getAllianceSettlementId();
       if (leJiaUser.getBindMerchant() != null && leJiaUser.getBindMerchant().getId()
           .equals(merchant.getId())) { //绑定商户，会员订单
         if (merchant.getMemberCommission().equals(merchant.getLjCommission())) { //佣金费率
-          order.setOrderType(new Category(12005L));
+          order.setOrderType(12005L);
         }
       } else { //导流订单
-        order.setOrderType(new Category(12004L));
+        order.setOrderType(12004L);
       }
       rebate =
           offLineOrderService.stagePolicyRebate(scoreA, merchantRebatePolicy.getRebateStages());
@@ -352,7 +352,7 @@ public class ScanCodeOrderService {
       } else {
         order.setSettleDate(backMap.get("txn_fin_ts"));
       }
-      long rebateWay = order.getOrderType().getId();
+      long rebateWay = order.getOrderType();
       if (rebateWay == 12001 || rebateWay == 12003) {
         //对于非会员 消费后只增加b积分
       } else {

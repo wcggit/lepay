@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -53,8 +54,7 @@ public class ScanCodeOrder implements Order {
   private Integer state = 0; //支付状态  0=未支付|1=已支付|2=已退款
 
   @NotNull
-  @ManyToOne
-  private Category orderType;//订单类型
+  private Long orderType;//订单类型
 
   @NotNull
   private Long totalPrice = 0L;
@@ -93,6 +93,17 @@ public class ScanCodeOrder implements Order {
   private ScanCodeOrderExt scanCodeOrderExt;
 
   private Long sumPrice; //totalprice+优惠金额
+
+  @Version
+  private Long version;
+
+  public Long getVersion() {
+    return version;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
+  }
 
   public Long getSumPrice() {
     return sumPrice;
@@ -136,11 +147,11 @@ public class ScanCodeOrder implements Order {
   }
 
 
-  public Category getOrderType() {
+  public Long getOrderType() {
     return orderType;
   }
 
-  public void setOrderType(Category orderType) {
+  public void setOrderType(Long orderType) {
     this.orderType = orderType;
   }
 
