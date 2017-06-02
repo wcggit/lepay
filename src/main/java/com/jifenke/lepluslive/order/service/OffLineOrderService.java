@@ -295,9 +295,7 @@ public class OffLineOrderService {
               }
             }
             scoreCService.paySuccess(offLineOrder);
-            new Thread(() -> {
-              orderShareService.offLIneOrderShare(offLineOrder);
-            }).start();
+            orderShareService.offLIneOrderShare(offLineOrder);
           }
           scoreAService.paySuccessForMember(offLineOrder);
         } catch (Exception e) {
@@ -640,7 +638,7 @@ public class OffLineOrderService {
   }
 
 
-  private Long stagePolicyRebate(Long totalPrice, List<RebateStage> rebateStages) {
+  public Long stagePolicyRebate(Long totalPrice, List<RebateStage> rebateStages) {
     Long scoreA = 0L;
     for (RebateStage rebateStage : rebateStages) {
       if (rebateStage.getStart() <= totalPrice && totalPrice <= rebateStage.getEnd()) {

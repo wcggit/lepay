@@ -13,6 +13,7 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 import com.jifenke.lepluslive.order.service.ScanCodeOrderService;
 import com.jifenke.lepluslive.score.service.ScoreAService;
+import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinUserService;
@@ -76,6 +77,9 @@ public class ScanCodeOrderController {
 
   @Inject
   private MerchantScanPayWayService scanPayWayService;
+
+  @Inject
+  private ScoreCService scoreCService;
 
   @RequestMapping("/pay")
   public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
@@ -271,8 +275,8 @@ public class ScanCodeOrderController {
     }
 
     model.addAttribute("order", order);
-
-    return MvUtil.go("/fuyou/paySuccess");
+    model.addAttribute("scoreC", scoreCService.findScoreCByleJiaUser(order.getLeJiaUser()));
+    return MvUtil.go("/fuyou/paySuccessbj");
 
   }
 
