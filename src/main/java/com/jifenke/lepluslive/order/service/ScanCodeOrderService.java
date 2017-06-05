@@ -213,7 +213,7 @@ public class ScanCodeOrderService {
     }
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
     Long commission = Math.round(total * settlement.getCommission().doubleValue() / 100.0);
-    if (settlement.getAccountType() == 1) {
+    if (settlement.getType() == 1) {
       share =
           Math.round(commission * merchantRebatePolicy.getImportShareScale().doubleValue() / 100.0);
       order.setWxCommission(Math.round(total * 6 / 1000.0));
@@ -300,7 +300,7 @@ public class ScanCodeOrderService {
     MerchantSettlement settlement = merchantSettlementService.findById(settlementId);//结算商户号
 
     Long commission = Math.round(scoreA * settlement.getCommission().doubleValue() / 100.0);
-    if (settlement.getAccountType() == 1) {
+    if (settlement.getType() == 1) {
       share =
           Math.round(commission * merchantRebatePolicy.getImportShareScale().doubleValue() / 100.0);
     }

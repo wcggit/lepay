@@ -36,7 +36,7 @@
         <p class="clearfix"><span class="left">确认码：</span><span
                 class="right">${order.lePayCode}</span></p>
     </li>
-    <c:if test="${order.rebate}!=0">
+    <c:if test="${order.rebate!=0}">
         <li class="confirm-code ordinry">
             <p class="clearfix"><span class="left">鼓励金：</span><span
                     class="right">+ ¥${order.rebate/100.0}</span></p>

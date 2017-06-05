@@ -18,6 +18,9 @@ public final class Constants {
 
 
     public static final String APPID = "wxe2190d22ce025e4f";
+
+    public static final String ALIAPPID = "2016060701491886";
+
     public static final String TEST_APPID = "wx0d04fde568a3832f";
 
     public static final String WEI_XIN_ROOT_URL = "http://www.lepluslife.com";
