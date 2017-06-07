@@ -7,4 +7,5 @@
 /*.p12
 /lepluslive.iml
 /pom.xml.bak
-/src/main/resources/*.txt
+/src/main/resources/public.txt
+/src/main/resources/private.txt
