@@ -141,7 +141,7 @@ public class HttpClientUtil {
     return httpost;
   }
 
-  public static void main(String[] args) {
+  public static void main1(String[] args) {
     HashMap<String, String> params = new HashMap<String, String>();
     params.put("grant_type", "authorization_code");
     params.put("code","kljlfsdj");

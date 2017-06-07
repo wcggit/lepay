@@ -80,7 +80,7 @@ public class WxTemMsgService {
           sb.append("(");
           sb.append("微信¥");
           sb.append(offLineOrder.getTruePay() / 100.0);
-          sb.append(",红包¥");
+          sb.append(",鼓励金¥");
           sb.append(offLineOrder.getTrueScore() / 100.0);
           sb.append(")");
           keys[1] = sb.toString();
@@ -88,7 +88,7 @@ public class WxTemMsgService {
           sb.append("¥");
           sb.append(offLineOrder.getTotalPrice() / 100.0);
           sb.append("(");
-          sb.append("红包¥");
+          sb.append("鼓励金¥");
           sb.append(offLineOrder.getTrueScore() / 100.0);
           sb.append(")");
           keys[1] = sb.toString();
@@ -112,11 +112,14 @@ public class WxTemMsgService {
       if (offLineOrder.getRebate() != 0L) {
         sb.append("¥");
         sb.append(offLineOrder.getRebate() / 100.0);
-        sb.append("红包+");
+        sb.append("鼓励金+");
       }
       sb.append("¥");
-      sb.append(offLineOrder.getScoreB());
-      sb.append("积分,");
+      sb.append(offLineOrder.getScoreC());
+      sb.append("金币");
+      sb.append("(乐付码:");
+      sb.append(offLineOrder.getLepayCode());
+      sb.append("),");
       sb.append("点击查看详情");
       mapRemark.put("value", sb.toString());
       mapRemark.put("color", "#173177");
@@ -361,7 +364,7 @@ public class WxTemMsgService {
    * @param merchant   商户
    */
   public void sendToMerchant(Long totalPrice, String orderSid, String lePayCode,
-                             Merchant merchant) {
+                             Merchant merchant,Long orderType) {
 
     new Thread(() -> {
       //为商家推送
@@ -375,6 +378,11 @@ public class WxTemMsgService {
 //      sb.append(",本月第");
 //      sb.append(offLineOrder.getMonthlyOrderCount());
 //      sb.append("笔订单");
+      if(orderType==1L){
+        sb.append("(乐加订单)");
+      }else {
+        sb.append("(普通订单)");
+      }
       sb.append(",点击查看详情");
       mapRemark.put("value", sb.toString());
       mapRemark.put("color", "#173177");

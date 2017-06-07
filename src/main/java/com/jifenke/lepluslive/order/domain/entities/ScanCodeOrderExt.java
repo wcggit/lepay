@@ -38,6 +38,16 @@ public class ScanCodeOrderExt {
 
   private Long thirdTrueCommission = 0L;  //三方实际手续费(对积分客)=truePay*0.35%
 
+  private String aliUserid ; //当为支付宝支付时的userid
+
+  public String getAliUserid() {
+    return aliUserid;
+  }
+
+  public void setAliUserid(String aliUserid) {
+    this.aliUserid = aliUserid;
+  }
+
   public Long getThirdCommission() {
     return thirdCommission;
   }

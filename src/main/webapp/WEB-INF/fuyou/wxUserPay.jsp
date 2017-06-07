@@ -75,7 +75,7 @@
 <script src="${resourceUrl}/js/MathContext.js"></script>
 <script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
-    document.title = "${merchant.name}222";
+    document.title = "${merchant.name}";
     $(function () {
         var val = ${scoreA.score/100>totalPrice/100}
                 ? $('.form-name font').text() : $('.back-hongbao font').text();

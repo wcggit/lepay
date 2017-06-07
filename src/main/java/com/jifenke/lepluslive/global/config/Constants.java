@@ -33,6 +33,7 @@ public final class Constants {
     public static final String EVENT_NO = "666"; //银联商务活动号
 
     public static final String FUYOU_PAY_URL = "http://weixinpay.fuiou.com/wxPreCreate"; //富友公众号预支付请求地址
+    public static final String FUYOU_ALiPAY_URL = "http://weixinpay.fuiou.com/preCreate"; //富友公众号预支付请求地址
     public static final String FUYOU_PRE_URL = "http://weixinpay.fuiou.com/preCreate"; //面对面收钱 生产二维码 用户主扫
     public static final String FUYOU_SM_URL = "http://weixinpay.fuiou.com/preCreate"; //面对面收钱 商户扫用户的支付宝或者微信的付款码
     public static final String FUYOU_QUERY_URL = "http://weixinpay.fuiou.com/commonQuery"; //富友查询订单状态地址

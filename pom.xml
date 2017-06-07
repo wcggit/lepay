@@ -59,12 +59,6 @@
     </properties>
 
     <dependencies>
-        <!--富友加解密jar-->
-        <dependency>
-            <groupId>com.zhangfu</groupId>
-            <artifactId>fuiou-encrypt</artifactId>
-            <version>0.0.1</version>
-        </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>
             <artifactId>aliyun-sdk-oss</artifactId>
@@ -88,6 +82,16 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mylib</groupId>
+            <artifactId>mylib-alipay-log</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mylib</groupId>
+            <artifactId>mylib-alipay</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.jayway.awaitility</groupId>
@@ -135,6 +139,12 @@
                     <groupId>com.sun</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!--富友加解密jar-->
+        <dependency>
+            <groupId>com.zhangfu</groupId>
+            <artifactId>fuiou-encrypt</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <!-- The HikariCP Java Agent is disabled by default, as it is experimental
           <dependency>
@@ -255,13 +265,6 @@
             <artifactId>javase</artifactId>
             <version>2.0</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>com.ibm</groupId>-->
-        <!--<artifactId>wmqtt</artifactId>-->
-        <!--<version>0.0.1</version>-->
-        <!--<scope>system</scope>-->
-        <!--<systemPath>${project.basedir}/src/main/lib/wmqtt.jar</systemPath>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>
@@ -426,6 +429,45 @@
                     It has no influence on the Maven build itself.
                     Remove when the m2e plugin can correctly bind to Maven lifecycle
                 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                    <executions>
+                        <execution>
+                            <id>install-external</id>
+                            <phase>clean</phase>
+                            <configuration>
+                                <file>${basedir}/src/main/lib/alipaySdk-0.0.1.jar</file>
+                                <repositoryLayout>default</repositoryLayout>
+                                <groupId>com.mylib</groupId>
+                                <artifactId>mylib-alipay</artifactId>
+                                <version>0.0.1</version>
+                                <packaging>jar</packaging>
+                                <generatePom>true</generatePom>
+                            </configuration>
+                            <goals>
+                                <goal>install-file</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>install-external-log</id>
+                            <phase>clean</phase>
+                            <configuration>
+                                <file>${basedir}/src/main/lib/commons-logging-1.1.1.jar</file>
+                                <repositoryLayout>default</repositoryLayout>
+                                <groupId>com.mylib</groupId>
+                                <artifactId>mylib-alipay-log</artifactId>
+                                <version>1.1.1</version>
+                                <packaging>jar</packaging>
+                                <generatePom>true</generatePom>
+                            </configuration>
+                            <goals>
+                                <goal>install-file</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>

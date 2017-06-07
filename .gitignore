@@ -4,6 +4,7 @@
 /*.log
 /target
 /src/main/resources/config
-/.p12
+/*.p12
 /lepluslive.iml
 /pom.xml.bak
+/src/main/resources/*.txt

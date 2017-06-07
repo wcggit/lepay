@@ -103,10 +103,15 @@ public class ScanCodeOrderService {
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder createOrderForNoNMember(String truePrice, Long merchantId,
-                                               WeiXinUser weiXinUser, int source) {
+                                               WeiXinUser weiXinUser, int source,int useWeixin,String aliUserId) {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
-    ext.setUseWeixin(1);
+    if(useWeixin==1){
+      ext.setUseWeixin(1);
+    }else {
+      ext.setUseAliPay(1);
+      ext.setAliUserid(aliUserId);
+    }
     order.setScanCodeOrderExt(ext);
     Date date = new Date();
     order.setLeJiaUser(weiXinUser.getLeJiaUser());
@@ -327,7 +332,13 @@ public class ScanCodeOrderService {
     wxTemMsgService
         .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreB(),
                       leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid());
-    wxTemMsgService.sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant);
+    Long type= order.getOrderType();
+    if(type==12001L||type==12002L||type==12003L){
+      type=0L;
+    }else{
+      type = 1L;
+    }
+    wxTemMsgService.sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant,type);
     //判断是否需要绑定商户
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
     orderRepository.save(order);
@@ -402,9 +413,15 @@ public class ScanCodeOrderService {
                           order.getTotalPrice(), order.getRebate(),
                           order.getScoreB(),
                           order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid());
+        Long orderType = order.getOrderType();
+        if(orderType==12001L||orderType==12002L||orderType==12003L){
+          orderType=0L;
+        }else{
+          orderType = 1L;
+        }
         wxTemMsgService
             .sendToMerchant(order.getTotalPrice(), order.getOrderSid(), order.getLePayCode(),
-                            merchant);
+                            merchant,orderType);
       }).start();
     }
   }
