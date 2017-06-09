@@ -6,6 +6,7 @@ import com.jifenke.lepluslive.partner.domain.entities.PartnerManager;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,13 +26,13 @@ public class OffLineOrderShare {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @OneToOne
+  @OneToOne(cascade = {CascadeType.ALL})
   private OffLineOrder offLineOrder;
 
-  @OneToOne
+  @OneToOne(cascade = {CascadeType.ALL})
   private PosOrder posOrder;
 
-  @OneToOne
+  @OneToOne(cascade = {CascadeType.ALL})
   private UnionPosOrder unionPosOrder;
 
   @OneToOne
