@@ -397,10 +397,6 @@
             <id>releases</id>
             <url>http://123.57.185.8:8054/nexus/content/groups/public</url>
         </repository>
-        <repository>
-            <id>my-local-repo</id>
-            <url>file://${project.basedir}/src/main/lib</url>
-        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
