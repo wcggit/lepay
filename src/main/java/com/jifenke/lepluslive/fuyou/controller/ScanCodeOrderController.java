@@ -158,7 +158,7 @@ public class ScanCodeOrderController {
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     ScanCodeOrder
         order =
-        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0);
+        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0,1,null);
     //封装订单参数
     Map<String, String> result = null;
     try {

@@ -299,6 +299,7 @@ public class OffLineOrderService {
           }
           scoreAService.paySuccessForMember(offLineOrder);
         } catch (Exception e) {
+          e.printStackTrace();
           log.error("该笔订单出现问题===========" + offLineOrder.getOrderSid());
         }
         scoreBService.paySuccess(offLineOrder);

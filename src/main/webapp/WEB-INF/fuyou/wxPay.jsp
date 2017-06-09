@@ -159,7 +159,7 @@
     $('body').bind("selectstart", function () {
         return false;
     });
-    document.title = "${merchant.name}222";
+    document.title = "${merchant.name}";
 
     $('#confirm-pay').on('touchstart', function () {
         if ($('#monetary').val() == 0) {
