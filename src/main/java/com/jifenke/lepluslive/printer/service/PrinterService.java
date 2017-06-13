@@ -1,17 +1,12 @@
 package com.jifenke.lepluslive.printer.service;
 
-import com.jifenke.lepluslive.merchant.repository.MerchantRepository;
-import com.jifenke.lepluslive.order.repository.OffLineOrderRepository;
-import com.jifenke.lepluslive.printer.domain.MD5;
-import com.jifenke.lepluslive.printer.domain.entities.MeasurementUrl;
-import com.jifenke.lepluslive.printer.repository.MeasurementRepository;
-import com.jifenke.lepluslive.printer.repository.PrinterRepository;
+import com.jifenke.lepluslive.global.util.MD5Util;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -25,17 +20,6 @@ import java.util.Map;
 @Service
 @Transactional(readOnly = false)
 public class PrinterService {
-    @Inject
-    private PrinterRepository printerRepository;
-
-    @Inject
-    private MerchantRepository merchantRepository;
-
-    @Inject
-    private OffLineOrderRepository offLineOrderRepository;
-
-    @Inject
-    private MeasurementRepository measurementRepository;
 
     @Value("${printer.apiKey}")
     private String apiKey;
@@ -45,17 +29,16 @@ public class PrinterService {
         Map<String, String> params = new HashMap<String, String>();
         params.put("orderSid", orderSid);
         params.put("apiKey", apiKey);
-        String sign = MD5.MD5Encode(apiKey + orderSid).toUpperCase();
+        String sign = MD5Util.MD5Encode(apiKey + orderSid,"utf-8").toUpperCase();
         params.put("sign", sign);
         addR(params);
     }
 
 
-    public boolean addR(Map<String, String> params) {
+    private boolean addR(Map<String, String> params) {
         try {
-            MeasurementUrl measurementUrl=measurementRepository.findUrlByName("printerUrl");
             byte[] data = ("orderSid=" + params.get("orderSid") + "&sign=" + params.get("sign")).getBytes();
-            URL url = new URL(measurementUrl.getUrl());
+            URL url = new URL("http://www.lepluslife.com/manage/addReceipt");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setConnectTimeout(5 * 1000);

@@ -313,9 +313,8 @@ public class OffLineOrderService {
       repository.save(offLineOrder);
       //调易连云打印机接口
       try {
-        new Thread(() -> {
-          printerService.addReceipt(offLineOrder.getOrderSid());
-        }).start();
+        final String orderSid = offLineOrder.getOrderSid();
+        new Thread(() -> printerService.addReceipt(orderSid)).start();
       } catch (Exception e) {
       }
     }
