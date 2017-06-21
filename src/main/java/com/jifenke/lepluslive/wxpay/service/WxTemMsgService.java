@@ -115,7 +115,7 @@ public class WxTemMsgService {
         sb.append("鼓励金+");
       }
       sb.append("¥");
-      sb.append(offLineOrder.getScoreC());
+      sb.append(offLineOrder.getScoreC()/100.0);
       sb.append("金币");
       sb.append("(乐付码:");
       sb.append(offLineOrder.getLepayCode());

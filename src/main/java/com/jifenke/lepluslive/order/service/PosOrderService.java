@@ -1,5 +1,9 @@
 package com.jifenke.lepluslive.order.service;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jifenke.lepluslive.global.config.Constants;
+import com.jifenke.lepluslive.global.util.HttpUtils;
 import com.jifenke.lepluslive.global.util.PosCardCheckUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
@@ -20,9 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -108,9 +117,7 @@ public class PosOrderService {
             new BigDecimal(dictionaryService.findDictionaryById(42L).getValue())
                 .multiply(paid);
       } else if (tradeFlag == 3) { //刷卡
-        String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
-        String httpArg = "cardnum=" + cardNo;
-        String request = PosCardCheckUtil.request(httpUrl, httpArg);
+        String request = cardCheck(cardNo);
         posOrder.setCardNo(cardNo);
         if (request.indexOf("贷") != -1) {
           posOrder.setCardType(1);
@@ -234,9 +241,7 @@ public class PosOrderService {
         posOrder.setCardNo(cardNo);
         ljCommission = totalPrice.multiply(merchantPos.getLjCommission());
         truePayCommission = truePay.multiply(merchantPos.getLjCommission());
-        String httpUrl = "http://apis.baidu.com/datatiny/cardinfo/cardinfo";
-        String httpArg = "cardnum=" + cardNo;
-        String request = PosCardCheckUtil.request(httpUrl, httpArg);
+        String request = cardCheck(cardNo);
         posOrder.setCardNo(cardNo);
         if (request.indexOf("贷") != -1) {
           thirdCommission =
@@ -330,4 +335,19 @@ public class PosOrderService {
     }
     return posOrder;
   }
+
+  /**
+   * 调用第三方获取银行卡相关信息 17/4/19
+   */
+  private String cardCheck(String cardNum) {
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+    headers.put("content-type", "application/json");
+    headers.put("apix-key", Constants.CARD_CHECK_KEY);
+    HashMap data = (HashMap) HttpUtils.get(Constants.CARD_CHECK_URL + cardNum, headers).get("data");
+    return (String) data.get("cardtype");
+  }
 }
+
+
