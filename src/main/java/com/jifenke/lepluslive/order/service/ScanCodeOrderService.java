@@ -107,9 +107,9 @@ public class ScanCodeOrderService {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
     if(useWeixin==1){
-      ext.setUseWeixin(1);
+      ext.setPayType(0);
     }else {
-      ext.setUseAliPay(1);
+      ext.setPayType(1);
       ext.setAliUserid(aliUserId);
     }
     order.setScanCodeOrderExt(ext);
@@ -181,11 +181,11 @@ public class ScanCodeOrderService {
 
     //付款方式  0=纯现金|1=纯红包|2=混合
     if (scoreA == 0) {
-      ext.setUseWeixin(1);
+      ext.setPayType(0);
     } else if (truePay == 0) {
       ext.setUseScoreA(1);
     } else {
-      ext.setUseWeixin(1);
+      ext.setPayType(0);
       ext.setUseScoreA(1);
     }
     ext.setSource(source);//支付来源  0=WAP|1=APP

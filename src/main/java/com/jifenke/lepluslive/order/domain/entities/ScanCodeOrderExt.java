@@ -24,13 +24,16 @@ public class ScanCodeOrderExt {
 
   private Integer source = 0;   //支付来源  0=WAP|1=APP
 
-  private Integer useWeixin = 0; //是否使用微信付款 0 不用 1 使用
 
-  private Integer useAliPay=0; //是否使用支付宝付款 0 不用 1 使用
+  private Integer payType=0; //0代表微信 1 代表支付宝
 
-  private Integer useScoreA=0; //是否使用支付宝付款 0 不用 1 使用
+  private Integer useScoreA=0; //是否使用红包付款 0 不用 1 使用
 
-  private String merchantNum;  //该订单使用的富友商户号
+  private String merchantNum;  //该订单使用的通道子商户号
+
+  private String tradeDate; //yyyy-MM-dd 结算日期
+
+  private Integer gatewayType; //通道类型 0 富有 1 易宝
 
   private BigDecimal merchantRate;  //商户号当时的佣金费率
 
@@ -88,20 +91,28 @@ public class ScanCodeOrderExt {
     this.source = source;
   }
 
-  public Integer getUseWeixin() {
-    return useWeixin;
+  public Integer getPayType() {
+    return payType;
   }
 
-  public void setUseWeixin(Integer useWeixin) {
-    this.useWeixin = useWeixin;
+  public void setPayType(Integer payType) {
+    this.payType = payType;
   }
 
-  public Integer getUseAliPay() {
-    return useAliPay;
+  public String getTradeDate() {
+    return tradeDate;
   }
 
-  public void setUseAliPay(Integer useAliPay) {
-    this.useAliPay = useAliPay;
+  public void setTradeDate(String tradeDate) {
+    this.tradeDate = tradeDate;
+  }
+
+  public Integer getGatewayType() {
+    return gatewayType;
+  }
+
+  public void setGatewayType(Integer gatewayType) {
+    this.gatewayType = gatewayType;
   }
 
   public Integer getUseScoreA() {
