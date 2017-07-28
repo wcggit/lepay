@@ -10,6 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -89,7 +90,7 @@ public class ScanCodeOrder implements Order {
   @Column(nullable = false, length = 10)
   private String lePayCode = MvUtil.getLePayCode(); //四位数支付码
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL)
   private ScanCodeOrderExt scanCodeOrderExt;
 
   private Long sumPrice; //totalprice+优惠金额

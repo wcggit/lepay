@@ -29,7 +29,7 @@ public class WeiXinFilter implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request,
                            HttpServletResponse response, Object o) throws Exception {
     String action = request.getRequestURI();
-    if (action.equals("/lepay/wxpay/afterPay") || action.equals("/lepay/wxpay/userRegister")) {
+    if (action.equals("/lepay/wxpay/afterPay") || action.equals("/lepay/wxpay/userRegister")||action.equals("/lepay/wxpay/yeepay")) {
       return true;
     }
 

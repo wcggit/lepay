@@ -4,6 +4,7 @@
 /*.log
 /target
 /src/main/resources/config
+/src/main/resources/yibao/merchantInfo.properties
 /*.p12
 /lepluslive.iml
 /pom.xml.bak

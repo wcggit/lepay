@@ -9,8 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Created by wcg on 2017/4/27.
- * 记录scanCodeOrder 额外信息
+ * Created by wcg on 2017/4/27. 记录scanCodeOrder 额外信息
  */
 @Entity
 @Table(name = "SCAN_CODE_ORDER_EXT")
@@ -20,18 +19,17 @@ public class ScanCodeOrderExt {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  private Long  merchantUserId; //门店对应的商户ID
+  private Long merchantUserId; //门店对应的商户ID
 
   private Integer source = 0;   //支付来源  0=WAP|1=APP
 
 
-  private Integer payType=0; //0代表微信 1 代表支付宝
+  private Integer payType = 0; //0代表微信 1 代表支付宝
 
-  private Integer useScoreA=0; //是否使用红包付款 0 不用 1 使用
+  private Integer useScoreA = 0; //是否使用红包付款 0 不用 1 使用
 
   private String merchantNum;  //该订单使用的通道子商户号
 
-  private String tradeDate; //yyyy-MM-dd 结算日期
 
   private Integer gatewayType; //通道类型 0 富有 1 易宝
 
@@ -41,7 +39,7 @@ public class ScanCodeOrderExt {
 
   private Long thirdTrueCommission = 0L;  //三方实际手续费(对积分客)=truePay*0.35%
 
-  private String aliUserid ; //当为支付宝支付时的userid
+  private String aliUserid; //当为支付宝支付时的userid
 
   public String getAliUserid() {
     return aliUserid;
@@ -97,14 +95,6 @@ public class ScanCodeOrderExt {
 
   public void setPayType(Integer payType) {
     this.payType = payType;
-  }
-
-  public String getTradeDate() {
-    return tradeDate;
-  }
-
-  public void setTradeDate(String tradeDate) {
-    this.tradeDate = tradeDate;
   }
 
   public Integer getGatewayType() {

@@ -94,9 +94,9 @@ public class FuYouPayService {
     params.put("ins_cd", Constants.FUYOU_INS_CD);//机构号
     params.put("mchnt_cd", order.getScanCodeOrderExt().getMerchantNum());//商户号
     params.put("term_id", MvUtil.getRandomNumber(8));//终端号, 随机八位
-    if (order.getScanCodeOrderExt().getUseWeixin() == 1) {//订单类型:1=ALIPAY|0=WECHAT
+    if (order.getScanCodeOrderExt().getPayType() == 0) {//订单类型:1=ALIPAY|0=WECHAT
       params.put("order_type", "WECHAT");
-    } else if (order.getScanCodeOrderExt().getUseAliPay() == 1)  {
+    } else if (order.getScanCodeOrderExt().getPayType() == 1)  {
       params.put("order_type", "ALIPAY");
     }
     params.put("mchnt_order_no", order.getOrderSid());

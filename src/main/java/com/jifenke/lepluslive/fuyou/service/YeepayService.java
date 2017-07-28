@@ -1,6 +1,8 @@
 package com.jifenke.lepluslive.fuyou.service;
 
 import com.fuiou.mpay.encrypt.RSAUtils;
+import com.jifenke.lepluslive.fuyou.util.YBConstants;
+import com.jifenke.lepluslive.fuyou.util.ZGTUtils;
 import com.jifenke.lepluslive.global.config.Constants;
 import com.jifenke.lepluslive.global.util.HttpClientUtil;
 import com.jifenke.lepluslive.global.util.MapUtil;
@@ -26,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 public class YeepayService {
 
   /**
-   * 富友封装支付参数   16/11/15
+   * 封装支付参数   16/11/15
    */
   public Map<String, String> buildParams(HttpServletRequest request, String openid,
                                          ScanCodeOrder order)
@@ -36,52 +38,40 @@ public class YeepayService {
 //    String mchnt_id = "0002230F0336622"; //商户号
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    SortedMap<String, Object> params = new TreeMap<>();
-    params.put("customernumber", ""); //主账号商户编号
+    SortedMap<String, String> params = new TreeMap<>();
+    params.put("customernumber", ZGTUtils.getCustomernumber()); //主账号商户编号
     params.put("requestid", order.getOrderSid()); //订单号
-    params.put("amount", order.getTruePay()/100.0); //总价 单位元
-    params.put("productdesc",  order.getMerchant().getName() + "消费");
-    params.put("callbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/wxpay/afterPay");//商品详情, 商品名称明细
-    params.put("payproducttype", "WECHATU");//
-    params.put("ins_cd", Constants.FUYOU_INS_CD);//机构号
-    params.put("limit_pay", ""); //限制支付,no_credit:不能使用信用卡
-    params.put("mchnt_cd", order.getScanCodeOrderExt().getMerchantNum());//商户号
-    params.put("mchnt_order_no", order.getOrderSid());
-    params.put("notify_url", Constants.WEI_XIN_ROOT_URL + "/pay/wxpay/afterPay");
-    params.put("openid", "");//用户标识
-    params.put("order_amt", order.getTruePay());//总金额, 订单总金额，单位为分
-    params.put("product_id", "");//商品标识
-    params.put("random_str", MvUtil.getRandomStr(32));//随机字符串
-    params.put("sub_appid", Constants.APPID); //子商户公众号id, trade_type为JSAPI时必传
-    params.put("sub_openid", openid);//子商户用户标识，trade_type为JSAPI时必传
-    params.put("term_id", MvUtil.getRandomNumber(8));//终端号, 随机八位
-    params.put("term_ip", getIpAddr(request));//终端IP
-    params.put("trade_type", "JSAPI");//JSAPI--公众号支付、APP--app支付
-    params.put("txn_begin_ts", sdf.format(order.getCreatedDate())); //交易起始时间,格式为yyyyMMddHHmmss
-    params.put("version", "1.0");
+    params.put("amount", order.getTruePay() / 100.0 + ""); //总价 单位元
+    params.put("productname", "测试支付-名称-" + order.getOrderSid());
+    params.put("productdesc", "测试支付-描述-" + order.getOrderSid());
+    params.put("callbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/afterPay");
+    params.put("webcallbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/paySuccess");
+    params.put("payproducttype", "ONEKEY");//
+    params.put("openid", openid);//
+    params.put("appid", Constants.APPID);//
+    params.put("ip", getIpAddr(request));//
+    params.put("directcode", "WAP_WECHATG");//
+    String data = ZGTUtils.buildData(params, ZGTUtils.PAYAPI_REQUEST_HMAC_ORDER);
+    Map<String, String> map = ZGTUtils.httpPost("https://o2o.yeepay.com/zgt-api/api/pay", data);
 
-    String srcSign = MapUtil.mapBlankJoin(params, false, false);
-
-    String sign = RSAUtils.sign(srcSign.getBytes("GBK"), Constants.FUYOU_PRI_KEY);
-    System.out.println(sign);
-    params.put("sign", sign);
-    System.out.println(params.toString());
-    StringBuffer paramBuffer = new StringBuffer("<?xml version=\"1.0\" encoding=\"GBK\"?><xml>");
-    MapUtil.mapToXML(params, paramBuffer);
-    paramBuffer.append("</xml>");
-    System.out.println(paramBuffer.toString());
     try {
-      Map<String, String> content = new HashMap<>();
-      content.put("req", URLEncoder.encode(paramBuffer.toString(), "GBK"));
-      String result =
-          HttpClientUtil.post(Constants.FUYOU_PAY_URL, content, "GBK");
-      result = new URLDecoder().decode(result, "GBK");
-      System.out.println(result);
-      return MapUtil.xmlStringToMap(result);
+
+      return callBack(map);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException();
     }
+  }
+
+  private static Map<String, String> callBack(Map<String, String> stringMap) {
+    System.out.println("易宝的同步响应：" + stringMap);
+
+    if (stringMap.containsKey("code")) {
+      return stringMap;
+    }
+    Map<String, String> responseDataMap = ZGTUtils.decryptData(stringMap.get("data"));
+    System.out.println("data解密后明文：" + responseDataMap);
+    return responseDataMap;
   }
 
   /**
@@ -104,5 +94,15 @@ public class YeepayService {
     return ip.equals("0:0:0:0:0:0:0:1") ? "127.0.0.1" : ip;
   }
 
-
+  /**
+   * 订单状态查询接口
+   */
+  public Map<String, String> checkOrderState(ScanCodeOrder order) {
+    SortedMap<String, String> params = new TreeMap<>();
+    params.put("customernumber", ZGTUtils.getCustomernumber()); //主账号商户编号
+    params.put("requestid", order.getOrderSid()); //订单号
+    String data = ZGTUtils.buildData(params, ZGTUtils.QUERYORDERAPI_REQUEST_HMAC_ORDER);
+    Map<String, String> map = ZGTUtils.httpPost("https://o2o.yeepay.com/zgt-api/api/queryOrder", data);
+    return callBack(map);
+  }
 }
