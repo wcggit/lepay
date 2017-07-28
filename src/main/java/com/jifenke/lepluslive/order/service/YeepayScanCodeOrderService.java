@@ -1,14 +1,11 @@
 package com.jifenke.lepluslive.order.service;
 
-import com.jifenke.lepluslive.fuyou.service.FuYouPayService;
 import com.jifenke.lepluslive.fuyou.service.YeepayService;
 import com.jifenke.lepluslive.fuyou.util.YBConstants;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
 import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.domain.entities.MerchantRebatePolicy;
-import com.jifenke.lepluslive.merchant.domain.entities.MerchantSettlement;
-import com.jifenke.lepluslive.merchant.domain.entities.MerchantSettlementStore;
 import com.jifenke.lepluslive.merchant.repository.MerchantRebatePolicyRepository;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.merchant.service.MerchantSettlementService;
@@ -18,7 +15,6 @@ import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrderExt;
 import com.jifenke.lepluslive.order.repository.ScanCodeOrderExtRepository;
 import com.jifenke.lepluslive.order.repository.ScanCodeOrderRepository;
 import com.jifenke.lepluslive.score.service.ScoreAService;
-import com.jifenke.lepluslive.score.service.ScoreBService;
 import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.WxTemMsgService;
@@ -66,9 +62,6 @@ public class YeepayScanCodeOrderService {
   private ScoreAService scoreAService;
 
   @Inject
-  private ScoreBService scoreBService;
-
-  @Inject
   private LeJiaUserService leJiaUserService;
 
   @Inject
@@ -104,13 +97,14 @@ public class YeepayScanCodeOrderService {
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder createOrderForNoNMember(String truePrice, Long merchantId,
-                                               WeiXinUser weiXinUser, int source,int useWeixin,String aliUserId) {
+                                               WeiXinUser weiXinUser, int source, int useWeixin,
+                                               String aliUserId) {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
     ext.setGatewayType(1); //通道为易宝
-    if(useWeixin==1){
+    if (useWeixin == 1) {
       ext.setPayType(0);
-    }else {
+    } else {
       ext.setPayType(1);
       ext.setAliUserid(aliUserId);
     }
@@ -144,9 +138,9 @@ public class YeepayScanCodeOrderService {
       }
     }
     order.setTruePayCommission(order.getLjCommission());
-    ext.setMerchantNum(null); //**输入子商户号**
+    ext.setMerchantNum(null); //todo:**输入子商户号**
 
-    order.setWxCommission(Math.round(price*YBConstants.WX_WEB_RATE.doubleValue()));
+    order.setWxCommission(Math.round(price * YBConstants.WX_WEB_RATE.doubleValue()));
     order.setWxTrueCommission(order.getWxCommission());
     Long transfer = price - order.getCommission();
     order.setTransferMoney(transfer);
@@ -200,7 +194,6 @@ public class YeepayScanCodeOrderService {
     }
     ext.setSource(source);//支付来源  0=WAP|1=APP
 
-
     MerchantRebatePolicy
         merchantRebatePolicy =
         merchantRebatePolicyRepository.findByMerchantId(merchantId);
@@ -231,14 +224,14 @@ public class YeepayScanCodeOrderService {
     order.setShare(share);
     order.setRebate(rebate);
     order.setScoreC(scoreC);
-    ext.setMerchantNum(null);  //**输入子商户号**
+    ext.setMerchantNum(null);  //todo:**输入子商户号**
     ext.setMerchantRate(merchant.getLjCommission());
     Long truePayCommission = Math.round(truePay * merchant.getLjCommission().doubleValue() / 100.0);
     order.setCommission(commission);
     order.setTruePayCommission(truePayCommission);
     order.setScoreCommission(commission - truePayCommission);
-    order.setWxCommission(Math.round(total*YBConstants.WX_WEB_RATE.doubleValue()));
-    order.setWxTrueCommission(Math.round(truePay*YBConstants.WX_WEB_RATE.doubleValue()));
+    order.setWxCommission(Math.round(total * YBConstants.WX_WEB_RATE.doubleValue()));
+    order.setWxTrueCommission(Math.round(truePay * YBConstants.WX_WEB_RATE.doubleValue()));
     order.setTransferMoney(total - commission);
     order.setTransferMoneyFromTruePay(truePay - truePayCommission);
     order.setTransferMoneyFromScore(scoreA - order.getScoreCommission());
@@ -299,7 +292,8 @@ public class YeepayScanCodeOrderService {
       } else { //导流订单
         order.setOrderType(12004L);
       }
-      rebate = offLineOrderService.stagePolicyRebate(scoreA, merchantRebatePolicy.getRebateStages());
+      rebate =
+          offLineOrderService.stagePolicyRebate(scoreA, merchantRebatePolicy.getRebateStages());
       scoreC =
           Math.round(scoreA * merchantRebatePolicy.getImportScoreCScale().doubleValue() / 100.0);
       share =
@@ -308,7 +302,7 @@ public class YeepayScanCodeOrderService {
     order.setShare(share);
     order.setRebate(rebate);
     order.setScoreC(scoreC);
-    ext.setMerchantNum(null);  //**输入子商户号**
+    ext.setMerchantNum(null);  //todo:**输入子商户号**
     ext.setMerchantRate(merchant.getLjCommission());
     order.setCommission(commission);
     order.setTruePayCommission(0L);
@@ -328,17 +322,19 @@ public class YeepayScanCodeOrderService {
     wxTemMsgService
         .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreB(),
                       leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid());
-    Long type= order.getOrderType();
-    if(type==12001L||type==12002L||type==12003L){
-      type=0L;
-    }else{
+    Long type = order.getOrderType();
+    if (type == 12001L || type == 12002L || type == 12003L) {
+      type = 0L;
+    } else {
       type = 1L;
     }
-    wxTemMsgService.sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant,type);
+    wxTemMsgService
+        .sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant, type);
     //判断是否需要绑定商户
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
     orderRepository.save(order);
     orderShareService.offLIneOrderShare(order);
+    //todo:支付成功
     return order;
   }
 
@@ -378,6 +374,7 @@ public class YeepayScanCodeOrderService {
       }
       order.setState(1);
       orderRepository.save(order);
+      //todo:支付成功
     }
   }
 
@@ -409,14 +406,14 @@ public class YeepayScanCodeOrderService {
                           order.getScoreB(),
                           order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid());
         Long orderType = order.getOrderType();
-        if(orderType==12001L||orderType==12002L||orderType==12003L){
-          orderType=0L;
-        }else{
+        if (orderType == 12001L || orderType == 12002L || orderType == 12003L) {
+          orderType = 0L;
+        } else {
           orderType = 1L;
         }
         wxTemMsgService
             .sendToMerchant(order.getTotalPrice(), order.getOrderSid(), order.getLePayCode(),
-                            merchant,orderType);
+                            merchant, orderType);
       }).start();
     }
   }

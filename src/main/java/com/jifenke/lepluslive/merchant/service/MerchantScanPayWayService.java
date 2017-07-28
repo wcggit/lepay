@@ -22,7 +22,7 @@ public class MerchantScanPayWayService {
    * 门店扫码支付方式  16/12/6
    *
    * @param merchantId 门店ID
-   * @return 扫码支付方式  0=富友结算|1=乐加结算|2=暂不开通
+   * @return 扫码支付方式  0=富友结算|1=乐加结算|2=暂不开通|3=易宝结算
    */
   public int findByMerchantId(Long merchantId) {
     MerchantScanPayWay scanPayWay = repository.findByMerchantId(merchantId);
