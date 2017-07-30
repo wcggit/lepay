@@ -1,6 +1,7 @@
 package com.jifenke.lepluslive.order.service;
 
 import com.jifenke.lepluslive.fuyou.service.YeepayService;
+import com.jifenke.lepluslive.fuyou.util.YBCallback;
 import com.jifenke.lepluslive.fuyou.util.YBConstants;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
@@ -18,6 +19,8 @@ import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
 import com.jifenke.lepluslive.wxpay.service.WxTemMsgService;
+import com.jifenke.lepluslive.yibao.service.LedgerTransferService;
+import com.jifenke.lepluslive.yibao.service.MerchantLedgerService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +29,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,10 +58,10 @@ public class YeepayScanCodeOrderService {
   private MerchantService merchantService;
 
   @Inject
-  private MerchantSettlementStoreService storeService;
+  private LedgerTransferService ledgerTransferService;
 
   @Inject
-  private MerchantSettlementService merchantSettlementService;
+  private MerchantLedgerService merchantLedgerService;
 
   @Inject
   private ScoreAService scoreAService;
@@ -138,8 +143,9 @@ public class YeepayScanCodeOrderService {
       }
     }
     order.setTruePayCommission(order.getLjCommission());
-    ext.setMerchantNum(null); //todo:**输入子商户号**
-
+    //输入子商户号
+    ext.setMerchantNum(merchantLedgerService.findByMerchant(merchant).getMerchantUserLedger()
+                           .getLedgerNo());
     order.setWxCommission(Math.round(price * YBConstants.WX_WEB_RATE.doubleValue()));
     order.setWxTrueCommission(order.getWxCommission());
     Long transfer = price - order.getCommission();
@@ -224,7 +230,9 @@ public class YeepayScanCodeOrderService {
     order.setShare(share);
     order.setRebate(rebate);
     order.setScoreC(scoreC);
-    ext.setMerchantNum(null);  //todo:**输入子商户号**
+    //输入子商户号
+    ext.setMerchantNum(merchantLedgerService.findByMerchant(merchant).getMerchantUserLedger()
+                           .getLedgerNo());
     ext.setMerchantRate(merchant.getLjCommission());
     Long truePayCommission = Math.round(truePay * merchant.getLjCommission().doubleValue() / 100.0);
     order.setCommission(commission);
@@ -302,7 +310,9 @@ public class YeepayScanCodeOrderService {
     order.setShare(share);
     order.setRebate(rebate);
     order.setScoreC(scoreC);
-    ext.setMerchantNum(null);  //todo:**输入子商户号**
+    //输入子商户号
+    ext.setMerchantNum(merchantLedgerService.findByMerchant(merchant).getMerchantUserLedger()
+                           .getLedgerNo());
     ext.setMerchantRate(merchant.getLjCommission());
     order.setCommission(commission);
     order.setTruePayCommission(0L);
@@ -312,8 +322,12 @@ public class YeepayScanCodeOrderService {
     order.setTransferMoneyFromScore(scoreA - commission);
 
     order.setState(1);
-    order.setCompleteDate(date);
-    order.setSettleDate(new SimpleDateFormat("yyyyMMddHHmmss").format(date));
+
+    //完成时间和入账时间
+    YBCallback callback = checkOrderDate();
+    order.setSettleDate(callback.getSettleDate());
+    order.setCompleteDate(callback.getDateCompleted());
+
     scoreAService.paySuccessForMember(order);
     scoreCService.paySuccess(order);
 
@@ -334,7 +348,11 @@ public class YeepayScanCodeOrderService {
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
     orderRepository.save(order);
     orderShareService.offLIneOrderShare(order);
-    //todo:支付成功
+    //23:30:00~23:59:30支付成功实时转账
+    if (callback.getType() == 2) { //转账
+      ledgerTransferService
+          .transfer(ext.getMerchantNum(), order.getTransferMoney(), order.getSettleDate(), 1);
+    }
     return order;
   }
 
@@ -345,15 +363,12 @@ public class YeepayScanCodeOrderService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public void paySuccess(ScanCodeOrder order, Map<String, String> backMap) {
     if (order.getState() == 0) {
-      Date date = new Date();
-      order.setCompleteDate(date);
-      if (backMap.get("paydate") == null) {
-        System.out.println("=============支付完成时间不存在=============");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        order.setSettleDate(sdf.format(date));
-      } else {
-        order.setSettleDate(backMap.get("paydate"));
-      }
+
+      //完成时间和入账时间
+      YBCallback callback = checkOrderDate();
+      order.setSettleDate(callback.getSettleDate());
+      order.setCompleteDate(callback.getDateCompleted());
+
       long rebateWay = order.getOrderType();
       if (rebateWay == 12001 || rebateWay == 12003) {
       } else {
@@ -362,7 +377,7 @@ public class YeepayScanCodeOrderService {
           scoreAService.paySuccessForMember(order);
           scoreCService.paySuccess(order);
         } catch (Exception e) {
-          log.error("富友订单出现问题===========" + order.getOrderSid());
+          log.error("易宝订单出现问题===========" + order.getOrderSid());
           throw e;
         }
         //对于会员,判断是否需要绑定商户和合伙人
@@ -374,7 +389,12 @@ public class YeepayScanCodeOrderService {
       }
       order.setState(1);
       orderRepository.save(order);
-      //todo:支付成功
+      //23:30:00~23:59:30支付成功实时转账
+      if (callback.getType() == 2) { //转账
+        ledgerTransferService
+            .transfer(order.getScanCodeOrderExt().getMerchantNum(), order.getTransferMoney(),
+                      order.getSettleDate(), 1);
+      }
     }
   }
 
@@ -436,5 +456,51 @@ public class YeepayScanCodeOrderService {
         e.printStackTrace();
       }
     }
+  }
+
+
+  /**
+   * 易宝结算临界点匹配
+   */
+  private YBCallback checkOrderDate() {
+    YBCallback callback = new YBCallback();
+    Date date = new Date();
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    String currDate = sdf.format(date);
+    Calendar calendar = Calendar.getInstance();
+    //获取今日三个临界点 23:30:00、23:59:30、00:00:00
+    Date date000000 = null;
+    Date date233000 = null;
+    Date date235930 = null;
+    try {
+      date000000 = sdf2.parse(currDate + " 00:00:00");
+      date233000 = sdf2.parse(currDate + " 23:30:00");
+      date235930 = sdf2.parse(currDate + " 23:59:30");
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    //1=[00:00:00~23:30:00]|2=(23:30:00~23:59:30]|3=(23:59:30~00:00:00)
+    if (date.compareTo(date000000) > -1 && date.compareTo(date233000) < 1) {
+      callback.setType(1);
+      callback.setSettleDate(currDate);
+      callback.setDateCompleted(date);
+    } else if (date.compareTo(date233000) == 1 && date.compareTo(date235930) < 1) {
+      callback.setType(2);
+      callback.setSettleDate(currDate);
+      callback.setDateCompleted(date);
+    } else {
+      callback.setType(3);
+      //完成时间延后
+      calendar.setTime(date);
+      calendar.add(Calendar.MINUTE, 2);
+      calendar.set(Calendar.HOUR_OF_DAY, 0);
+      calendar.set(Calendar.MINUTE, 0);
+      calendar.set(Calendar.SECOND, 1);
+      Date dateCompleted = calendar.getTime();
+      callback.setDateCompleted(dateCompleted);
+      callback.setSettleDate(sdf.format(dateCompleted));
+    }
+    return callback;
   }
 }

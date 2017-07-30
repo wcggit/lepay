@@ -37,7 +37,7 @@ public class ScanCodeOrder implements Order {
 
   private String orderCode;  //第三方渠道流水号
 
-  private String settleDate;  //第三方支付完成时间
+  private String settleDate;  //第三方支付完成时间(入账时间[第二天结算]：易宝格式：yyyy-MM-dd,富友：yyyyMMdd)
 
   private Date createdDate;
 

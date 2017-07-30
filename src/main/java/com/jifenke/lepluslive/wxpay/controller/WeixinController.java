@@ -100,9 +100,9 @@ public class WeixinController {
 
   @RequestMapping("/wxpay/yeepay")
   public ModelAndView goYeePayPage(@RequestParam String openid, @RequestParam String merchantSid,
-                                @RequestParam(required = false) String pure,
-                                HttpServletRequest request,
-                                Model model) {
+                                   @RequestParam(required = false) String pure,
+                                   HttpServletRequest request,
+                                   Model model) {
 
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     Optional<Merchant> optional = merchantService.findMerchantBySId(merchantSid);
@@ -149,7 +149,7 @@ public class WeixinController {
       }
 
       model.addAttribute("wxConfig", getWeiXinPayConfig(request));
-      //0=富友结算|1=乐加结算|2=暂不开通
+      //0=富友结算|1=乐加结算|2=暂不开通|3=易宝结算
       int way = scanPayWayService.findByMerchantId(merchant.getId());
       if (way == 1) {
         new Thread(() -> {
@@ -160,9 +160,10 @@ public class WeixinController {
         return MvUtil.go("/weixin/wxPay");
       } else if (way == 0) {
         return MvUtil.go("/fuyou/wxPay");
-      } else {
-
+      } else if (way == 3) {
         return MvUtil.go("/yeepay/wxPay");
+      } else {
+        return MvUtil.go("/weixin/wxPay");
       }
     } else {
       return null;
@@ -344,7 +345,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
                                                         strs[4], strs[4], leJiaUserService
-                .findUserByUserSid(strs[2]), 1L);
+                                                            .findUserByUserSid(strs[2]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =
@@ -376,7 +377,7 @@ public class WeixinController {
         offLineOrder =
         offLineOrderService.createOffLineOrderForMember(strs[1], Long.parseLong(strs[2]), "0",
                                                         strs[1], strs[1], leJiaUserService
-                .findUserByUserSid(strs[0]), 1L);
+                                                            .findUserByUserSid(strs[0]), 1L);
     //封装订单参数
     SortedMap<Object, Object>
         map =

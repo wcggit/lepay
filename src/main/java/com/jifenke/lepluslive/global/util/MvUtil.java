@@ -42,6 +42,16 @@ public class MvUtil {
     return new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + randomStr;
   }
 
+  /**
+   * 生成时间戳+n位随机数
+   *
+   * @param random 随机位数
+   */
+  public static String getOrderNumber(int random) {
+    String randomStr = RandomStringUtils.random(random, "1234567890");
+    return new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + randomStr;
+  }
+
 
   /**
    * 生成随机字符串
