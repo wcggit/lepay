@@ -20,8 +20,23 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}/css/common.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/index.css">
+    <link rel="stylesheet" href="${resourceUrl}lepay_common.css">
+    <link rel="stylesheet" href="${resourceUrl}lepay_index.css">
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}zepto.min.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}lphash.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}MathContext.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}BigDecimal.js?" + Math.random()
+            + "'></scr" + "ipt>");
+    </script>
 </head>
 <body>
 <!--表单-->
@@ -64,17 +79,14 @@
     </ul>
 </div>
 </body>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-<script src="${resourceUrl}/js/lphash.js"></script>
-<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
-<script src="${resourceUrl}/js/MathContext.js"></script>
-<script src="${resourceUrl}/js/BigDecimal.js"></script>
+
 <script>
-    $(function () {
+    window.onload = function () {
         $('#monetary').focus();
         var spans = $('#keyboard button:not(:last-child)');
         spans.each(function (i) {
-            spans.eq(i).attr({'unselectable': 'on'}).css({'-webkit-user-select': 'none'}).on('selectstart'), function () {
+            spans.eq(i).attr({'unselectable': 'on'}).css({'-webkit-user-select': 'none'}).on(
+                'selectstart'), function () {
                 return false;
             };
             spans.eq(i).on("touchstart", function (event) {
@@ -123,7 +135,7 @@
             $("#monetary").val("");
             fontFUn();
         })
-    });
+    };
     function fontFUn() {
         if ($("#monetary").val() == '' || $("#monetary").val() == null) {
             $("#monetary").css({'font-size': '3.2vw'});
@@ -221,7 +233,7 @@
                 <%--var ext = ljhash("${leJiaUser.userSid} " + totalPrice--%>
                 <%--+ " ${merchant.id} ${ljopenid}", "lepluslife");--%>
                 totalPrice =
-                parseInt(new BigDecimal(totalPrice).multiply(new BigDecimal("100")));
+                    parseInt(new BigDecimal(totalPrice).multiply(new BigDecimal("100")));
                 var ext = ljhash(totalPrice + " 0"
                                  + " ${leJiaUser.userSid} ${merchant.id} " + totalPrice
                                  + " ${ljopenid}", "lepluslife");
@@ -286,29 +298,29 @@
 //                           }
 //                       });
         WeixinJSBridge.invoke(
-                'getBrandWCPayRequest', {
-                    "appId":     res['appId'] + "",     //公众号名称，由商户传入
-                    "timeStamp": res['timeStamp'] + "", // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
-                    "nonceStr":  res['nonceStr'] + "", // 支付签名随机串，不长于 32 位
-                    "package":   res['package'] + "", // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-                    "signType":  res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-                    "paySign":   res['sign'] + "" // 支付签名
-                },
-                function (reslut) {
-                    if (reslut.err_msg == "get_brand_wcpay_request:ok") {
-                        window.location.href =
+            'getBrandWCPayRequest', {
+                "appId": res['appId'] + "",     //公众号名称，由商户传入
+                "timeStamp": res['timeStamp'] + "", // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+                "nonceStr": res['nonceStr'] + "", // 支付签名随机串，不长于 32 位
+                "package": res['package'] + "", // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+                "signType": res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+                "paySign": res['sign'] + "" // 支付签名
+            },
+            function (reslut) {
+                if (reslut.err_msg == "get_brand_wcpay_request:ok") {
+                    window.location.href =
                         '/lepay/wxpay/paySuccess?orderSid='
                         + res['orderSid'];
-                    }     // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
-                    else {
-                        $('#confirm-pay').empty().text("确认支付");
-                        $('#confirm-pay').on('touchstart', function () {
-                            $('#confirm-pay').unbind('touchstart');
-                            $(this).empty().text("正在支付,请稍后");
-                            pay();
-                        });
-                    }
+                }     // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
+                else {
+                    $('#confirm-pay').empty().text("确认支付");
+                    $('#confirm-pay').on('touchstart', function () {
+                        $('#confirm-pay').unbind('touchstart');
+                        $(this).empty().text("正在支付,请稍后");
+                        pay();
+                    });
                 }
+            }
         );
         if (typeof WeixinJSBridge == "undefined") {
             if (document.addEventListener) {

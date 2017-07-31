@@ -21,8 +21,23 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}/css/common.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/useAngPao.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_useAngPao.css">
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script>
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}zepto.min.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}lphash.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}MathContext.js?" + Math.random()
+            + "'></scr" + "ipt>");
+        document.write(
+            "<s" + "cript type='text/javascript' src='${ossUrl}BigDecimal.js?" + Math.random()
+            + "'></scr" + "ipt>");
+    </script>
 </head>
 <body>
 <!--表单-->
@@ -69,11 +84,6 @@
     </ul>
 </div>
 </body>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
-<script src="${resourceUrl}/js/lphash.js"></script>
-<script src="${resourceUrl}/js/MathContext.js"></script>
-<script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
     document.title = "${merchant.name}";
     <%--$(function () {--%>
@@ -248,7 +258,7 @@
                 <%--'${wxRootUrl}/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;--%>
                 <%--} else {--%>
                 window.location.href =
-                '/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
+                    '/lepay/wxpay/paySuccess?orderSid=' + res.data.orderSid;
                 // }
             } else {
                 alert(res.msg)
@@ -256,23 +266,23 @@
         });
     });
     <%--wx.config({--%>
-                  <%--"debug": false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。--%>
-                  <%--"appId": "wxe2190d22ce025e4f", // 必填，公众号的唯一标识--%>
-                  <%--"timestamp": "${wxConfig['timestamp']}", // 必填，生成签名的时间戳--%>
-                  <%--"nonceStr": "${wxConfig['noncestr']}", // 必填，生成签名的随机串--%>
-                  <%--"signature": "${wxConfig['signature']}",// 必填，签名，见附录1--%>
-                  <%--"jsApiList": [--%>
-                      <%--'chooseWXPay'--%>
-                  <%--] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2--%>
-              <%--});--%>
+    <%--"debug": false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。--%>
+    <%--"appId": "wxe2190d22ce025e4f", // 必填，公众号的唯一标识--%>
+    <%--"timestamp": "${wxConfig['timestamp']}", // 必填，生成签名的时间戳--%>
+    <%--"nonceStr": "${wxConfig['noncestr']}", // 必填，生成签名的随机串--%>
+    <%--"signature": "${wxConfig['signature']}",// 必填，签名，见附录1--%>
+    <%--"jsApiList": [--%>
+    <%--'chooseWXPay'--%>
+    <%--] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2--%>
+    <%--});--%>
     <%--wx.ready(function () {--%>
-        <%--// config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。--%>
-<%--//       隐藏菜单--%>
-        <%--wx.hideOptionMenu();--%>
+    <%--// config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。--%>
+    <%--//       隐藏菜单--%>
+    <%--wx.hideOptionMenu();--%>
 
     <%--});--%>
     <%--wx.error(function (res) {--%>
-        <%--// config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。--%>
+    <%--// config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。--%>
 
     <%--});--%>
     <%--$('#confirm-pay').on('click', function () {--%>
@@ -324,25 +334,25 @@
 //                           }
 //                       });
         WeixinJSBridge.invoke(
-                'getBrandWCPayRequest', {
-                    "appId":     res['appId'] + "",     //公众号名称，由商户传入
-                    "timeStamp": res['timeStamp'] + "", // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
-                    "nonceStr":  res['nonceStr'] + "", // 支付签名随机串，不长于 32 位
-                    "package":   res['package'] + "", // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-                    "signType":  res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-                    "paySign":   res['sign'] + "" // 支付签名
-                },
-                function (reslut) {
-                    if (reslut.err_msg == "get_brand_wcpay_request:ok") {
-                        window.location.href =
+            'getBrandWCPayRequest', {
+                "appId": res['appId'] + "",     //公众号名称，由商户传入
+                "timeStamp": res['timeStamp'] + "", // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+                "nonceStr": res['nonceStr'] + "", // 支付签名随机串，不长于 32 位
+                "package": res['package'] + "", // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+                "signType": res['signType'] + "", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+                "paySign": res['sign'] + "" // 支付签名
+            },
+            function (reslut) {
+                if (reslut.err_msg == "get_brand_wcpay_request:ok") {
+                    window.location.href =
                         '/lepay/wxpay/paySuccess?orderSid='
                         + res['orderSid'];
-                    }     // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
-                    else {
-                        $('.form-btn').empty().text("确认支付");
-                        bindPay();
-                    }
+                }     // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回    ok，但并不保证它绝对可靠。
+                else {
+                    $('.form-btn').empty().text("确认支付");
+                    bindPay();
                 }
+            }
         );
         if (typeof WeixinJSBridge == "undefined") {
             if (document.addEventListener) {
