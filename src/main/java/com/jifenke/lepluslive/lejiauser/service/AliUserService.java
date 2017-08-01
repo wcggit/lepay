@@ -50,4 +50,14 @@ public class AliUserService {
   }
 
 
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  public void bindLejiaUser(String userId, LeJiaUser leJiaUser) {
+    AliUser userById = findUserById(userId);
+    if(userById==null){
+      AliUser aliUser = new AliUser();
+      aliUser.setLeJiaUser(leJiaUser);
+      aliUser.setUserId(userId);
+      aliUserRepository.save(aliUser);
+    }
+  }
 }

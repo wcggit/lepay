@@ -23,7 +23,7 @@ public final class Constants {
 
     public static final String TEST_APPID = "wx0d04fde568a3832f";
 
-    public static final String WEI_XIN_ROOT_URL = "http://www.tiegancrm.com";
+    public static final String WEI_XIN_ROOT_URL = "http://www.lepluslife.com";
     public static final String WEI_XIN_TEST_ROOT_URL = "http://www.lepluslife.com/subTest";
 
     public static final String LE_PAY_MCH_ID = "1363466902";

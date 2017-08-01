@@ -90,4 +90,29 @@ public class YeepayService {
         ZGTUtils.httpPost(YBConstants.QUERY_ORDER_URL, data);
     return YbRequestUtils.callBack(map);
   }
+  public Map<String, String> buildAliParams(HttpServletRequest request, ScanCodeOrder order) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+
+    SortedMap<String, String> params = new TreeMap<>();
+    params.put("customernumber", ZGTUtils.getCustomernumber()); //主账号商户编号
+    params.put("requestid", order.getOrderSid()); //订单号
+    params.put("amount", order.getTruePay() / 100.0 + ""); //总价 单位元
+    params.put("productname", order.getMerchant().getName() + "消费");
+    params.put("productdesc", order.getMerchant().getName() + "消费");
+    params.put("callbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/afterPay");
+    params.put("webcallbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/paySuccess");
+    params.put("payproducttype", "ONEKEY");//
+    params.put("ip", getIpAddr(request));//
+    params.put("directcode", "WAP_ALIPAYAPP");//
+    String data = ZGTUtils.buildData(params, ZGTUtils.PAYAPI_REQUEST_HMAC_ORDER);
+    Map<String, String> map = ZGTUtils.httpPost(YBConstants.PAY_URL, data);
+
+    try {
+
+      return YbRequestUtils.callBack(map);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException();
+    }
+  }
 }

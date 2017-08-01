@@ -33,6 +33,7 @@ import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +55,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,15 +69,11 @@ public class ScanCodeOrderAliPayController {
 
   private static Logger log = LoggerFactory.getLogger(ScanCodeOrderAliPayController.class);
 
-  @Value("#{T(org.apache.commons.io.FileUtils).readFileToString(" +
-         "T(org.springframework.util.ResourceUtils).getFile('classpath:private.txt')" +
-         ")}")
-  private String APP_PRIVATE_KEY;
+  @Inject
+  private String private_ali;
 
-  @Value("#{T(org.apache.commons.io.FileUtils).readFileToString(" +
-         "T(org.springframework.util.ResourceUtils).getFile('classpath:public.txt')" +
-         ")}")
-  private String ALIPAY_PUBLIC_KEY;
+  @Inject
+  private String public_ali;
 
   @Inject
   private AliUserService aliUserService;
@@ -89,6 +87,12 @@ public class ScanCodeOrderAliPayController {
   @Inject
   private WeiXinUserService weiXinUserService;
 
+  @Inject
+  private MerchantScanPayWayService scanPayWayService;
+
+  @Inject
+  private ScoreAService scoreAService;
+
   @RequestMapping("/userToken")
   public ModelAndView goPayPage(@RequestParam String auth_code, @RequestParam String merchantSid,
                                 HttpServletRequest request,
@@ -98,20 +102,28 @@ public class ScanCodeOrderAliPayController {
     AlipayClient
         alipayClient =
         new DefaultAlipayClient("https://openapi.alipay.com/gateway.do", Constants.ALIAPPID,
-                                APP_PRIVATE_KEY, "json", "utf-8", ALIPAY_PUBLIC_KEY, "RSA2");
+                                private_ali, "json", "utf-8", public_ali, "RSA2");
     AlipaySystemOauthTokenRequest
         alipaySystemOauthTokenRequest =
         new AlipaySystemOauthTokenRequest();
     alipaySystemOauthTokenRequest.setGrantType("authorization_code");
     alipaySystemOauthTokenRequest.setCode(auth_code);
     try {
+      Merchant merchant = merchantBySId.get();
       AlipaySystemOauthTokenResponse execute = alipayClient.execute(alipaySystemOauthTokenRequest);
       if (execute.isSuccess()) {
         AliUser aliUser = aliUserService.findUserById(execute.getUserId());
         if (merchantBySId.isPresent()) {
+          int way = scanPayWayService.findByMerchantId(merchant.getId());
           model.addAttribute("userId", execute.getUserId());
-          model.addAttribute("aliUser", aliUser);
-          return MvUtil.go("/fuyou/ali/pay");
+          if(way==2){
+            if(aliUser!=null){
+              model.addAttribute("aliUser",aliUser);
+              model.addAttribute("scorea",scoreAService.findScoreAByLeJiaUser(aliUser.getLeJiaUser()));
+            }
+            model.addAttribute("merchant",merchant);
+            return MvUtil.go("/yeepay/ali/aliPay");
+          }
         } else {
           return null;
         }

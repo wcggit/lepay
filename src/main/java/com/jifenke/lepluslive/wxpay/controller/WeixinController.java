@@ -98,11 +98,11 @@ public class WeixinController {
 
   }
 
-  @RequestMapping("/wxpay/yeepay")
-  public ModelAndView goYeePayPage(@RequestParam String openid, @RequestParam String merchantSid,
-                                   @RequestParam(required = false) String pure,
-                                   HttpServletRequest request,
-                                   Model model) {
+  @RequestMapping("/wxpay/pay")
+  public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
+                                @RequestParam(required = false) String pure,
+                                HttpServletRequest request,
+                                Model model) {
 
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     Optional<Merchant> optional = merchantService.findMerchantBySId(merchantSid);
@@ -162,76 +162,6 @@ public class WeixinController {
         return MvUtil.go("/fuyou/wxPay");
       } else if (way == 3) {
         return MvUtil.go("/yeepay/wxPay");
-      } else {
-        return MvUtil.go("/weixin/wxPay");
-      }
-    } else {
-      return null;
-    }
-  }
-
-  @RequestMapping("/wxpay/pay")
-  public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
-                                @RequestParam(required = false) String pure,
-                                HttpServletRequest request,
-                                Model model) {
-
-    WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
-    Optional<Merchant> optional = merchantService.findMerchantBySId(merchantSid);
-    if (optional.isPresent()) {
-      Merchant merchant = optional.get();
-      model.addAttribute("merchant", merchant);
-      if (weiXinUser == null || weiXinUser.getState() == 0) {
-        new Thread(() -> {
-          //未关注公众号的人消费默认注册一个lejiauser
-          weiXinUserService.registerLeJiaUserForNonMember(openid, weiXinUser);
-        }).start();
-        model.addAttribute("openid", openid);
-        if (pure != null && "access".equals(pure)) {
-          model.addAttribute("pure", true);
-        }
-      } else {
-        //如果扫纯支付码
-        if (pure != null && "access".equals(pure)) {
-          model.addAttribute("openid", openid);
-          model.addAttribute("pure", true);
-        } else {
-          model.addAttribute("leJiaUser", weiXinUser.getLeJiaUser());
-          model
-              .addAttribute("scoreA",
-                            scoreAService.findScoreAByLeJiaUser(weiXinUser.getLeJiaUser()));
-          model.addAttribute("ljopenid", openid);
-        }
-      }
-      //增加储值业务
-      MerchantStoredActivity
-          merchantStoreActivity =
-          merchantService.findMerchantStoreActivity(merchant.getMerchantUser());
-      if (merchantStoreActivity != null) { //商户开启了储值，查看会员储值是否不为为0
-        ScoreD
-            scoreD =
-            scoreDService.findScoreDByleJiaUserAndMerchantUser(weiXinUser.getLeJiaUser(),
-                                                               merchantStoreActivity
-                                                                   .getMerchantUser());
-        if (scoreD != null && scoreD.getScore() != 0) {
-          model.addAttribute("scoreD", scoreD);
-          model.addAttribute("merchantStoreActivity", merchantStoreActivity);
-          return MvUtil.go("/stored/storedPay");
-        }
-      }
-
-      model.addAttribute("wxConfig", getWeiXinPayConfig(request));
-      //0=富友结算|1=乐加结算|2=暂不开通
-      int way = scanPayWayService.findByMerchantId(merchant.getId());
-      if (way == 1) {
-        new Thread(() -> {
-          WeixinPayUtil
-              .createUnifiedOrder("https://api.mch.weixin.qq.com/pay/unifiedorder", "POST",
-                                  "test");
-        }).start();
-        return MvUtil.go("/weixin/wxPay");
-      } else if (way == 0) {
-        return MvUtil.go("/fuyou/wxPay");
       } else {
         return MvUtil.go("/weixin/wxPay");
       }

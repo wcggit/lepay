@@ -1,9 +1,13 @@
 package com.jifenke.lepluslive.global.config;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
+
+import sun.nio.ch.IOUtil;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -44,6 +48,17 @@ public class BaseConfig {
       e.printStackTrace();
     }
     return sslcontext;
+  }
+
+  @Bean(name = "private_ali")
+  public String getAliPrivate() throws IOException {
+    return IOUtils.toString(resourceLoader.getResource("classpath:private.txt").getInputStream());
+
+  }
+
+  @Bean(name = "public_ali")
+  public String getAliPublic() throws IOException {
+   return IOUtils.toString(resourceLoader.getResource("classpath:public.txt").getInputStream());
   }
 
 

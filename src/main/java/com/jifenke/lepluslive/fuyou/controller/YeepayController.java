@@ -14,6 +14,7 @@ import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 import com.jifenke.lepluslive.order.service.ScanCodeOrderService;
 import com.jifenke.lepluslive.order.service.YeepayScanCodeOrderService;
+import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.service.ScoreAService;
 import com.jifenke.lepluslive.score.service.ScoreCService;
 import com.jifenke.lepluslive.wxpay.domain.entities.WeiXinUser;
@@ -149,14 +150,15 @@ public class YeepayController {
     Long merchantId = new Long(strs[2]);
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(strs[0]);
     model.addAttribute("leJiaUser", leJiaUser);
-    model.addAttribute("scoreA", scoreAService.findScoreAByLeJiaUser(leJiaUser));
+    ScoreA scorea = scoreAService.findScoreAByLeJiaUser(leJiaUser);
+    model.addAttribute("scoreA",scorea);
     model.addAttribute("totalPrice", totalPrice);
     model.addAttribute("merchantId", merchantId);
     Merchant merchant = merchantService.findMerchantById(merchantId);
     model.addAttribute("merchant", merchant);
     model.addAttribute("wxConfig", getWeiXinPayConfig(request));
     model.addAttribute("openid", strs[3]);
-    if (merchant.getReceiptAuth() == 0) {
+    if (merchant.getReceiptAuth() == 0 ||scorea.getScore()==0) {
       return MvUtil.go("/yeepay/userPayNonScore");
     }
     return MvUtil.go("/yeepay/wxUserPay");
