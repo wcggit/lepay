@@ -334,7 +334,7 @@ public class YeepayScanCodeOrderService {
     merchantService.paySuccess(merchant, order.getTransferMoney());
     order.setMessageState(1);
     wxTemMsgService
-        .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreB(),
+        .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreC(),
                       leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid());
     Long type = order.getOrderType();
     if (type == 12001L || type == 12002L || type == 12003L) {
@@ -423,7 +423,7 @@ public class YeepayScanCodeOrderService {
         wxTemMsgService
             .sendToClient(merchant.getName(), order.getTrueScore(), order.getTruePay(),
                           order.getTotalPrice(), order.getRebate(),
-                          order.getScoreB(),
+                          order.getScoreC(),
                           order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid());
         Long orderType = order.getOrderType();
         if (orderType == 12001L || orderType == 12002L || orderType == 12003L) {

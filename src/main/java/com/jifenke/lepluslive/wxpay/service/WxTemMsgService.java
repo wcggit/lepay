@@ -292,7 +292,7 @@ public class WxTemMsgService {
    * @param orderSid     订单号
    */
   public void sendToClient(String merchantName, Long trueScore, Long truePay, Long totalPrice,
-                           Long rebate, Long scoreB, String openId, String orderSid) {
+                           Long rebate, Long scorec, String openId, String orderSid) {
     new Thread(() -> {
       //为用户推送
       StringBuffer sb = new StringBuffer();
@@ -339,9 +339,11 @@ public class WxTemMsgService {
         sb.append(rebate / 100.0);
         sb.append("红包+");
       }
-      sb.append("¥");
-      sb.append(scoreB);
-      sb.append("积分,");
+      if(scorec!=0L){
+        sb.append("¥");
+        sb.append(scorec);
+        sb.append("金币,");
+      }
       sb.append("点击查看详情");
       mapRemark.put("value", sb.toString());
       mapRemark.put("color", "#173177");

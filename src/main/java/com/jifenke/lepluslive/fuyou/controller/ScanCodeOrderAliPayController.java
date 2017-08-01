@@ -116,7 +116,7 @@ public class ScanCodeOrderAliPayController {
         if (merchantBySId.isPresent()) {
           int way = scanPayWayService.findByMerchantId(merchant.getId());
           model.addAttribute("userId", execute.getUserId());
-          if(way==2){
+          if(way==3){
             if(aliUser!=null){
               model.addAttribute("aliUser",aliUser);
               model.addAttribute("scorea",scoreAService.findScoreAByLeJiaUser(aliUser.getLeJiaUser()));
