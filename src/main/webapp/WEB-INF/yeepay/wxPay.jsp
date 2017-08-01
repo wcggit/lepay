@@ -20,8 +20,12 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}/css/common.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/index.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_index.css">
+    <script src="${ossUrl}zepto.min.js"></script>
+    <script src="${ossUrl}lphash.js"></script>
+    <script src="${ossUrl}MathContext.js"></script>
+    <script src="${ossUrl}BigDecimal.js"></script>
 </head>
 <body>
 <!--表单-->
@@ -64,10 +68,6 @@
     </ul>
 </div>
 </body>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-<script src="${resourceUrl}/js/lphash.js"></script>
-<script src="${resourceUrl}/js/MathContext.js"></script>
-<script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
     $(function () {
         $('#monetary').focus();

@@ -21,8 +21,12 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title>富友支付</title>
-    <link rel="stylesheet" href="${resourceUrl}/css/common.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/useAngPao.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_useAngPao.css">
+    <script src="${ossUrl}zepto.min.js"></script>
+    <script src="${ossUrl}lphash.js"></script>
+    <script src="${ossUrl}MathContext.js"></script>
+    <script src="${ossUrl}BigDecimal.js"></script>
 </head>
 <body>
 <!--表单-->
@@ -53,10 +57,6 @@
     </ul>
 </div>
 </body>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-<script src="${resourceUrl}/js/lphash.js"></script>
-<script src="${resourceUrl}/js/MathContext.js"></script>
-<script src="${resourceUrl}/js/BigDecimal.js"></script>
 <script>
     document.title = "${merchant.name}";
 

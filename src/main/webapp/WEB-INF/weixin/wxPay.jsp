@@ -20,8 +20,8 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}lepay_common.css">
-    <link rel="stylesheet" href="${resourceUrl}lepay_index.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
+    <link rel="stylesheet" href="${ossUrl}lepay_index.css">
     <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
     <script>
         document.write(
