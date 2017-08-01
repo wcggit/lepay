@@ -1,20 +1,14 @@
 package com.jifenke.lepluslive.fuyou.service;
 
-import com.fuiou.mpay.encrypt.RSAUtils;
 import com.jifenke.lepluslive.fuyou.util.YBConstants;
+import com.jifenke.lepluslive.fuyou.util.YbRequestUtils;
 import com.jifenke.lepluslive.fuyou.util.ZGTUtils;
 import com.jifenke.lepluslive.global.config.Constants;
-import com.jifenke.lepluslive.global.util.HttpClientUtil;
-import com.jifenke.lepluslive.global.util.MapUtil;
-import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
 
 import org.springframework.stereotype.Service;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -52,26 +46,15 @@ public class YeepayService {
     params.put("ip", getIpAddr(request));//
     params.put("directcode", "WAP_WECHATG");//
     String data = ZGTUtils.buildData(params, ZGTUtils.PAYAPI_REQUEST_HMAC_ORDER);
-    Map<String, String> map = ZGTUtils.httpPost("https://o2o.yeepay.com/zgt-api/api/pay", data);
+    Map<String, String> map = ZGTUtils.httpPost(YBConstants.PAY_URL, data);
 
     try {
 
-      return callBack(map);
+      return YbRequestUtils.callBack(map);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException();
     }
-  }
-
-  private static Map<String, String> callBack(Map<String, String> stringMap) {
-    System.out.println("易宝的同步响应：" + stringMap);
-
-    if (stringMap.containsKey("code")) {
-      return stringMap;
-    }
-    Map<String, String> responseDataMap = ZGTUtils.decryptData(stringMap.get("data"));
-    System.out.println("data解密后明文：" + responseDataMap);
-    return responseDataMap;
   }
 
   /**
@@ -102,7 +85,9 @@ public class YeepayService {
     params.put("customernumber", ZGTUtils.getCustomernumber()); //主账号商户编号
     params.put("requestid", order.getOrderSid()); //订单号
     String data = ZGTUtils.buildData(params, ZGTUtils.QUERYORDERAPI_REQUEST_HMAC_ORDER);
-    Map<String, String> map = ZGTUtils.httpPost("https://o2o.yeepay.com/zgt-api/api/queryOrder", data);
-    return callBack(map);
+    Map<String, String>
+        map =
+        ZGTUtils.httpPost(YBConstants.QUERY_ORDER_URL, data);
+    return YbRequestUtils.callBack(map);
   }
 }
