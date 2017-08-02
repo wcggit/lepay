@@ -32,7 +32,7 @@
     <span class="name"></span><input id="phone" type="text" placeholder="请输入您在注册时绑定的手机号"/>
   </li>
   <li class="info">
-    <span class="passWord"></span><input type="password" placeholder="请输入验证码"/>
+    <span class="passWord"></span><input id="code" type="password" placeholder="请输入验证码"/>
     <div class="btn-yanzhengma">获取验证码</div>
   </li>
 </ul>
@@ -74,7 +74,7 @@
   }
 
   $(".form-btn").on("touchstart",function(){
-    var code = $(".btn-yanzhengma").val()
+    var code = $("#code").val()
     if(code!=null){
       $(".form-btn").unbind("touchstart")
       bindUser(code)
