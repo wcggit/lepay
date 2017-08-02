@@ -20,9 +20,9 @@
     <!--按设备宽度缩放，并且用户不允许手动缩放-->
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
-    <title>富友支付</title>
-    <link rel="stylesheet" href="${resourceUrl}/css/common.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/useAngPao.css">
+    <title>支付</title>
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/common.css">
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/useAngPao.css">
 </head>
 <body>
 <!--表单-->
@@ -45,10 +45,10 @@
     </ul>
 </div>
 </body>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-<script src="${resourceUrl}/js/lphash.js"></script>
-<script src="${resourceUrl}/js/MathContext.js"></script>
-<script src="${resourceUrl}/js/BigDecimal.js"></script>
+<script src="${cdnUrl}js/zepto.min.js"></script>
+<script src="${cdnUrl}js/lphash.js"></script>
+<script src="${cdnUrl}js/MathContext.js"></script>
+<script src="${cdnUrl}js/BigDecimal.js"></script>
 <script>
     document.title = "${merchant.name}";
 

@@ -20,8 +20,8 @@
     <!--不显示拨号链接-->
     <meta charset="UTF-8">
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}/paySuccess/css/swiper.min.css">
-    <link rel="stylesheet" href="${resourceUrl}/paySuccess/css/paySuccess2.css">
+    <link rel="stylesheet" href="${cdnUrl}css/swiper.min.css">
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/success/paySuccess2.css">
 </head>
 <body>
 <div id="main">
@@ -74,74 +74,12 @@
                 </div>
                 <div class="swiper-container1">
                     <div class="swiper-wrapper" id="swiper">
-                            <%--<div class="swiper-slide" onclick="showMerchant()">--%>
-                            <%--<div class="top-img"--%>
-                            <%--style="background: url('') no-repeat;background-size: 100% 100%;"></div>--%>
-                            <%--<ul>--%>
-                            <%--<li>望京新会城购物中心</li>--%>
-                            <%--<li>高碑店 | 1.3km | 韩国料理</li>--%>
-                            <%--<li class="price">120元/人</li>--%>
-                            <%--</ul>--%>
-                            <%--</div>--%>
 
                     </div>
                 </div>
             </div>
         </c:if>
-        <%--<c:if test="${map.currScoreB != null && map.currScoreB > 0}">--%>
-        <%--<div class="div-out">--%>
-        <%--<div class="ttl">--%>
-        <%--您有<font color="#fb991a">${map.currScoreB}</font>积分，可兑换以下商品--%>
-        <%--<a>全部</a>--%>
-        <%--</div>--%>
-        <%--<div class="swiper-container2">--%>
-        <%--<div class="swiper-wrapper">--%>
-        <%--<div class="swiper-slide">--%>
-        <%--<div class="top-img"></div>--%>
-        <%--<ul>--%>
-        <%--<li>甜丫头</li>--%>
-        <%--<li class="jifen"><font color="#333">5元<font--%>
-        <%--color="#666">+</font></font><font--%>
-        <%--color="#fb991a">120积分</font></li>--%>
-        <%--<li class="oldPrice"><strike>市场价128元</strike><span--%>
-        <%--class="right">已售88份</span>--%>
-        <%--</li>--%>
-        <%--</ul>--%>
-        <%--</div>--%>
 
-
-        <%--<div class="swiper-slide">--%>
-        <%--<div class="top-img"></div>--%>
-        <%--<ul>--%>
-        <%--<li>甜丫头</li>--%>
-        <%--<li>¥5+120积分</li>--%>
-        <%--</ul>--%>
-        <%--</div>--%>
-        <%--<div class="swiper-slide">--%>
-        <%--<div class="top-img"></div>--%>
-        <%--<ul>--%>
-        <%--<li>甜丫头</li>--%>
-        <%--<li>¥5+120积分</li>--%>
-        <%--</ul>--%>
-        <%--</div>--%>
-        <%--<div class="swiper-slide">--%>
-        <%--<div class="top-img"></div>--%>
-        <%--<ul>--%>
-        <%--<li>甜丫头</li>--%>
-        <%--<li>¥5+120积分</li>--%>
-        <%--</ul>--%>
-        <%--</div>--%>
-        <%--<div class="swiper-slide">--%>
-        <%--<div class="top-img"></div>--%>
-        <%--<ul>--%>
-        <%--<li>甜丫头</li>--%>
-        <%--<li>¥5+120积分</li>--%>
-        <%--</ul>--%>
-        <%--</div>--%>
-        <%--</div>--%>
-        <%--</div>--%>
-        <%--</div>--%>
-        <%--</c:if>--%>
         <div class="shadow-small">
             <div class="money-god-small">
                 <div class="god-top"></div>
@@ -174,8 +112,8 @@
         </div>
     </div>
 </div>
-<script src="${resourceUrl}/paySuccess/js/swiper.min.js"></script>
-<script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
+<script src="${cdnUrl}js/swiper.min.js"></script>
+<script src="${cdnUrl}js/jquery-2.0.3.min.js"></script>
 <script>
     document.title = "${offLineOrder.merchant.name}";
     var swifterOut1 = CN('swifter-out')[0];

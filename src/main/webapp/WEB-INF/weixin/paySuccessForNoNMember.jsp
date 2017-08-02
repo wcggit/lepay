@@ -18,8 +18,7 @@
     <meta name="format-detection" content="telephone=no"><!--不显示拨号链接-->
     <meta charset="UTF-8">
     <title></title>
-    <link rel="stylesheet" href="${resourceUrl}/css/paySuccessCommon.css">
-    <link rel="stylesheet" href="${resourceUrl}/css/paySuccess.css"/>
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/success/paySuccess.css">
 </head>
 <body>
 <ul id="paySuccess">

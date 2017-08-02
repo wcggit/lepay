@@ -15,10 +15,10 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
-    <title>Title</title>
-    <link rel="stylesheet" type="text/css" href="${policyResourceUrl}/framework/reset.css">
-    <link rel="stylesheet" type="text/css" href="${policyResourceUrl}/css/paySuccess.css">
-    <script src="${policyResourceUrl}/framework/zepto.min.js"></script>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="${cdnUrl}lepay/weixin/success/reset.css">
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/success/paySuccess3.css">
+    <script src="${cdnUrl}js/zepto.min.js"></script>
 </head>
 <body>
 <div class="top">

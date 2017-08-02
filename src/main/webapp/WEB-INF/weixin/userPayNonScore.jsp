@@ -21,23 +21,8 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
-    <link rel="stylesheet" href="${ossUrl}lepay_useAngPao.css">
-    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
-    <script>
-        document.write(
-            "<s" + "cript type='text/javascript' src='${ossUrl}zepto.min.js?" + Math.random()
-            + "'></scr" + "ipt>");
-        document.write(
-            "<s" + "cript type='text/javascript' src='${ossUrl}lphash.js?" + Math.random()
-            + "'></scr" + "ipt>");
-        document.write(
-            "<s" + "cript type='text/javascript' src='${ossUrl}MathContext.js?" + Math.random()
-            + "'></scr" + "ipt>");
-        document.write(
-            "<s" + "cript type='text/javascript' src='${ossUrl}BigDecimal.js?" + Math.random()
-            + "'></scr" + "ipt>");
-    </script>
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/common.css">
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/useAngPao.css">
 </head>
 <body>
 <!--表单-->
@@ -84,6 +69,11 @@
     </ul>
 </div>
 </body>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script src="${cdnUrl}js/zepto.min.js"></script>
+<script src="${cdnUrl}js/lphash.js"></script>
+<script src="${cdnUrl}js/MathContext.js"></script>
+<script src="${cdnUrl}js/BigDecimal.js"></script>
 <script>
     document.title = "${merchant.name}";
     <%--$(function () {--%>

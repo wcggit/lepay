@@ -20,12 +20,8 @@
     <meta name="format-detection" content="telephone=no">
     <!--不显示拨号链接-->
     <title></title>
-    <link rel="stylesheet" href="${ossUrl}lepay_common.css">
-    <link rel="stylesheet" href="${ossUrl}lepay_index.css">
-    <script src="${ossUrl}zepto.min.js"></script>
-    <script src="${ossUrl}lphash.js"></script>
-    <script src="${ossUrl}MathContext.js"></script>
-    <script src="${ossUrl}BigDecimal.js"></script>
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/common.css">
+    <link rel="stylesheet" href="${cdnUrl}lepay/weixin/wxPay/index.css">
 </head>
 <body>
 <!--表单-->
@@ -68,6 +64,10 @@
     </ul>
 </div>
 </body>
+<script src="${cdnUrl}js/zepto.min.js"></script>
+<script src="${cdnUrl}js/lphash.js"></script>
+<script src="${cdnUrl}js/MathContext.js"></script>
+<script src="${cdnUrl}js/BigDecimal.js"></script>
 <script>
     $(function () {
         $('#monetary').focus();
