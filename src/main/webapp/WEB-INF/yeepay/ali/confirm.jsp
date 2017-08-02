@@ -19,14 +19,13 @@
   <!--按设备宽度缩放，并且用户不允许手动缩放-->
   <meta name="format-detection" content="telephone=no"><!--不显示拨号链接-->
   <title></title>
-  <link rel="stylesheet" href="${resourceUrl}/css/reset.css">
-  <link rel="stylesheet" href="${resourceUrl}/css/keyboard.css">
-  <link rel="stylesheet" href="${resourceUrl}/alipay/confirm_nomember.css">
-  <script src="${policyResourceUrl}/framework/zepto.min.js"></script>
-  <script src="${resourceUrl}/js/lphash.js"></script>
-  <script src="${resourceUrl}/js/jquery-2.0.3.min.js"></script>
-  <script src="${resourceUrl}/js/MathContext.js"></script>
-  <script src="${resourceUrl}/js/BigDecimal.js"></script>
+  <link rel="stylesheet" href="${cdnUrl}lepay/css/reset.css">
+  <link rel="stylesheet" href="${cdnUrl}lepay/css/keyboard.css">
+  <link rel="stylesheet" href="${cdnUrl}lepay/alipay/confirm_nomember.css">
+  <script src="${cdnUrl}js/zepto.min.js"></script>
+  <script src="${cdnUrl}js/lphash.js"></script>
+  <script src="${cdnUrl}js/MathContext.js"></script>
+  <script src="${cdnUrl}js/BigDecimal.js"></script>
 </head>
 <body>
 <!--表单-->
