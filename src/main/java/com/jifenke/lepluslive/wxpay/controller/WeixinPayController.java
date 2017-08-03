@@ -125,7 +125,6 @@ public class WeixinPayController {
       }
       return MvUtil.go("/weixin/paySuccessForNoNMember");
     } else {
-      if (offLineOrder.getPolicy().endsWith("1")) { //鼓励金策略订单
         Calendar calendar = Calendar.getInstance();
         int day = calendar.get(Calendar.DAY_OF_WEEK);//今天星期几
 //        int day = 5;//今天星期几
@@ -168,8 +167,6 @@ public class WeixinPayController {
         } else { //星期5,6,7且星期4非暴击订单
           return MvUtil.go("/weixin/newpolicy/paySuccessybj");
         }
-      }
-      return MvUtil.go("/weixin/paySuccessForMember");
     }
   }
 
