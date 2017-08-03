@@ -36,8 +36,16 @@ public class YeepayService {
     params.put("customernumber", ZGTUtils.getCustomernumber()); //主账号商户编号
     params.put("requestid", order.getOrderSid()); //订单号
     params.put("amount", order.getTruePay() / 100.0 + ""); //总价 单位元
-    params.put("productname", "测试支付-名称-" + order.getOrderSid());
-    params.put("productdesc", "测试支付-描述-" + order.getOrderSid());
+    params.put("productname", order.getMerchant().getName() + "消费");
+    if (order.getTrueScore() != 0) {
+      params.put("productdesc",
+                 order.getMerchant().getName() + "消费(实付" + order.getTruePay() / 100.0 + "+"
+                 + order.getTrueScore() / 100.0 + "鼓励金)");
+    } else {
+      params.put("productdesc",
+                 order.getMerchant().getName() + "消费(实付" + order.getTruePay() / 100.0 + ")");
+
+    }
     params.put("callbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/afterPay");
     params.put("webcallbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/paySuccess");
     params.put("payproducttype", "ONEKEY");//
@@ -90,6 +98,7 @@ public class YeepayService {
         ZGTUtils.httpPost(YBConstants.QUERY_ORDER_URL, data);
     return YbRequestUtils.callBack(map);
   }
+
   public Map<String, String> buildAliParams(HttpServletRequest request, ScanCodeOrder order) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -98,7 +107,15 @@ public class YeepayService {
     params.put("requestid", order.getOrderSid()); //订单号
     params.put("amount", order.getTruePay() / 100.0 + ""); //总价 单位元
     params.put("productname", order.getMerchant().getName() + "消费");
-    params.put("productdesc", order.getMerchant().getName() + "消费");
+    if (order.getTrueScore() != 0) {
+      params.put("productdesc",
+                 order.getMerchant().getName() + "消费(实付" + order.getTruePay() / 100.0 + "+"
+                 + order.getTrueScore() / 100.0 + "鼓励金)");
+    } else {
+      params.put("productdesc",
+                 order.getMerchant().getName() + "消费(实付" + order.getTruePay() / 100.0 + ")");
+
+    }
     params.put("callbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/afterPay");
     params.put("webcallbackurl", Constants.WEI_XIN_ROOT_URL + "/pay/yeepay/paySuccess");
     params.put("payproducttype", "ONEKEY");//

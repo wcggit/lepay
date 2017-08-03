@@ -290,9 +290,10 @@ public class WxTemMsgService {
    * @param scoreB       发积分
    * @param openId       用户openId
    * @param orderSid     订单号
+   * @param paytype     微信or支付宝
    */
   public void sendToClient(String merchantName, Long trueScore, Long truePay, Long totalPrice,
-                           Long rebate, Long scorec, String openId, String orderSid) {
+                           Long rebate, Long scorec, String openId, String orderSid,Integer paytype) {
     new Thread(() -> {
       //为用户推送
       StringBuffer sb = new StringBuffer();
@@ -303,7 +304,11 @@ public class WxTemMsgService {
           sb.append("¥");
           sb.append(totalPrice / 100.0);
           sb.append("(");
-          sb.append("微信¥");
+          if(paytype==0){
+            sb.append("微信¥");
+          }else {
+            sb.append("支付宝¥");
+          }
           sb.append(truePay / 100.0);
           sb.append(",红包¥");
           sb.append(trueScore / 100.0);
@@ -313,7 +318,7 @@ public class WxTemMsgService {
           sb.append("¥");
           sb.append(totalPrice / 100.0);
           sb.append("(");
-          sb.append("红包¥");
+          sb.append("鼓励金¥");
           sb.append(trueScore / 100.0);
           sb.append(")");
           keys[1] = sb.toString();
@@ -322,7 +327,11 @@ public class WxTemMsgService {
         sb.append("¥");
         sb.append(totalPrice / 100.0);
         sb.append("(");
-        sb.append("微信¥");
+        if(paytype==0){
+          sb.append("微信¥");
+        }else {
+          sb.append("支付宝¥");
+        }
         sb.append(totalPrice / 100.0);
         sb.append(")");
         keys[1] = sb.toString();
@@ -337,11 +346,11 @@ public class WxTemMsgService {
       if (rebate != 0L) {
         sb.append("¥");
         sb.append(rebate / 100.0);
-        sb.append("红包+");
+        sb.append("鼓励金+");
       }
       if(scorec!=0L){
         sb.append("¥");
-        sb.append(scorec);
+        sb.append(scorec/100.0);
         sb.append("金币,");
       }
       sb.append("点击查看详情");
