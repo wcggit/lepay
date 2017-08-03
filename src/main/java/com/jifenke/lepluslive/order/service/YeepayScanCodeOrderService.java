@@ -360,7 +360,7 @@ public class YeepayScanCodeOrderService {
     paySuccess(order, backMap);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+  @Transactional(propagation = Propagation.REQUIRED)
   public void paySuccess(ScanCodeOrder order, Map<String, String> backMap) {
     if (order.getState() == 0) {
 
@@ -388,6 +388,7 @@ public class YeepayScanCodeOrderService {
         }
       }
       order.setState(1);
+      order.setOrderCode(backMap.get("externalid"));
       orderRepository.save(order);
       //23:30:00~23:59:30支付成功实时转账
       if (callback.getType() == 2) { //转账
