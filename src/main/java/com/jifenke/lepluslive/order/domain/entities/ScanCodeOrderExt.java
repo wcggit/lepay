@@ -23,15 +23,15 @@ public class ScanCodeOrderExt {
 
   private Integer source = 0;   //支付来源  0=WAP|1=APP
 
-
   private Integer payType = 0; //0代表微信 1 代表支付宝
 
   private Integer useScoreA = 0; //是否使用红包付款 0 不用 1 使用
 
+  private Integer payment = 0; //付款方式 0=不用（纯通道） 1=使用（纯鼓励金）  2=混合
+
   private String merchantNum;  //该订单使用的通道子商户号
 
-
-  private Integer gatewayType; //通道类型 0 富有 1 易宝
+  private Integer gatewayType = 0; //通道类型 0=富有|1=易宝
 
   private BigDecimal merchantRate;  //商户号当时的佣金费率
 
@@ -63,6 +63,14 @@ public class ScanCodeOrderExt {
 
   public void setThirdTrueCommission(Long thirdTrueCommission) {
     this.thirdTrueCommission = thirdTrueCommission;
+  }
+
+  public Integer getPayment() {
+    return payment;
+  }
+
+  public void setPayment(Integer payment) {
+    this.payment = payment;
   }
 
   public Long getId() {

@@ -99,15 +99,18 @@ public class YeepayScanCodeOrderService {
    * @param merchantId 商家
    * @param weiXinUser 用户
    * @param source     支付来源  0=WAP|1=APP
+   * @param payType    0代表微信 1 代表支付宝
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder createOrderForNoNMember(String truePrice, Long merchantId,
-                                               WeiXinUser weiXinUser, int source, int useWeixin,
+                                               WeiXinUser weiXinUser, int source, int payType,
                                                String aliUserId) {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
     ext.setGatewayType(1); //通道为易宝
-    if (useWeixin == 1) {
+    ext.setPayment(0);
+    ext.setUseScoreA(0);
+    if (payType == 0) {
       ext.setPayType(0);
     } else {
       ext.setPayType(1);
@@ -165,16 +168,16 @@ public class YeepayScanCodeOrderService {
    * @param source     支付来源  0=WAP|1=APP
    * @param trueScore  使用红包
    * @param totalPrice 总价
+   * @param payType    0代表微信 1 代表支付宝
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder createOrderForMember(String truePrice, Long merchantId,
                                             String trueScore,
                                             String totalPrice,
-                                            LeJiaUser leJiaUser, int source
+                                            LeJiaUser leJiaUser, int source, int payType
   ) {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
-    ext.setGatewayType(1); //通道为易宝
     order.setScanCodeOrderExt(ext);
     Date date = new Date();
     order.setLeJiaUser(leJiaUser);
@@ -189,15 +192,19 @@ public class YeepayScanCodeOrderService {
     order.setMerchant(merchant);
     ext.setMerchantUserId(merchant.getMerchantUser().getId());
 
-    //付款方式  0=纯现金|1=纯红包|2=混合
+    //付款方式  0=纯通道|1=纯鼓励金|2=混合
     if (scoreA == 0) {
-      ext.setPayType(0);
+      ext.setUseScoreA(0);
+      ext.setPayment(0);
     } else if (truePay == 0) {
       ext.setUseScoreA(1);
+      ext.setPayment(1);
     } else {
-      ext.setPayType(0);
       ext.setUseScoreA(1);
+      ext.setPayment(2);
     }
+    ext.setGatewayType(1); //通道为易宝
+    ext.setPayType(payType);
     ext.setSource(source);//支付来源  0=WAP|1=APP
 
     MerchantRebatePolicy
@@ -255,14 +262,18 @@ public class YeepayScanCodeOrderService {
    * @param userSid    用户
    * @param source     支付来源  0=WAP|1=APP
    * @param totalPrice 总价
+   * @param payType    0代表微信 1 代表支付宝
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder payByScoreA(String userSid, Long merchantId, String totalPrice,
-                                   int source) throws Exception {
+                                   int source, int payType) throws Exception {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
     order.setScanCodeOrderExt(ext);
+    ext.setPayType(payType);
     ext.setUseScoreA(1);
+    ext.setPayment(1);
+    ext.setGatewayType(1); //通道为易宝
     Date date = new Date();
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
     order.setLeJiaUser(leJiaUser);
@@ -275,7 +286,6 @@ public class YeepayScanCodeOrderService {
     order.setMerchant(merchant);
     ext.setMerchantUserId(merchant.getMerchantUser().getId());
 
-    //付款方式  0=纯现金|1=纯红包|2=混合
     ext.setSource(source);//支付来源  0=WAP|1=APP
 
     //判断订单类型和使用的商户号
@@ -333,17 +343,24 @@ public class YeepayScanCodeOrderService {
 
     merchantService.paySuccess(merchant, order.getTransferMoney());
     order.setMessageState(1);
-    wxTemMsgService
-        .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreC(),
-                      leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid(),order.getScanCodeOrderExt().getPayType());
+
     Long type = order.getOrderType();
     if (type == 12001L || type == 12002L || type == 12003L) {
       type = 0L;
     } else {
       type = 1L;
     }
-    wxTemMsgService
-        .sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant, type);
+    final long orderType = type;
+    new Thread(() -> {
+      wxTemMsgService
+          .sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant, orderType);
+      wxTemMsgService
+          .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(),
+                        order.getScoreC(),
+                        leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid(),
+                        order.getScanCodeOrderExt().getPayType());
+    }).start();
+
     //判断是否需要绑定商户
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
     orderRepository.save(order);
@@ -421,11 +438,6 @@ public class YeepayScanCodeOrderService {
       orderRepository.save(order);
       new Thread(() -> {
         Merchant merchant = order.getMerchant();
-        wxTemMsgService
-            .sendToClient(merchant.getName(), order.getTrueScore(), order.getTruePay(),
-                          order.getTotalPrice(), order.getRebate(),
-                          order.getScoreC(),
-                          order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid(),order.getScanCodeOrderExt().getPayType());
         Long orderType = order.getOrderType();
         if (orderType == 12001L || orderType == 12002L || orderType == 12003L) {
           orderType = 0L;
@@ -435,6 +447,12 @@ public class YeepayScanCodeOrderService {
         wxTemMsgService
             .sendToMerchant(order.getTotalPrice(), order.getOrderSid(), order.getLePayCode(),
                             merchant, orderType);
+        wxTemMsgService
+            .sendToClient(merchant.getName(), order.getTrueScore(), order.getTruePay(),
+                          order.getTotalPrice(), order.getRebate(),
+                          order.getScoreC(),
+                          order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid(),
+                          order.getScanCodeOrderExt().getPayType());
       }).start();
     }
   }

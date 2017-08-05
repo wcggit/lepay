@@ -103,15 +103,19 @@ public class ScanCodeOrderService {
    */
   @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   public ScanCodeOrder createOrderForNoNMember(String truePrice, Long merchantId,
-                                               WeiXinUser weiXinUser, int source,int useWeixin,String aliUserId) {
+                                               WeiXinUser weiXinUser, int source, int useWeixin,
+                                               String aliUserId) {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
-    if(useWeixin==1){
+    if (useWeixin == 1) {
       ext.setPayType(0);
-    }else {
+    } else {
       ext.setPayType(1);
       ext.setAliUserid(aliUserId);
     }
+    ext.setGatewayType(0);
+    ext.setPayment(0);
+    ext.setUseScoreA(0);
     order.setScanCodeOrderExt(ext);
     Date date = new Date();
     order.setLeJiaUser(weiXinUser.getLeJiaUser());
@@ -179,15 +183,19 @@ public class ScanCodeOrderService {
     order.setMerchant(merchant);
     ext.setMerchantUserId(merchant.getMerchantUser().getId());
 
-    //付款方式  0=纯现金|1=纯红包|2=混合
+    //付款方式  0=纯通道|1=纯鼓励金|2=混合
     if (scoreA == 0) {
-      ext.setPayType(0);
+      ext.setUseScoreA(0);
+      ext.setPayment(0);
     } else if (truePay == 0) {
       ext.setUseScoreA(1);
+      ext.setPayment(1);
     } else {
-      ext.setPayType(0);
       ext.setUseScoreA(1);
+      ext.setPayment(2);
     }
+    ext.setGatewayType(0);
+    ext.setPayType(0);
     ext.setSource(source);//支付来源  0=WAP|1=APP
 
     MerchantSettlementStore store = storeService.findByMerchantId(merchantId);
@@ -257,6 +265,9 @@ public class ScanCodeOrderService {
     ScanCodeOrder order = new ScanCodeOrder();
     ScanCodeOrderExt ext = new ScanCodeOrderExt();
     order.setScanCodeOrderExt(ext);
+    ext.setGatewayType(0);
+    ext.setPayType(0);
+    ext.setPayment(1);
     ext.setUseScoreA(1);
     Date date = new Date();
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(userSid);
@@ -331,14 +342,16 @@ public class ScanCodeOrderService {
     order.setMessageState(1);
     wxTemMsgService
         .sendToClient(merchant.getName(), scoreA, 0L, scoreA, order.getRebate(), order.getScoreB(),
-                      leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid(),order.getScanCodeOrderExt().getPayType());
-    Long type= order.getOrderType();
-    if(type==12001L||type==12002L||type==12003L){
-      type=0L;
-    }else{
+                      leJiaUser.getWeiXinUser().getOpenId(), order.getOrderSid(),
+                      order.getScanCodeOrderExt().getPayType());
+    Long type = order.getOrderType();
+    if (type == 12001L || type == 12002L || type == 12003L) {
+      type = 0L;
+    } else {
       type = 1L;
     }
-    wxTemMsgService.sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant,type);
+    wxTemMsgService
+        .sendToMerchant(scoreA, order.getOrderSid(), order.getLePayCode(), merchant, type);
     //判断是否需要绑定商户
     leJiaUserService.checkUserBindMerchant(leJiaUser, merchant);
     orderRepository.save(order);
@@ -408,20 +421,21 @@ public class ScanCodeOrderService {
       orderRepository.save(order);
       new Thread(() -> {
         Merchant merchant = order.getMerchant();
-        wxTemMsgService
-            .sendToClient(merchant.getName(), order.getTrueScore(), order.getTruePay(),
-                          order.getTotalPrice(), order.getRebate(),
-                          order.getScoreB(),
-                          order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid(),order.getScanCodeOrderExt().getPayType());
         Long orderType = order.getOrderType();
-        if(orderType==12001L||orderType==12002L||orderType==12003L){
-          orderType=0L;
-        }else{
+        if (orderType == 12001L || orderType == 12002L || orderType == 12003L) {
+          orderType = 0L;
+        } else {
           orderType = 1L;
         }
         wxTemMsgService
             .sendToMerchant(order.getTotalPrice(), order.getOrderSid(), order.getLePayCode(),
-                            merchant,orderType);
+                            merchant, orderType);
+        wxTemMsgService
+            .sendToClient(merchant.getName(), order.getTrueScore(), order.getTruePay(),
+                          order.getTotalPrice(), order.getRebate(),
+                          order.getScoreB(),
+                          order.getLeJiaUser().getWeiXinUser().getOpenId(), order.getOrderSid(),
+                          order.getScanCodeOrderExt().getPayType());
       }).start();
     }
   }

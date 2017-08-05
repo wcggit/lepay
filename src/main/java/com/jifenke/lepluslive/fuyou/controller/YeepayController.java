@@ -4,7 +4,6 @@ import com.jifenke.lepluslive.fuyou.service.YeepayService;
 import com.jifenke.lepluslive.fuyou.util.ZGTUtils;
 import com.jifenke.lepluslive.global.util.Des;
 import com.jifenke.lepluslive.global.util.LejiaResult;
-import com.jifenke.lepluslive.global.util.MapUtil;
 import com.jifenke.lepluslive.global.util.MvUtil;
 import com.jifenke.lepluslive.lejiauser.domain.entities.LeJiaUser;
 import com.jifenke.lepluslive.lejiauser.service.LeJiaUserService;
@@ -12,7 +11,6 @@ import com.jifenke.lepluslive.merchant.domain.entities.Merchant;
 import com.jifenke.lepluslive.merchant.service.MerchantScanPayWayService;
 import com.jifenke.lepluslive.merchant.service.MerchantService;
 import com.jifenke.lepluslive.order.domain.entities.ScanCodeOrder;
-import com.jifenke.lepluslive.order.service.ScanCodeOrderService;
 import com.jifenke.lepluslive.order.service.YeepayScanCodeOrderService;
 import com.jifenke.lepluslive.score.domain.entities.ScoreA;
 import com.jifenke.lepluslive.score.service.ScoreAService;
@@ -22,6 +20,8 @@ import com.jifenke.lepluslive.wxpay.service.WeiXinPayService;
 import com.jifenke.lepluslive.wxpay.service.WeiXinUserService;
 
 import org.jdom.JDOMException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
@@ -34,7 +34,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,11 +45,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * 易宝 微信 扫码
  * Created by wcg on 2017/7/19.
  */
 @RestController
 @RequestMapping("/pay/yeepay")
 public class YeepayController {
+
+  private static Logger log = LoggerFactory.getLogger(YeepayController.class);
 
   @Value("${weixin.appId}")
   private String appId;
@@ -84,12 +86,6 @@ public class YeepayController {
 
   /**
    * 测试易宝支付微信支付接口
-   * @param openid
-   * @param merchantSid
-   * @param pure
-   * @param request
-   * @param model
-   * @return
    */
   @RequestMapping("/wxPay")
   public ModelAndView goPayPage(@RequestParam String openid, @RequestParam String merchantSid,
@@ -131,9 +127,9 @@ public class YeepayController {
         return MvUtil.go("/weixin/wxPay");
       } else if (way == 0) {
         return MvUtil.go("/fuyou/wxPay");
-      } else if (way ==2){
+      } else if (way == 2) {
         return MvUtil.go("/yeepay/wxPay");
-      }else {
+      } else {
         return MvUtil.go("/weixin/wxPay");
       }
     } else {
@@ -151,14 +147,14 @@ public class YeepayController {
     LeJiaUser leJiaUser = leJiaUserService.findUserByUserSid(strs[0]);
     model.addAttribute("leJiaUser", leJiaUser);
     ScoreA scorea = scoreAService.findScoreAByLeJiaUser(leJiaUser);
-    model.addAttribute("scoreA",scorea);
+    model.addAttribute("scoreA", scorea);
     model.addAttribute("totalPrice", totalPrice);
     model.addAttribute("merchantId", merchantId);
     Merchant merchant = merchantService.findMerchantById(merchantId);
     model.addAttribute("merchant", merchant);
     model.addAttribute("wxConfig", getWeiXinPayConfig(request));
     model.addAttribute("openid", strs[3]);
-    if (merchant.getReceiptAuth() == 0 ||scorea.getScore()==0) {
+    if (merchant.getReceiptAuth() == 0 || scorea.getScore() == 0) {
       return MvUtil.go("/yeepay/userPayNonScore");
     }
     return MvUtil.go("/yeepay/wxUserPay");
@@ -171,7 +167,7 @@ public class YeepayController {
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId(openid);
     ScanCodeOrder
         order =
-        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0,1,null);
+        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0, 0, null);
     //封装订单参数
     Map<String, String> result = null;
     try {
@@ -197,7 +193,7 @@ public class YeepayController {
         order =
         orderService.createOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
                                           strs[4], leJiaUserService
-                .findUserByUserSid(strs[2]), 0);
+                                              .findUserByUserSid(strs[2]), 0, 0);
     //封装订单参数
     Map<String, String> map = null;
     try {
@@ -223,7 +219,7 @@ public class YeepayController {
     try {
       ScanCodeOrder
           order =
-          orderService.payByScoreA(strs[0], Long.parseLong(strs[1]), strs[2], 0);
+          orderService.payByScoreA(strs[0], Long.parseLong(strs[1]), strs[2], 0, 0);
 
       return LejiaResult.build(200, "", order);
     } catch (Exception e) {
@@ -236,10 +232,13 @@ public class YeepayController {
    * 微信回调函数
    */
   @RequestMapping(value = "/afterPay", produces = MediaType.APPLICATION_XML_VALUE)
-  public void afterPay(HttpServletResponse res,@RequestParam String data) throws IOException, JDOMException {
+  public void afterPay(HttpServletResponse res, @RequestParam String data)
+      throws IOException, JDOMException {
 
     System.out.println("---易宝公众号支付充值回调成功请求收到-----");
     Map<String, String> responseMAp = ZGTUtils.decryptData(data);
+    //打印日志
+    log.info("afterPay===" + responseMAp.toString());
     if (ZGTUtils.checkHmac(responseMAp, ZGTUtils.PAYAPICALLBACK_HMAC_ORDER)) {
       if (responseMAp.get("code").equals("1")) {
         ScanCodeOrder order = orderService.findOrderByOrderSid(responseMAp.get("requestid"));
