@@ -418,8 +418,8 @@ public class OffLineOrderService {
       paySuccess(offLineOrder);
       Long count = countMerchantMonthlyOrder(offLineOrder);
       offLineOrder.setMonthlyOrderCount(++count);
-      wxTemMsgService.sendToClient(offLineOrder);
       wxTemMsgService.sendToMerchant(offLineOrder);
+      wxTemMsgService.sendToClient(offLineOrder);
       offLineOrder.setMessageState(1);
       repository.save(offLineOrder);
     }
@@ -458,10 +458,9 @@ public class OffLineOrderService {
       Long count = countMerchantMonthlyOrder(offLineOrder);
       offLineOrder.setMonthlyOrderCount(++count);
       repository.save(offLineOrder);
-      new Thread(() -> {
-        wxTemMsgService.sendToClient(offLineOrder);
-        wxTemMsgService.sendToMerchant(offLineOrder);
-      }).start();
+      //以下两个方法内已异步，TODO:后期建议使用MQ
+      wxTemMsgService.sendToMerchant(offLineOrder);
+      wxTemMsgService.sendToClient(offLineOrder);
     }
   }
 
@@ -787,7 +786,8 @@ public class OffLineOrderService {
                   result.put("value",
                              offLineOrder.getNonCriticalRebate() / 100.0 + " × 2" + " + " + (value
                                                                                              - offLineOrder
-                                 .getRebate()) / 100.0);
+                                                                                                 .getRebate())
+                                                                                            / 100.0);
                 } else {
                   result.put("value", offLineOrder.getNonCriticalRebate() / 100.0 + " × 2");
                 }

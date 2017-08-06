@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
-* 易宝扫码 Created by zhangwen on 2016/12/6.
+* 易宝 支付宝 扫码 Created by zhangwen on 2016/12/6.
 */
 @RestController
 @RequestMapping("/pay/yeepay/alipay")
@@ -140,7 +140,7 @@ public class YeepayAliPayController {
     WeiXinUser weiXinUser = weiXinUserService.findWeiXinUserByOpenId("doubles2");//虚拟用户
     ScanCodeOrder
         order =
-        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0,0,userId);
+        orderService.createOrderForNoNMember(truePrice, merchantId, weiXinUser, 0,1,userId);
     //封装订单参数
     Map<String, String> result = null;
     try {
@@ -166,7 +166,7 @@ public class YeepayAliPayController {
         order =
         orderService.createOrderForMember(strs[0], Long.parseLong(strs[3]), strs[1],
                                           strs[4], leJiaUserService
-                .findUserByUserSid(strs[2]), 0);
+                .findUserByUserSid(strs[2]), 0,1);
     //封装订单参数
     Map<String, String> map = null;
     try {
@@ -191,7 +191,7 @@ public class YeepayAliPayController {
     try {
       ScanCodeOrder
           order =
-          orderService.payByScoreA(strs[0], Long.parseLong(strs[1]), strs[2], 0);
+          orderService.payByScoreA(strs[0], Long.parseLong(strs[1]), strs[2], 0,1);
 
       return LejiaResult.build(200, "", order);
     } catch (Exception e) {

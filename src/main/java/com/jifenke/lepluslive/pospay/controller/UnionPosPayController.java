@@ -11,6 +11,8 @@ import com.jifenke.lepluslive.order.domain.entities.UnionPosOrder;
 import com.jifenke.lepluslive.order.service.UnionPosOrderLogService;
 import com.jifenke.lepluslive.order.service.UnionPosOrderService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,6 +38,8 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping("/lepay")
 public class UnionPosPayController {
+
+  private static Logger log = LoggerFactory.getLogger(UnionPosPayController.class);
 
   @Inject
   private UnionPosOrderLogService unionPosOrderLogService;
@@ -74,6 +78,13 @@ public class UnionPosPayController {
   @RequestMapping(value = "/pospay/u_pay/success", method = RequestMethod.POST)
   public LejiaResult paySuccess(@RequestParam String orderSid, @RequestParam Long merchantId,
                                 @RequestParam String account, @RequestParam String data) {
+    System.out.println(
+        "POS机混合支付成功后通知&orderSid=" + orderSid + "---merchantId=" + merchantId + "---account="
+        + account + "data="
+        + data);
+    log.info("POS机混合支付成功后通知&orderSid=" + orderSid + "---merchantId=" + merchantId + "---account="
+             + account + "data="
+             + data);
     Map
         result =
         unionOrderService.PaySuccess(orderSid, account, merchantId, data);
@@ -98,7 +109,8 @@ public class UnionPosPayController {
     //保存查询日志
     unionPosOrderLogService.saveLogBySearch(parameters, 1);
     System.out.println("===============4.1查询银行卡绑定活动接口（002000）==================");
-//    System.out.println("请求数据==================" + parameters.toString());
+    System.out.println("请求数据==================" + parameters.toString());
+    log.info("002000=request=" + parameters.toString());
 
     String sign = String.valueOf(parameters.get("sign"));
 //    String enc_card_no = parameters.get("enc_card_no").toString();
@@ -140,6 +152,7 @@ public class UnionPosPayController {
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
     System.out.println("4.1 返回数据====================" + returnMap.toString());
+    log.info("002000=response=" + returnMap.toString());
     return returnMap;
   }
 
@@ -152,7 +165,8 @@ public class UnionPosPayController {
     //保存销账日志
     unionPosOrderLogService.saveLogAfterPay(parameters, 2);
     System.out.println("===============4.2销账交易接口（002100）==================");
-//    System.out.println("请求数据==================" + parameters.toString());
+    System.out.println("请求数据==================" + parameters.toString());
+    log.info("002100=request=" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
@@ -196,6 +210,7 @@ public class UnionPosPayController {
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
     System.out.println("4.2 返回数据====================" + returnMap.toString());
+    log.info("002100=response=" + returnMap.toString());
     return returnMap;
   }
 
@@ -209,6 +224,7 @@ public class UnionPosPayController {
     //保存销账冲正日志
     unionPosOrderLogService.saveLogReverse(parameters, 3);
     System.out.println("请求数据==================" + parameters.toString());
+    log.info("002101=request=" + parameters.toString());
     String sign = String.valueOf(parameters.get("sign"));
     parameters.remove("sign");
     String requestStr = getOriginStr(parameters);
@@ -236,6 +252,7 @@ public class UnionPosPayController {
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
     System.out.println("4.3 返回数据====================" + returnMap.toString());
+    log.info("002101=response=" + returnMap.toString());
     return returnMap;
   }
 
@@ -246,6 +263,7 @@ public class UnionPosPayController {
   public Map cancel(HttpServletRequest request) {
     System.out.println("===============4.4销账撤销通知接口（002102）（只支持撤销当天，未清算交易）==================");
     TreeMap parameters = getParametersFromRequest(request);
+    log.info("002102=request=" + parameters.toString());
     //保存销账冲正日志
     unionPosOrderLogService.saveLogReverse(parameters, 4);
 
@@ -276,6 +294,7 @@ public class UnionPosPayController {
     }
     returnMap.put("sign", RSAUtil.sign(getOriginStr(returnMap)));
     System.out.println("4.4 返回数据====================" + returnMap.toString());
+    log.info("002102=response=" + returnMap.toString());
     return returnMap;
   }
 

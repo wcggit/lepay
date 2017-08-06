@@ -115,7 +115,7 @@ public class WxTemMsgService {
         sb.append("鼓励金+");
       }
       sb.append("¥");
-      sb.append(offLineOrder.getScoreC()/100.0);
+      sb.append(offLineOrder.getScoreC() / 100.0);
       sb.append("金币");
       sb.append("(乐付码:");
       sb.append(offLineOrder.getLepayCode());
@@ -208,7 +208,7 @@ public class WxTemMsgService {
           try {
             Thread.sleep(10000);
             --times;
-            sendTemplateMessage(param, wxId,times);
+            sendTemplateMessage(param, wxId, times);
           } catch (InterruptedException e) {
             //e.printStackTrace();
             log.error(param.get("data").toString() + e.getMessage());
@@ -235,9 +235,9 @@ public class WxTemMsgService {
       sb.append(",本月第");
       sb.append(offLineOrder.getMonthlyOrderCount());
       sb.append("笔订单");
-      if(offLineOrder.getRebateWay()==1||offLineOrder.getRebateWay()==3){
+      if (offLineOrder.getRebateWay() == 1 || offLineOrder.getRebateWay() == 3) {
         sb.append("(乐加订单)");
-      }else {
+      } else {
         sb.append("(普通订单)");
       }
       sb.append(",点击查看详情");
@@ -245,11 +245,6 @@ public class WxTemMsgService {
       mapRemark.put("color", "#173177");
       HashMap<String, Object> map2 = new HashMap<>();
       map2.put("remark", mapRemark);
-//      List<MerchantUser>
-//          merchantUsers =
-//          merchantService.findMerchantUserByMerchant(offLineOrder
-//                                                         .getMerchant());
-//      for (MerchantUser merchantUser : merchantUsers) {
       List<TemporaryMerchantUserShop>
           list =
           temporaryMerchantUserShopService.findAllByMerchant(offLineOrder.getMerchant());
@@ -262,20 +257,6 @@ public class WxTemMsgService {
                          offLineOrder.getOrderSid(), 9L, map2);
         }
       }
-//      merchantService.findMerchantUserByMerchant(offLineOrder
-//                                                     .getMerchant()).stream().map(merchantUser -> {
-//        merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(merchantUser).stream()
-//            .map(merchantWeiXinUser -> {
-//              sendTemMessage(merchantWeiXinUser.getOpenId(), 3L, keys,
-//                             offLineOrder.getOrderSid(), 41L, map2);
-//              return null;
-//            })
-//            .collect(Collectors.toList());
-//        return null;
-//      }).collect(
-//          Collectors.toList());
-
-      //为商户发送模版消息
     }).start();
   }
 
@@ -283,86 +264,83 @@ public class WxTemMsgService {
    * 发送支付成功模板消息给消费者   16/12/19
    *
    * @param merchantName 商户名称
-   * @param trueScore    使用红包
+   * @param trueScore    使用鼓励金
    * @param truePay      实际支付
    * @param totalPrice   总支付
-   * @param rebate       发红包
-   * @param scoreB       发积分
+   * @param rebate       发鼓励金
+   * @param scorec       发金币
    * @param openId       用户openId
    * @param orderSid     订单号
-   * @param paytype     微信or支付宝
+   * @param paytype      微信or支付宝
    */
   public void sendToClient(String merchantName, Long trueScore, Long truePay, Long totalPrice,
-                           Long rebate, Long scorec, String openId, String orderSid,Integer paytype) {
-    new Thread(() -> {
-      //为用户推送
-      StringBuffer sb = new StringBuffer();
-      String[] keys = new String[4];
-      keys[0] = merchantName;
-      if (trueScore != 0) {
-        if (truePay != 0) {
-          sb.append("¥");
-          sb.append(totalPrice / 100.0);
-          sb.append("(");
-          if(paytype==0){
-            sb.append("微信¥");
-          }else {
-            sb.append("支付宝¥");
-          }
-          sb.append(truePay / 100.0);
-          sb.append(",红包¥");
-          sb.append(trueScore / 100.0);
-          sb.append(")");
-          keys[1] = sb.toString();
+                           Long rebate, Long scorec, String openId, String orderSid,
+                           Integer paytype) {
+    //为用户推送
+    StringBuffer sb = new StringBuffer();
+    String[] keys = new String[4];
+    keys[0] = merchantName;
+    if (trueScore != 0) {
+      if (truePay != 0) {
+        sb.append("¥");
+        sb.append(totalPrice / 100.0);
+        sb.append("(");
+        if (paytype == 0) {
+          sb.append("微信¥");
         } else {
-          sb.append("¥");
-          sb.append(totalPrice / 100.0);
-          sb.append("(");
-          sb.append("鼓励金¥");
-          sb.append(trueScore / 100.0);
-          sb.append(")");
-          keys[1] = sb.toString();
+          sb.append("支付宝¥");
         }
+        sb.append(truePay / 100.0);
+        sb.append(",红包¥");
+        sb.append(trueScore / 100.0);
+        sb.append(")");
+        keys[1] = sb.toString();
       } else {
         sb.append("¥");
         sb.append(totalPrice / 100.0);
         sb.append("(");
-        if(paytype==0){
-          sb.append("微信¥");
-        }else {
-          sb.append("支付宝¥");
-        }
-        sb.append(totalPrice / 100.0);
+        sb.append("鼓励金¥");
+        sb.append(trueScore / 100.0);
         sb.append(")");
         keys[1] = sb.toString();
       }
-      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-      keys[2] = dateFormat.format(new Date());
-
-      HashMap<String, Object> mapRemark = new HashMap<>();
-      sb.setLength(0);
-      sb.append("您本次消费获得");
-      if (rebate != 0L) {
-        sb.append("¥");
-        sb.append(rebate / 100.0);
-        sb.append("鼓励金+");
+    } else {
+      sb.append("¥");
+      sb.append(totalPrice / 100.0);
+      sb.append("(");
+      if (paytype == 0) {
+        sb.append("微信¥");
+      } else {
+        sb.append("支付宝¥");
       }
-      if(scorec!=0L){
-        sb.append("¥");
-        sb.append(scorec/100.0);
-        sb.append("金币,");
-      }
-      sb.append("点击查看详情");
-      mapRemark.put("value", sb.toString());
-      mapRemark.put("color", "#173177");
-      HashMap<String, Object> map2 = new HashMap<>();
-      map2.put("remark", mapRemark);
+      sb.append(totalPrice / 100.0);
+      sb.append(")");
+      keys[1] = sb.toString();
+    }
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-      sendTemMessage(openId, 7L, keys, orderSid, 7L, map2);
+    keys[2] = dateFormat.format(new Date());
 
-      //为商户发送模版消息
-    }).start();
+    HashMap<String, Object> mapRemark = new HashMap<>();
+    sb.setLength(0);
+    sb.append("您本次消费获得");
+    if (rebate != 0L) {
+      sb.append("¥");
+      sb.append(rebate / 100.0);
+      sb.append("鼓励金+");
+    }
+    if (scorec != 0L) {
+      sb.append("¥");
+      sb.append(scorec / 100.0);
+      sb.append("金币,");
+    }
+    sb.append("点击查看详情");
+    mapRemark.put("value", sb.toString());
+    mapRemark.put("color", "#173177");
+    HashMap<String, Object> map2 = new HashMap<>();
+    map2.put("remark", mapRemark);
+
+    sendTemMessage(openId, 7L, keys, orderSid, 7L, map2);
   }
 
 
@@ -375,46 +353,43 @@ public class WxTemMsgService {
    * @param merchant   商户
    */
   public void sendToMerchant(Long totalPrice, String orderSid, String lePayCode,
-                             Merchant merchant,Long orderType) {
-
-    new Thread(() -> {
-      //为商家推送
-      StringBuffer sb = new StringBuffer();
-      String[] keys = new String[4];
-      keys[0] = totalPrice / 100.0 + "";
-      keys[1] = orderSid;
-      HashMap<String, Object> mapRemark = new HashMap<>();
-      sb.append("本次支付的乐付码是");
-      sb.append(lePayCode);
+                             Merchant merchant, Long orderType) {
+    //为商家推送
+    StringBuffer sb = new StringBuffer();
+    String[] keys = new String[4];
+    keys[0] = totalPrice / 100.0 + "";
+    keys[1] = orderSid;
+    HashMap<String, Object> mapRemark = new HashMap<>();
+    sb.append("本次支付的乐付码是");
+    sb.append(lePayCode);
 //      sb.append(",本月第");
 //      sb.append(offLineOrder.getMonthlyOrderCount());
 //      sb.append("笔订单");
-      if(orderType==1L){
-        sb.append("(乐加订单)");
-      }else {
-        sb.append("(普通订单)");
-      }
-      sb.append(",点击查看详情");
-      mapRemark.put("value", sb.toString());
-      mapRemark.put("color", "#173177");
-      HashMap<String, Object> map2 = new HashMap<>();
-      map2.put("remark", mapRemark);
+    if (orderType == 1L) {
+      sb.append("(乐加订单)");
+    } else {
+      sb.append("(普通订单)");
+    }
+    sb.append(",点击查看详情");
+    mapRemark.put("value", sb.toString());
+    mapRemark.put("color", "#173177");
+    HashMap<String, Object> map2 = new HashMap<>();
+    map2.put("remark", mapRemark);
 //      List<MerchantUser>
 //          merchantUsers =
 //          merchantService.findMerchantUserByMerchant(merchant);
-      List<TemporaryMerchantUserShop>
-          list =
-          temporaryMerchantUserShopService.findAllByMerchant(merchant);
-      for (TemporaryMerchantUserShop s : list) {
-        List<MerchantWeiXinUser>
-            merchantWeiXinUsers =
-            merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(s.getMerchantUser());
-        for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
-          sendTemMessage(merchantWeiXinUser.getOpenId(), 8L, keys,
-                         orderSid, 9L, map2);
-        }
+    List<TemporaryMerchantUserShop>
+        list =
+        temporaryMerchantUserShopService.findAllByMerchant(merchant);
+    for (TemporaryMerchantUserShop s : list) {
+      List<MerchantWeiXinUser>
+          merchantWeiXinUsers =
+          merchantWeiXinUserService.findMerchantWeiXinUserByMerchantUser(s.getMerchantUser());
+      for (MerchantWeiXinUser merchantWeiXinUser : merchantWeiXinUsers) {
+        sendTemMessage(merchantWeiXinUser.getOpenId(), 8L, keys,
+                       orderSid, 9L, map2);
       }
-    }).start();
+    }
   }
 }
 

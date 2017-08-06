@@ -71,6 +71,7 @@ public class WeixinPayController {
     while ((str = bufferedReader.readLine()) != null) {
       buffer.append(str);
     }
+    log.info(buffer.toString());
     Map map = WeixinPayUtil.doXMLParse(buffer.toString());
     String orderSid = (String) map.get("out_trade_no");
     String returnCode = (String) map.get("return_code");
